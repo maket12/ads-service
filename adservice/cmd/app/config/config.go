@@ -41,36 +41,6 @@ func Load() (*Config, error) {
 		return nil, fmt.Errorf("failed to load config: %v", err)
 	}
 
-	if cfg.PgHost == "" {
-		return nil, fmt.Errorf("PG_HOST is required")
-	}
-	if cfg.PgUser == "" {
-		return nil, fmt.Errorf("PG_USER is required")
-	}
-	if cfg.PgPassword == "" {
-		return nil, fmt.Errorf("PG_PASSWORD is required")
-	}
-	if cfg.PgDBName == "" {
-		return nil, fmt.Errorf("PG_DB_NAME is required")
-	}
-
-	if cfg.MongoHost == "" {
-		return nil, fmt.Errorf("MONGO_HOST is required")
-	}
-	if cfg.MongoUser == "" {
-		return nil, fmt.Errorf("MONGO_USER is required")
-	}
-	if cfg.MongoPassword == "" {
-		return nil, fmt.Errorf("MONGO_PASSWORD is required")
-	}
-	if cfg.MongoDBName == "" {
-		return nil, fmt.Errorf("MONGO_DB_NAME is required")
-	}
-
-	if cfg.MongoCollectionName == "" {
-		return nil, fmt.Errorf("MONGO_COLLECTION_NAME is required")
-	}
-
 	fmt.Printf("Config loaded successfully\n")
 	fmt.Printf("   Environment: %s\n", cfg.Environment)
 	fmt.Printf("   Log Level: %s\n", cfg.LogLevel)

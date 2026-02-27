@@ -238,6 +238,7 @@ services:
     environment:
       - AUTH_GRPC_ADDR=auth-service:50051
       - USER_GRPC_ADDR=user-service:50052
+      - AD_GRPC_ADDR=ad-service:50053
     depends_on:
       - auth-service
       - user-service

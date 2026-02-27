@@ -53,40 +53,6 @@ func Load() (*Config, error) {
 		return nil, fmt.Errorf("failed to load config: %v", err)
 	}
 
-	if cfg.PgHost == "" {
-		return nil, fmt.Errorf("PG_HOST is required")
-	}
-	if cfg.PgUser == "" {
-		return nil, fmt.Errorf("PG_USER is required")
-	}
-	if cfg.PgPassword == "" {
-		return nil, fmt.Errorf("PG_PASSWORD is required")
-	}
-	if cfg.PgDBName == "" {
-		return nil, fmt.Errorf("PG_DB_NAME is required")
-	}
-
-	if cfg.AccessSecret == "" {
-		return nil, fmt.Errorf("ACCESS_SECRET is required")
-	}
-	if cfg.RefreshSecret == "" {
-		return nil, fmt.Errorf("REFRESH_SECRET is required")
-	}
-
-	if cfg.RabbitHost == "" {
-		return nil, fmt.Errorf("RABBIT_HOST is required")
-	}
-	if cfg.RabbitUser == "" {
-		return nil, fmt.Errorf("RABBIT_USER is required")
-	}
-	if cfg.RabbitPassword == "" {
-		return nil, fmt.Errorf("RABBIT_PASSWORD is required")
-	}
-
-	if cfg.RoutingKey == "" {
-		return nil, fmt.Errorf("ROUTING_KEY is required")
-	}
-
 	fmt.Printf("Config loaded successfully\n")
 	fmt.Printf("   Environment: %s\n", cfg.Environment)
 	fmt.Printf("   Log Level: %s\n", cfg.LogLevel)
