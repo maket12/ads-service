@@ -2,7 +2,6 @@ package mongodb_test
 
 import (
 	adaptermongodb "ads/adservice/internal/adapter/out/mongodb"
-	"ads/adservice/internal/domain/model"
 	pkgmongodb "ads/pkg/mongodb"
 	"context"
 	"testing"
@@ -16,7 +15,6 @@ type MediaRepoSuite struct {
 	dbClient *pkgmongodb.Client
 	repo     *adaptermongodb.MediaRepository
 	ctx      context.Context
-	testAd   *model.Ad
 }
 
 func TestMediaRepoSuite(t *testing.T) {

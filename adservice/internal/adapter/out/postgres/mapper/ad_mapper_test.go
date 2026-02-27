@@ -48,7 +48,7 @@ func TestMapSQLCToAd(t *testing.T) {
 func TestMapAdToSQLCCreate(t *testing.T) {
 	t.Parallel()
 
-	var testDesc string = "was built in 1983"
+	testDesc := "was built in 1983"
 
 	ad, _ := model.NewAd(
 		uuid.New(),
@@ -76,7 +76,7 @@ func TestMapAdToSQLCCreate(t *testing.T) {
 func TestMapAdToSQLCUpdate(t *testing.T) {
 	t.Parallel()
 
-	var testDesc string = "was built in 1983"
+	testDesc := "was built in 1983"
 
 	ad, _ := model.NewAd(
 		uuid.New(),
@@ -121,10 +121,8 @@ func TestMapAdToSQLCUpdateStatus(t *testing.T) {
 func TestMapToSQLCList(t *testing.T) {
 	t.Parallel()
 
-	var (
-		testLimit  int = 10
-		testOffset int = 10
-	)
+	testLimit := 10
+	testOffset := 10
 
 	mapped := mapper.MapToSQLCList(testLimit, testOffset)
 
@@ -139,24 +137,24 @@ func TestMapSQLCToAdsList(t *testing.T) {
 
 	rawAds := []sqlc.Ad{
 		{
-			uuid.New(),
-			uuid.New(),
-			"A new product",
-			sql.NullString{},
-			10000,
-			sqlc.AdStatusDeleted,
-			time.Time{},
-			time.Time{},
+			ID:          uuid.New(),
+			SellerID:    uuid.New(),
+			Title:       "A new product",
+			Description: sql.NullString{},
+			Price:       10000,
+			Status:      sqlc.AdStatusDeleted,
+			CreatedAt:   time.Time{},
+			UpdatedAt:   time.Time{},
 		},
 		{
-			uuid.New(),
-			uuid.New(),
-			"A new product",
-			sql.NullString{},
-			10000,
-			sqlc.AdStatusRejected,
-			time.Time{},
-			time.Time{},
+			ID:          uuid.New(),
+			SellerID:    uuid.New(),
+			Title:       "A new product",
+			Description: sql.NullString{},
+			Price:       10000,
+			Status:      sqlc.AdStatusRejected,
+			CreatedAt:   time.Time{},
+			UpdatedAt:   time.Time{},
 		},
 	}
 

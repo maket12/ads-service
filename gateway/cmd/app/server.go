@@ -15,6 +15,7 @@ import (
 	"github.com/99designs/gqlgen/graphql/handler"
 	"github.com/99designs/gqlgen/graphql/playground"
 	"google.golang.org/grpc"
+	"google.golang.org/grpc/credentials/insecure"
 )
 
 func AuthMiddleware(authClient auth_v1.AuthServiceClient) func(http.Handler) http.Handler {
@@ -90,19 +91,28 @@ func main() {
 	}
 
 	// Make connections to services
-	authConn, err := grpc.Dial(cfg.AuthGRPCAddr, grpc.WithInsecure(), grpc.WithBlock())
+	authConn, err := grpc.NewClient(
+		cfg.AuthGRPCAddr,
+		grpc.WithTransportCredentials(insecure.NewCredentials()),
+	)
 	if err != nil {
 		log.Printf("Gateway: WARNING - could not connect to Auth Service: %v", err)
 	}
 	defer closeAuthConnection(authConn)
 
-	userConn, err := grpc.Dial(cfg.UserGRPCAddr, grpc.WithInsecure())
+	userConn, err := grpc.NewClient(
+		cfg.UserGRPCAddr,
+		grpc.WithTransportCredentials(insecure.NewCredentials()),
+	)
 	if err != nil {
 		log.Printf("Gateway: WARNING - could not connect to User Service: %v", err)
 	}
 	defer closeUserConnection(userConn)
 
-	addConn, err := grpc.Dial(cfg.UserGRPCAddr, grpc.WithInsecure())
+	addConn, err := grpc.NewClient(
+		cfg.UserGRPCAddr,
+		grpc.WithTransportCredentials(insecure.NewCredentials()),
+	)
 	if err != nil {
 		log.Printf("Gateway: WARNING - could not connect to Ad Service: %v", err)
 	}

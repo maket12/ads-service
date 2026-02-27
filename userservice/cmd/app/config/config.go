@@ -9,16 +9,16 @@ import (
 
 type Config struct {
 	// Database
-	PgHost     string `env:"PG_HOST,required"`
-	PgPort     int    `env:"PG_PORT" envDefault:"5432"`
-	PgUser     string `env:"PG_USER,required"`
-	PgPassword string `env:"PG_PASSWORD,required"`
-	PgDBName   string `env:"PG_DB_NAME,required"`
-	PgSSLMode  string `env:"DB_SSL_MODE" envDefault:"prefer"`
+	PgHost     string `env:"USER_PG_HOST,required"`
+	PgPort     int    `env:"USER_PG_PORT" envDefault:"5432"`
+	PgUser     string `env:"USER_PG_USER,required"`
+	PgPassword string `env:"USER_PG_PASSWORD,required"`
+	PgDBName   string `env:"USER_PG_DB_NAME,required"`
+	PgSSLMode  string `env:"USER_PG_SSL_MODE" envDefault:"prefer"`
 
-	PgOpenConn     int           `env:"PG_OPEN_CONNECTIONS" envDefault:"25"`
-	PgIdleConn     int           `env:"PG_IDLE_CONNECTIONS" envDefault:"25"`
-	PgConnLifeTime time.Duration `env:"PG_CONNECTION_LIFETIME" envDefault:"5m"`
+	PgOpenConn     int           `env:"USER_PG_OPEN_CONNECTIONS" envDefault:"25"`
+	PgIdleConn     int           `env:"USER_PG_IDLE_CONNECTIONS" envDefault:"25"`
+	PgConnLifeTime time.Duration `env:"USER_PG_CONNECTION_LIFETIME" envDefault:"5m"`
 
 	// RabbitMQ
 	RabbitHost     string `env:"RABBIT_HOST,required"`
@@ -29,17 +29,17 @@ type Config struct {
 	RabbitWaitTime time.Duration `env:"RABBIT_WAIT_TIME" envDefault:"30s"`
 	RabbitAttempts int           `env:"RABBIT_ATTEMPTS" envDefault:"5"`
 
-	ExchangeName string `env:"EXCHANGE_NAME" envDefault:"account_topic"`
-	QueueName    string `env:"QUEUE_NAME" envDefault:"account_create"`
-	RoutingKey   string `env:"ROUTING_KEY,required"`
+	ExchangeName string `env:"ACCOUNT_EXCHANGE" envDefault:"account_topic"`
+	QueueName    string `env:"USER_SERVICE_QUEUE" envDefault:"account_create"`
+	RoutingKey   string `env:"ACCOUNT_ROUTING_KEY,required"`
 
 	// Phone validator
 	PhoneDefaultRegion string `env:"PHONE_DEFAULT_REGION"`
 
 	// Service
-	GRPCPort    int    `env:"GRPC_PORT" envDefault:"50052"`
-	LogLevel    string `env:"LOG_LEVEL" envDefault:"INFO"`
-	Environment string `env:"ENVIRONMENT" envDefault:"development"`
+	GRPCPort    int    `env:"USER_GRPC_PORT" envDefault:"50052"`
+	LogLevel    string `env:"USER_LOG_LEVEL" envDefault:"INFO"`
+	Environment string `env:"USER_ENVIRONMENT" envDefault:"development"`
 }
 
 func Load() (*Config, error) {

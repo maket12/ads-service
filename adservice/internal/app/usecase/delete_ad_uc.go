@@ -50,13 +50,13 @@ func (uc *DeleteAdUC) Execute(ctx context.Context, in dto.DeleteAdInput) (dto.De
 		err = ad.Delete()
 		if err != nil {
 			return dto.DeleteAdOutput{Success: false}, uc_errors.ErrCannotDelete
-		} else {
-			err = uc.ad.UpdateStatus(ctx, ad)
-			if err != nil {
-				return dto.DeleteAdOutput{Success: false}, uc_errors.Wrap(
-					uc_errors.ErrUpdateAdStatusDB, err,
-				)
-			}
+		}
+
+		err = uc.ad.UpdateStatus(ctx, ad)
+		if err != nil {
+			return dto.DeleteAdOutput{Success: false}, uc_errors.Wrap(
+				uc_errors.ErrUpdateAdStatusDB, err,
+			)
 		}
 	}
 

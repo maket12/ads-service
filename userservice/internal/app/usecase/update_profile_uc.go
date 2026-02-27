@@ -52,7 +52,7 @@ func (uc *UpdateProfileUC) Execute(ctx context.Context, in dto.UpdateProfileInpu
 		in.FirstName,
 		in.LastName,
 		validatedPhone,
-		in.AvatarURl,
+		in.AvatarURL,
 		in.Bio,
 	)
 	if err != nil {

@@ -14,7 +14,7 @@ func MapGetProfileDTOToPb(out dto.GetProfileOutput) *user_v1.GetProfileResponse 
 		FirstName: out.FirstName,
 		LastName:  out.LastName,
 		Phone:     out.Phone,
-		AvatarUrl: out.AvatarURl,
+		AvatarUrl: out.AvatarURL,
 		Bio:       out.Bio,
 		UpdatedAt: timestamppb.New(out.UpdatedAt),
 	}
@@ -26,7 +26,7 @@ func MapUpdateProfilePbToDTO(accountID uuid.UUID, req *user_v1.UpdateProfileRequ
 		FirstName: req.FirstName,
 		LastName:  req.LastName,
 		Phone:     req.Phone,
-		AvatarURl: req.AvatarUrl,
+		AvatarURL: req.AvatarUrl,
 		Bio:       req.Bio,
 	}
 }

@@ -16,14 +16,13 @@ import (
 )
 
 func TestRegisterUC_Execute(t *testing.T) {
-	// Приводим к твоему формату: название adapter
 	type adapter struct {
-		account        *mocks.AccountRepository
-		accountRole    *mocks.AccountRoleRepository
-		passwordHasher *mocks.PasswordHasher
+		account          *mocks.AccountRepository
+		accountRole      *mocks.AccountRoleRepository
+		passwordHasher   *mocks.PasswordHasher
+		accountPublisher *mocks.AccountPublisher
 	}
 
-	// Приводим к твоему формату: название testCase
 	type testCase struct {
 		name    string
 		input   dto.RegisterInput
@@ -47,6 +46,9 @@ func TestRegisterUC_Execute(t *testing.T) {
 				})).Return(nil)
 
 				a.accountRole.On("Create", mock.Anything, mock.Anything).
+					Return(nil)
+
+				a.accountPublisher.On("PublishAccountCreate", mock.Anything, mock.Anything).
 					Return(nil)
 			},
 			wantErr: nil,
@@ -93,21 +95,44 @@ func TestRegisterUC_Execute(t *testing.T) {
 			},
 			wantErr: uc_errors.ErrCreateAccountRoleDB,
 		},
+		{
+			name: "Error - create a rabbitmq event",
+			input: dto.RegisterInput{
+				Email:    "test@example.com",
+				Password: "securePassword123",
+			},
+			prepare: func(a adapter) {
+				a.passwordHasher.On("Hash", "securePassword123").
+					Return("hashed_password", nil)
+
+				a.account.On("Create", mock.Anything, mock.MatchedBy(func(acc interface{ Email() string }) bool {
+					return acc.Email() == "test@example.com"
+				})).Return(nil)
+
+				a.accountRole.On("Create", mock.Anything, mock.Anything).
+					Return(nil)
+
+				a.accountPublisher.On("PublishAccountCreate", mock.Anything, mock.Anything).
+					Return(errors.New("account publisher error"))
+			},
+			wantErr: uc_errors.ErrPublishEvent,
+		},
 	}
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			a := adapter{
-				account:        mocks.NewAccountRepository(t),
-				accountRole:    mocks.NewAccountRoleRepository(t),
-				passwordHasher: mocks.NewPasswordHasher(t),
+				account:          mocks.NewAccountRepository(t),
+				accountRole:      mocks.NewAccountRoleRepository(t),
+				passwordHasher:   mocks.NewPasswordHasher(t),
+				accountPublisher: mocks.NewAccountPublisher(t),
 			}
 
 			if tt.prepare != nil {
 				tt.prepare(a)
 			}
 
-			uc := usecase.NewRegisterUC(a.account, a.accountRole, a.passwordHasher)
+			uc := usecase.NewRegisterUC(a.account, a.accountRole, a.passwordHasher, a.accountPublisher)
 
 			res, err := uc.Execute(context.Background(), tt.input)
 

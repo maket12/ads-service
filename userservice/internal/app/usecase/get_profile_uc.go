@@ -31,7 +31,7 @@ func (uc *GetProfileUC) Execute(ctx context.Context, in dto.GetProfileInput) (dt
 		FirstName: profile.FirstName(),
 		LastName:  profile.LastName(),
 		Phone:     profile.Phone(),
-		AvatarURl: profile.AvatarURL(),
+		AvatarURL: profile.AvatarURL(),
 		Bio:       profile.Bio(),
 		UpdatedAt: profile.UpdatedAt(),
 	}, nil

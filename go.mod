@@ -1,6 +1,6 @@
 module ads
 
-go 1.25
+go 1.25.0
 
 require (
 	github.com/99designs/gqlgen v0.17.86
@@ -19,7 +19,6 @@ require (
 	google.golang.org/grpc v1.74.2
 	google.golang.org/protobuf v1.36.11
 	gorm.io/driver/postgres v1.6.0
-	gorm.io/gorm v1.30.1
 )
 
 require (

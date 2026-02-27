@@ -99,13 +99,6 @@ func closeMongoClient(
 	}
 }
 
-func newMediaRepositoryConfig(cfg *config.Config, client *pkgmongodb.Client) *adaptermongo.MediaRepositoryConfig {
-	return adaptermongo.NewMediaRepositoryConfig(
-		client,
-		cfg.MongoCollectionName,
-	)
-}
-
 func runServer(ctx context.Context, cfg *config.Config, logger *slog.Logger) error {
 	// Postgres client
 	pgClient, err := newPostgresClient(cfg)

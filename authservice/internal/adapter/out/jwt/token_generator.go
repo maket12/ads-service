@@ -33,7 +33,7 @@ func NewTokenGenerator(
 	}
 }
 
-func (gen *TokenGenerator) GenerateAccessToken(ctx context.Context, accountID uuid.UUID, role string) (string, error) {
+func (gen *TokenGenerator) GenerateAccessToken(_ context.Context, accountID uuid.UUID, role string) (string, error) {
 	accessClaims := CustomClaims{
 		RegisteredClaims: jwt.RegisteredClaims{
 			Subject:   accountID.String(),
@@ -54,7 +54,7 @@ func (gen *TokenGenerator) GenerateAccessToken(ctx context.Context, accountID uu
 	return accessStr, nil
 }
 
-func (gen *TokenGenerator) GenerateRefreshToken(ctx context.Context, accountID, sessionID uuid.UUID) (string, error) {
+func (gen *TokenGenerator) GenerateRefreshToken(_ context.Context, accountID, sessionID uuid.UUID) (string, error) {
 	refreshClaims := CustomClaims{
 		RegisteredClaims: jwt.RegisteredClaims{
 			Subject:   accountID.String(),
@@ -75,7 +75,7 @@ func (gen *TokenGenerator) GenerateRefreshToken(ctx context.Context, accountID, 
 	return refreshStr, nil
 }
 
-func (gen *TokenGenerator) parseAccessToken(ctx context.Context, token string) (*CustomClaims, error) {
+func (gen *TokenGenerator) parseAccessToken(_ context.Context, token string) (*CustomClaims, error) {
 	accessClaims := &CustomClaims{}
 
 	parsedToken, err := jwt.ParseWithClaims(token, accessClaims, func(token *jwt.Token) (interface{}, error) {
@@ -93,7 +93,7 @@ func (gen *TokenGenerator) parseAccessToken(ctx context.Context, token string) (
 	return accessClaims, nil
 }
 
-func (gen *TokenGenerator) parseRefreshToken(ctx context.Context, token string) (*CustomClaims, error) {
+func (gen *TokenGenerator) parseRefreshToken(_ context.Context, token string) (*CustomClaims, error) {
 	refreshClaims := &CustomClaims{}
 
 	parsedToken, err := jwt.ParseWithClaims(token, refreshClaims, func(token *jwt.Token) (interface{}, error) {

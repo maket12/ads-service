@@ -9,30 +9,30 @@ import (
 
 type Config struct {
 	// Postgres
-	PgHost     string `env:"PG_HOST,required"`
-	PgPort     int    `env:"PG_PORT" envDefault:"5433"`
-	PgUser     string `env:"PG_USER,required"`
-	PgPassword string `env:"PG_PASSWORD,required"`
-	PgDBName   string `env:"PG_DB_NAME,required"`
-	PgSSLMode  string `env:"DB_SSL_MODE" envDefault:"prefer"`
+	PgHost     string `env:"AD_PG_HOST,required"`
+	PgPort     int    `env:"AD_PG_PORT" envDefault:"5433"`
+	PgUser     string `env:"AD_PG_USER,required"`
+	PgPassword string `env:"AD_PG_PASSWORD,required"`
+	PgDBName   string `env:"AD_PG_DB_NAME,required"`
+	PgSSLMode  string `env:"AD_PG_SSL_MODE" envDefault:"prefer"`
 
-	PgOpenConn     int           `env:"PG_OPEN_CONNECTIONS" envDefault:"25"`
-	PgIdleConn     int           `env:"PG_IDLE_CONNECTIONS" envDefault:"25"`
-	PgConnLifeTime time.Duration `env:"PG_CONNECTION_LIFETIME" envDefault:"5m"`
+	PgOpenConn     int           `env:"AD_PG_OPEN_CONNECTIONS" envDefault:"25"`
+	PgIdleConn     int           `env:"AD_PG_IDLE_CONNECTIONS" envDefault:"25"`
+	PgConnLifeTime time.Duration `env:"AD_PG_CONNECTION_LIFETIME" envDefault:"5m"`
 
 	// Mongo
-	MongoHost     string `env:"MONGO_HOST,required"`
-	MongoPort     int    `env:"MONGO_PORT" envDefault:"27017"`
-	MongoUser     string `env:"MONGO_USER,required"`
-	MongoPassword string `env:"MONGO_PASSWORD,required"`
-	MongoDBName   string `env:"MONGO_DB_NAME,required"`
+	MongoHost     string `env:"AD_MONGO_HOST,required"`
+	MongoPort     int    `env:"AD_MONGO_PORT" envDefault:"27017"`
+	MongoUser     string `env:"AD_MONGO_USER,required"`
+	MongoPassword string `env:"AD_MONGO_PASSWORD,required"`
+	MongoDBName   string `env:"AD_MONGO_DB_NAME,required"`
 
-	MongoCollectionName string `env:"MONGO_COLLECTION_NAME,required"`
+	MongoCollectionName string `env:"AD_MONGO_COLLECTION_NAME,required"`
 
 	// Service
-	GRPCPort    int    `env:"GRPC_PORT" envDefault:"50051"`
-	LogLevel    string `env:"LOG_LEVEL" envDefault:"INFO"`
-	Environment string `env:"ENVIRONMENT" envDefault:"development"`
+	GRPCPort    int    `env:"AD_GRPC_PORT" envDefault:"50051"`
+	LogLevel    string `env:"AD_LOG_LEVEL" envDefault:"INFO"`
+	Environment string `env:"AD_ENVIRONMENT" envDefault:"development"`
 }
 
 func Load() (*Config, error) {

@@ -16,7 +16,7 @@ func NewPhoneValidator(defaultRegion string) *PhoneValidator {
 	return &PhoneValidator{defaultRegion: defaultRegion}
 }
 
-func (v *PhoneValidator) Validate(ctx context.Context, phone string) (string, error) {
+func (v *PhoneValidator) Validate(_ context.Context, phone string) (string, error) {
 	num, err := phonenumbers.Parse(phone, v.defaultRegion)
 	if err != nil {
 		return "", errs.NewValueInvalidErrorWithReason("phone", err)

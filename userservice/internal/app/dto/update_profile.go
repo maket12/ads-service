@@ -9,7 +9,7 @@ type UpdateProfileInput struct {
 	FirstName *string
 	LastName  *string
 	Phone     *string
-	AvatarURl *string
+	AvatarURL *string
 	Bio       *string
 }
 
