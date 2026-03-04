@@ -2,12 +2,13 @@ package grpc
 
 import (
 	"ads/authservice/internal/app/uc_errors"
+	"ads/pkg/errs"
 	"errors"
 
 	"google.golang.org/grpc/codes"
 )
 
-func gRPCError(err error) (codes.Code, string, error) {
+func gRPCError(err error) *errs.OutErr {
 	var w *uc_errors.WrappedError
 	if errors.As(err, &w) {
 		switch {
@@ -25,33 +26,33 @@ func gRPCError(err error) (codes.Code, string, error) {
 			errors.Is(w.Public, uc_errors.ErrGenerateAccessToken),
 			errors.Is(w.Public, uc_errors.ErrGenerateRefreshToken),
 			errors.Is(w.Public, uc_errors.ErrPublishEvent):
-			return codes.Internal, w.Public.Error(), w.Reason
+			return errs.NewOutError(codes.Internal, w.Public.Error(), w.Reason)
 
 		case errors.Is(w.Public, uc_errors.ErrInvalidInput):
-			return codes.InvalidArgument, w.Public.Error(), w.Reason
+			return errs.NewOutError(codes.InvalidArgument, w.Public.Error(), w.Reason)
 
 		default:
-			return codes.Internal, "internal error", w.Reason
+			return errs.NewOutError(codes.Internal, "internal error", w.Reason)
 		}
 	}
 
 	switch {
 	case errors.Is(err, uc_errors.ErrInvalidCredentials),
 		errors.Is(err, uc_errors.ErrInvalidAccountID):
-		return codes.NotFound, err.Error(), nil
+		return errs.NewOutError(codes.NotFound, err.Error(), nil)
 
 	case errors.Is(err, uc_errors.ErrAccountAlreadyExists):
-		return codes.AlreadyExists, err.Error(), nil
+		return errs.NewOutError(codes.AlreadyExists, err.Error(), nil)
 
 	case errors.Is(err, uc_errors.ErrCannotLogin),
 		errors.Is(err, uc_errors.ErrCannotAssign),
 		errors.Is(err, uc_errors.ErrCannotRevoke):
-		return codes.FailedPrecondition, err.Error(), nil
+		return errs.NewOutError(codes.FailedPrecondition, err.Error(), nil)
 
 	case errors.Is(err, uc_errors.ErrInvalidAccessToken),
 		errors.Is(err, uc_errors.ErrInvalidRefreshToken):
-		return codes.Unauthenticated, err.Error(), nil
+		return errs.NewOutError(codes.Unauthenticated, err.Error(), nil)
 	}
 
-	return codes.Internal, "internal error", nil
+	return errs.NewOutError(codes.Internal, "internal error", nil)
 }

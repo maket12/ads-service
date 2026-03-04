@@ -2,6 +2,10 @@ package uc_errors
 
 import "errors"
 
+var (
+	ErrAccessDenied = errors.New("no permission to access this data")
+)
+
 /*
 ================ Validation failures ================
 */

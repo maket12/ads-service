@@ -35,6 +35,13 @@ func (uc *GetAdUC) Execute(ctx context.Context, in dto.GetAdInput) (dto.GetAdOut
 		)
 	}
 
+	// Check if current user can see this ad
+	if !ad.IsPublished() {
+		if ad.SellerID() != in.SellerID {
+			return dto.GetAdOutput{}, uc_errors.ErrAccessDenied
+		}
+	}
+
 	// Get images from db
 	images, err := uc.media.Get(ctx, ad.ID())
 	if err != nil {

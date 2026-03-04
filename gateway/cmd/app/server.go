@@ -110,7 +110,7 @@ func main() {
 	defer closeUserConnection(userConn)
 
 	addConn, err := grpc.NewClient(
-		cfg.UserGRPCAddr,
+		cfg.AdGRPCAddr,
 		grpc.WithTransportCredentials(insecure.NewCredentials()),
 	)
 	if err != nil {
