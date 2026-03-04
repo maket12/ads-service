@@ -1,30 +1,32 @@
-# 🚀 **Ads Service — Микросервисная платформа для управления объявлениями**
+# **🚀 Ads Service — Microservice Platform for Ad Management**
 
-## 📋 **О проекте**
+[English](README.md) | [Русский](README.ru.md)
 
-**Ads Service** — это высоконагруженная микросервисная платформа для управления объявлениями, реализованная в соответствии с техническим заданием. Проект построен на принципах **Clean Architecture** и **Domain-Driven Design (DDD)** с четким разделением на независимые, масштабируемые сервисы.
+## **📋 Overview**
 
-### ✨ **Реализованный функционал**
+**Ads Service** is a high-load microservice platform for ad management. The project is built using **Clean Architecture** and **Domain-Driven Design (DDD)** principles with a clear separation into independent, scalable services.
 
-✅ **Auth Service** — полная аутентификация и авторизация (JWT, refresh tokens, роли)  
-✅ **User Service** — управление профилями пользователей  
-✅ **Ad Service** — CRUD объявлений с PostgreSQL + MongoDB  
-✅ **GraphQL Gateway** — единая точка входа с агрегацией gRPC  
-✅ **RabbitMQ** — асинхронное событийное взаимодействие  
-✅ **Graceful Shutdown** — корректное завершение всех сервисов  
-✅ **Чистая архитектура** — слои: handler → usecase → domain → repository  
-✅ **DDD** — выделенные bounded contexts, entity, value objects  
-✅ **Unit + Integration тесты** — покрытие ключевых сценариев  
-✅ **Docker** — контейнеризация всех сервисов  
-✅ **gRPC** — эффективное межсервисное взаимодействие
+### **✨ Key Features**
+
+✅ **Auth Service** — full authentication & authorization (JWT, refresh tokens, roles)
+✅ **User Service** — user profile management
+✅ **Ad Service** — Ad CRUD with PostgreSQL \+ MongoDB
+✅ **GraphQL Gateway** — single entry point with gRPC aggregation
+✅ **RabbitMQ** — asynchronous event-driven communication
+✅ **Graceful Shutdown** — clean termination of all services
+✅ **Clean Architecture** — layers: handler → usecase → domain → repository
+✅ **DDD** — bounded contexts, entities, value objects
+✅ **Unit \+ Integration Tests** — coverage for key scenarios
+✅ **Docker** — containerization for all services
+✅ **gRPC** — efficient inter-service communication
 
 ---
 
-## 🏗 **Архитектура системы**
+## 🏗 **System architecture**
 
 ```
 ┌─────────────────────────────────────────────────────────────────┐
-│                        Клиенты (Web/Mobile)                      │
+│                       Clients (Web/Mobile)                      │
 └───────────────────────────────┬─────────────────────────────────┘
                                 │ HTTPS
                                 ▼
@@ -52,63 +54,61 @@
 
 ---
 
-## 🛠 **Технологический стек**
+## **🛠 Tech Stack**
 
 ### **Backend**
-| Технология   | Назначение |
-|--------------|------------|
-| **Go 1.24+** | Основной язык разработки |
-| **gRPC**     | Межсервисное взаимодействие |
-| **GraphQL**  | API Gateway |
-| **RabbitMQ** | Асинхронные события |
-| **JWT**      | Аутентификация |
+| Technology   | Purpose                     |
+|--------------|-----------------------------|
+| **Go 1.24+** | Primary language            |
+| **gRPC**     | Inter-service communication |
+| **GraphQL**  | API Gateway                 |
+| **RabbitMQ** | Async events                |
+| **JWT**      | Authentication              |
 
-### **Хранилища**
-| Технология | Сервис | Назначение |
-|------------|--------|------------|
-| **PostgreSQL** | Auth, User, Ad | Основные данные |
-| **MongoDB** | Ad Service | Медиафайлы, вложения |
+### **Storage**
+| Technology     | Service        | Purpose                  |
+|----------------|----------------|--------------------------|
+| **PostgreSQL** | Auth, User, Ad | Main data                |
+| **MongoDB**    | Ad Service     | Media files, attachments |
 
-### **Инфраструктура**
-| Технология | Назначение |
-|------------|------------|
-| **Docker** | Контейнеризация |
-| **Docker Compose** | Локальная разработка |
+### **Infrastructure**
+| Technology         | Purpose           |
+|--------------------|-------------------|
+| **Docker**         | Containerization  |
+| **Docker Compose** | Local development |
 
----
+## **🚀 Getting Started**
 
-## 🚀 **Начало работы**
-
-### **Предварительные требования**
+### **Prerequisites**
 - Go 1.24+
 - Docker & Docker Compose
 - Protocol Buffers (protoc)
 
-### **Быстрый старт**
+### **Quick Start**
 
 ```bash
-# 1. Клонировать репозиторий
+# 1. Clone repository
 git clone https://github.com/maket12/ads-service.git
 cd ads-service
 
-# 2. Скопировать конфигурацию окружения
+# 2. Copy env
 cp .env.example .env
 
-# 3. Запустить все сервисы (включая миграции)
+# 3. Launch all services (including migrations)
 docker compose up --build
 
-# 4. Открыть GraphQL playground
+# 4. Open GraphQL playground
 http://localhost:8080/graphql
 ```
 
 ---
 
-## 🔌 **API Endpoints**
+# 🔌 **API Endpoints**
 
 ### **GraphQL Gateway** (порт `8080`)
 
 ```graphql
-# Примеры запросов
+# Examples
 query GetProfile {
     me {
         id
@@ -135,38 +135,37 @@ mutation UpdateProfile {
 
 ### **gRPC Endpoints**
 
-| Сервис | Порт | Основные методы                            |
-|--------|------|--------------------------------------------|
-| Auth Service | 50051 | `ValidateAccessToken`, `Login`, `Register` |
-| User Service | 50052 | `GetProfile`, `UpdateProfile` |
-| Ad Service | 50053 | `CreateAd`, `UpdateAd`, `DeleteAd`, `GetAd` |
+| Service      | Port  | Main methods                                |
+|--------------|-------|---------------------------------------------|
+| Auth Service | 50051 | `ValidateAccessToken`, `Login`, `Register`  |
+| User Service | 50052 | `GetProfile`, `UpdateProfile`               |
+| Ad Service   | 50053 | `CreateAd`, `UpdateAd`, `DeleteAd`, `GetAd` |
 
 ---
 
-## 🧪 **Тестирование**
+## 🧪 **Testing**
 
-Проект имеет полное покрытие тестами:
+Project has full test coverage:
 
-### **Unit тесты**
-- Моки через `mockery` для всех портов
-- Изолированное тестирование use cases
-- Покрытие: **~85%**
+### **Unit tests**
+- Mocks via `mockery` for each port
+- Isolated testing of use cases
+- Coverage: **~85%**
 
-### **Интеграционные тесты**
-- Реальные БД (PostgreSQL, MongoDB)
-- gRPC клиент-сервер тесты
+### **Integrational tests**
+- Real DB (PostgreSQL, MongoDB)
 
 ---
 
-## 🐳 **Docker контейнеризация**
+## 🐳 **Docker containerisation**
 
-Все сервисы полностью докеризированы:
+All services have their own docker containers:
 
 ```bash
-# Собрать и запустить
+# Build and launch
 docker-compose up --build
 
-# Доступные сервисы:
+# Available services:
 # - auth-service:50051
 # - user-service:50052
 # - ad-service:50053
@@ -180,7 +179,7 @@ docker-compose up --build
 
 ## ⚡ **Graceful Shutdown**
 
-Каждый сервис корректно обрабатывает завершение:
+Each service correctly handles termination gracefully: 
 
 ```go
 // Graceful shutdown
@@ -200,38 +199,42 @@ select {
 
 ## 🔄 **RabbitMQ Events**
 
-### **Публикуемые события**
-- `account.created` — при регистрации пользователя
+### **Published events**
+- `account.created` — while registration of user
 
-### **Подписки**
-- User Service подписан на `account.created`
-
----
-
-## 📄 **Лицензия**
-
-Проект распространяется под лицензией Apache-2.0. См. файл [LICENSE](LICENSE).
+### **Subscriptions**
+- User Service subscribed on `account.created`
 
 ---
 
-## ✅ **Статус реализации по ТЗ**
+## 📄 **License**
 
-| Компонент | Статус | Примечание |
-|-----------|--------|------------|
-| **Auth Service** | ✅ Готов | JWT, refresh, роли |
-| **User Service** | ✅ Готов | Профили, настройки |
-| **Ad Service** | ✅ Готов | CRUD + MongoDB |
-| **GraphQL Gateway** | ✅ Готов | Агрегация, авторизация |
-| **RabbitMQ** | ✅ Интегрировано | События `account.created` |
-| **Docker** | ✅ Контейнеризация | Все сервисы |
-| **Graceful Shutdown** | ✅ Реализован | gRPC, БД, очереди |
-| **Чистая архитектура** | ✅ Реализована | Слои, DDD |
-| **Тесты (unit/integration)** | ✅ Есть | Покрытие ~80% |
-| **CI/CD** | ⏳ В планах | Линтинг, тесты, сборка |
-| **Search Service** | ⏳ В планах | Elasticsearch |
-| **Kubernetes** | ⏳ В планах | Helm charts |
-| **Мониторинг** | ⏳ В планах | Prometheus metrics |
+The project is distributed under the Apache-2.0 license.. See the [LICENSE](LICENSE).
 
 ---
 
-**Готово к продакшену!** 🚀
+## ✅ **Status of implementation**
+
+| Component                      | Status             | Note                         |
+|--------------------------------|--------------------|------------------------------|
+| **Auth Service**               | ✅ Ready            | JWT, refresh, roles          |
+| **User Service**               | ✅ Ready            | Profiles, settings           |
+| **Ad Service**                 | ✅ Ready            | CRUD + MongoDB               |
+| **GraphQL Gateway**            | ✅ Ready            | Aggregation, authorisation   |
+| **RabbitMQ**                   | ✅ Integrated       | Events `account.created`     |
+| **Docker**                     | ✅ Containerisation | All services                 |
+| **Graceful Shutdown**          | ✅ Realised         | gRPC, DB, queues             |
+| **Clean architecture**         | ✅ Realised         | Layers, DDD                  |
+| **Testing (unit/integration)** | ✅ Included         | Coverage ~80%                |
+| **CI/CD**                      | ⏳ In plans         | Linting, tests, installation |
+| **Search Service**             | ⏳ In plans         | Elasticsearch                |
+| **Kubernetes**                 | ⏳ In plans         | Helm charts                  |
+| **Monitoring**                 | ⏳ In plans         | Prometheus metrics           |
+
+---
+
+**Ready for production!** 🚀
+
+## **📄 License**
+
+This project is licensed under the Apache-2.0 License.
