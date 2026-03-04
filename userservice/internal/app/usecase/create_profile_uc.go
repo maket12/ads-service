@@ -1,13 +1,14 @@
 package usecase
 
 import (
-	"ads/pkg/errs"
-	"ads/userservice/internal/app/dto"
-	"ads/userservice/internal/app/uc_errors"
-	"ads/userservice/internal/domain/model"
-	"ads/userservice/internal/domain/port"
 	"context"
 	"errors"
+
+	pkgerrs "github.com/maket12/ads-service/pkg/errs"
+	"github.com/maket12/ads-service/userservice/internal/app/dto"
+	ucerrs "github.com/maket12/ads-service/userservice/internal/app/errs"
+	"github.com/maket12/ads-service/userservice/internal/domain/model"
+	"github.com/maket12/ads-service/userservice/internal/domain/port"
 )
 
 type CreateProfileUC struct {
@@ -22,14 +23,14 @@ func (uc *CreateProfileUC) Execute(ctx context.Context, in dto.CreateProfileInpu
 	// Create profile
 	profile, err := model.NewProfile(in.AccountID)
 	if err != nil {
-		return uc_errors.ErrInvalidAccountID
+		return ucerrs.ErrInvalidAccountID
 	}
 
 	if err := uc.profile.Create(ctx, profile); err != nil {
-		if errors.Is(err, errs.ErrObjectAlreadyExists) {
+		if errors.Is(err, pkgerrs.ErrObjectAlreadyExists) {
 			return nil
 		}
-		return uc_errors.Wrap(uc_errors.ErrCreateProfileDB, err)
+		return ucerrs.Wrap(ucerrs.ErrCreateProfileDB, err)
 	}
 
 	return nil

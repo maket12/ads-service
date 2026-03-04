@@ -1,7 +1,7 @@
 syntax = "proto3";
 
 package user;
-option go_package = "ads/pkg/generated/user_v1;user_v1";
+option go_package = "github.com/maket12/ads-service/pkg/generated/user_v1;user_v1";
 
 import "google/protobuf/timestamp.proto";
 

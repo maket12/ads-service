@@ -1,12 +1,12 @@
 package usecase
 
 import (
-	"ads/adservice/internal/app/dto"
-	"ads/adservice/internal/app/uc_errors"
-	"ads/adservice/internal/domain/port"
-	"ads/pkg/errs"
 	"context"
 	"errors"
+	"github.com/maket12/ads-service/adservice/internal/app/dto"
+	ucerrs "github.com/maket12/ads-service/adservice/internal/app/errs"
+	"github.com/maket12/ads-service/adservice/internal/domain/port"
+	pkgerrs "github.com/maket12/ads-service/pkg/errs"
 )
 
 type UpdateAdUC struct {
@@ -27,40 +27,40 @@ func (uc *UpdateAdUC) Execute(ctx context.Context, in dto.UpdateAdInput) (dto.Up
 	// Get from db
 	ad, err := uc.ad.Get(ctx, in.AdID)
 	if err != nil {
-		if errors.Is(err, errs.ErrObjectNotFound) {
-			return dto.UpdateAdOutput{Success: false}, uc_errors.ErrInvalidAdID
+		if errors.Is(err, pkgerrs.ErrObjectNotFound) {
+			return dto.UpdateAdOutput{Success: false}, ucerrs.ErrInvalidAdID
 		}
-		return dto.UpdateAdOutput{Success: false}, uc_errors.Wrap(
-			uc_errors.ErrGetAdDB, err,
+		return dto.UpdateAdOutput{Success: false}, ucerrs.Wrap(
+			ucerrs.ErrGetAdDB, err,
 		)
 	}
 
 	// Check if current user can update this ad
 	if ad.SellerID() != in.SellerID {
-		return dto.UpdateAdOutput{Success: false}, uc_errors.ErrAccessDenied
+		return dto.UpdateAdOutput{Success: false}, ucerrs.ErrAccessDenied
 	}
 
 	// Update
 	err = ad.Update(in.Title, in.Description, in.Price, in.Images)
 	if err != nil {
-		return dto.UpdateAdOutput{Success: false}, uc_errors.Wrap(
-			uc_errors.ErrInvalidInput, err,
+		return dto.UpdateAdOutput{Success: false}, ucerrs.Wrap(
+			ucerrs.ErrInvalidInput, err,
 		)
 	}
 
 	// Update in db
 	err = uc.ad.Update(ctx, ad)
 	if err != nil {
-		return dto.UpdateAdOutput{Success: false}, uc_errors.Wrap(
-			uc_errors.ErrUpdateAdDB, err,
+		return dto.UpdateAdOutput{Success: false}, ucerrs.Wrap(
+			ucerrs.ErrUpdateAdDB, err,
 		)
 	}
 
 	// Update images in db
 	err = uc.media.Save(ctx, ad.ID(), ad.Images())
 	if err != nil {
-		return dto.UpdateAdOutput{Success: false}, uc_errors.Wrap(
-			uc_errors.ErrSaveImagesDB, err,
+		return dto.UpdateAdOutput{Success: false}, ucerrs.Wrap(
+			ucerrs.ErrSaveImagesDB, err,
 		)
 	}
 

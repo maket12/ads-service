@@ -1,8 +1,8 @@
 package model_test
 
 import (
-	"ads/pkg/errs"
-	"ads/userservice/internal/domain/model"
+	pkgerrs "github.com/maket12/ads-service/pkg/errs"
+	"github.com/maket12/ads-service/userservice/internal/domain/model"
 	"testing"
 	"time"
 
@@ -29,7 +29,7 @@ func TestNewProfile(t *testing.T) {
 		{
 			name:      "failure - invalid account id",
 			accountID: uuid.Nil,
-			expect:    errs.ErrValueIsInvalid,
+			expect:    pkgerrs.ErrValueIsInvalid,
 		},
 	}
 
@@ -100,7 +100,7 @@ func TestProfile_Update(t *testing.T) {
 			phone:     &testPhone,
 			avatarURL: &testAvatarURL,
 			bio:       &testBio,
-			expect:    errs.ErrValueIsInvalid,
+			expect:    pkgerrs.ErrValueIsInvalid,
 		},
 		{
 			name:      "failure - invalid last name",
@@ -109,7 +109,7 @@ func TestProfile_Update(t *testing.T) {
 			phone:     &testPhone,
 			avatarURL: &testAvatarURL,
 			bio:       &testBio,
-			expect:    errs.ErrValueIsInvalid,
+			expect:    pkgerrs.ErrValueIsInvalid,
 		},
 		{
 			name:      "failure - invalid phone",
@@ -118,7 +118,7 @@ func TestProfile_Update(t *testing.T) {
 			phone:     strPtr(""),
 			avatarURL: &testAvatarURL,
 			bio:       &testBio,
-			expect:    errs.ErrValueIsInvalid,
+			expect:    pkgerrs.ErrValueIsInvalid,
 		},
 		{
 			name:      "failure - invalid avatar url",
@@ -127,7 +127,7 @@ func TestProfile_Update(t *testing.T) {
 			phone:     &testPhone,
 			avatarURL: strPtr(""),
 			bio:       &testBio,
-			expect:    errs.ErrValueIsInvalid,
+			expect:    pkgerrs.ErrValueIsInvalid,
 		},
 		{
 			name:      "failure - invalid bio",
@@ -136,7 +136,7 @@ func TestProfile_Update(t *testing.T) {
 			phone:     &testPhone,
 			avatarURL: &testAvatarURL,
 			bio:       strPtr(""),
-			expect:    errs.ErrValueIsInvalid,
+			expect:    pkgerrs.ErrValueIsInvalid,
 		},
 	}
 

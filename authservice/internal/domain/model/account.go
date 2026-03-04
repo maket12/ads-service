@@ -1,7 +1,7 @@
 package model
 
 import (
-	"ads/pkg/errs"
+	pkgerrs "github.com/maket12/ads-service/pkg/errs"
 	"time"
 
 	"github.com/google/uuid"
@@ -30,10 +30,10 @@ type Account struct {
 
 func NewAccount(email, passwordHash string) (*Account, error) {
 	if email == "" {
-		return nil, errs.NewValueRequiredError("email")
+		return nil, pkgerrs.NewValueRequiredError("email")
 	}
 	if passwordHash == "" {
-		return nil, errs.NewValueRequiredError("password_hash")
+		return nil, pkgerrs.NewValueRequiredError("password_hash")
 	}
 
 	now := time.Now()

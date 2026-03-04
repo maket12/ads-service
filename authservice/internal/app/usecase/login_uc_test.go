@@ -1,13 +1,13 @@
 package usecase_test
 
 import (
-	"ads/authservice/internal/app/dto"
-	"ads/authservice/internal/app/uc_errors"
-	"ads/authservice/internal/app/usecase"
-	"ads/authservice/internal/domain/model"
-	"ads/authservice/internal/domain/port/mocks"
-	"ads/pkg/errs"
 	"context"
+	"github.com/maket12/ads-service/authservice/internal/app/dto"
+	ucerrs "github.com/maket12/ads-service/authservice/internal/app/errs"
+	"github.com/maket12/ads-service/authservice/internal/app/usecase"
+	"github.com/maket12/ads-service/authservice/internal/domain/model"
+	"github.com/maket12/ads-service/authservice/internal/domain/port/mocks"
+	pkgerrs "github.com/maket12/ads-service/pkg/errs"
 	"testing"
 	"time"
 
@@ -62,9 +62,9 @@ func TestLoginUC_Execute(t *testing.T) {
 			input: dto.LoginInput{Email: "unknown@test.com", Password: pass},
 			prepare: func(a adapter) {
 				a.account.On("GetByEmail", mock.Anything, "unknown@test.com").
-					Return(nil, errs.ErrObjectNotFound)
+					Return(nil, pkgerrs.ErrObjectNotFound)
 			},
-			wantErr: uc_errors.ErrInvalidCredentials,
+			wantErr: ucerrs.ErrInvalidCredentials,
 		},
 		{
 			name:  "Fail - Password Mismatch",
@@ -73,7 +73,7 @@ func TestLoginUC_Execute(t *testing.T) {
 				a.account.On("GetByEmail", mock.Anything, email).Return(account, nil)
 				a.passwordHasher.On("Compare", "hashed_db", "wrong_password").Return(false)
 			},
-			wantErr: uc_errors.ErrInvalidCredentials,
+			wantErr: ucerrs.ErrInvalidCredentials,
 		},
 		{
 			name:  "Fail - account Banned",
@@ -85,7 +85,7 @@ func TestLoginUC_Execute(t *testing.T) {
 				a.account.On("GetByEmail", mock.Anything, email).Return(bannedAcc, nil)
 				a.passwordHasher.On("Compare", "hashed_db", pass).Return(true)
 			},
-			wantErr: uc_errors.ErrCannotLogin,
+			wantErr: ucerrs.ErrCannotLogin,
 		},
 		{
 			name:  "Fail - Token Generation Error",
@@ -99,7 +99,7 @@ func TestLoginUC_Execute(t *testing.T) {
 				a.tokenGenerator.On("GenerateAccessToken", mock.Anything, mock.Anything, mock.Anything).
 					Return("", assert.AnError)
 			},
-			wantErr: uc_errors.ErrGenerateAccessToken,
+			wantErr: ucerrs.ErrGenerateAccessToken,
 		},
 	}
 

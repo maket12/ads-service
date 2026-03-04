@@ -1,13 +1,13 @@
 package postgres_test
 
 import (
-	adapterpostgres "ads/authservice/internal/adapter/out/postgres"
-	"ads/authservice/internal/domain/model"
-	"ads/authservice/migrations"
-	"ads/pkg/errs"
-	pkgpostgres "ads/pkg/postgres"
 	"context"
 	"errors"
+	adapterpostgres "github.com/maket12/ads-service/authservice/internal/adapter/out/postgres"
+	"github.com/maket12/ads-service/authservice/internal/domain/model"
+	"github.com/maket12/ads-service/authservice/migrations"
+	pkgerrs "github.com/maket12/ads-service/pkg/errs"
+	pkgpostgres "github.com/maket12/ads-service/pkg/postgres"
 	"testing"
 	"time"
 
@@ -134,7 +134,7 @@ func (s *AccountRolesRepoSuite) TestGet_NotFound() {
 	// Try to get non-existing account role
 	_, err := s.repo.Get(s.ctx, s.testRole.AccountID())
 	s.Require().Error(err)
-	s.Require().ErrorIs(err, errs.ErrObjectNotFound)
+	s.Require().ErrorIs(err, pkgerrs.ErrObjectNotFound)
 }
 
 func (s *AccountRolesRepoSuite) TestUpdate() {
@@ -164,5 +164,5 @@ func (s *AccountRolesRepoSuite) TestDelete() {
 	// Ensure deletion was successful
 	_, err = s.repo.Get(s.ctx, s.testRole.AccountID())
 	s.Require().Error(err)
-	s.Require().ErrorIs(err, errs.ErrObjectNotFound)
+	s.Require().ErrorIs(err, pkgerrs.ErrObjectNotFound)
 }

@@ -1,9 +1,9 @@
 package mongodb_test
 
 import (
-	adaptermongodb "ads/adservice/internal/adapter/out/mongodb"
-	pkgmongodb "ads/pkg/mongodb"
 	"context"
+	adaptermongodb "github.com/maket12/ads-service/adservice/internal/adapter/out/mongodb"
+	pkgmongodb "github.com/maket12/ads-service/pkg/mongodb"
 	"testing"
 
 	"github.com/google/uuid"

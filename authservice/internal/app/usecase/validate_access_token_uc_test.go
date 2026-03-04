@@ -1,13 +1,13 @@
 package usecase_test
 
 import (
-	"ads/authservice/internal/app/dto"
-	"ads/authservice/internal/app/uc_errors"
-	"ads/authservice/internal/app/usecase"
-	"ads/authservice/internal/domain/model"
-	"ads/authservice/internal/domain/port/mocks"
-	"ads/pkg/errs"
 	"context"
+	"github.com/maket12/ads-service/authservice/internal/app/dto"
+	ucerrs "github.com/maket12/ads-service/authservice/internal/app/errs"
+	"github.com/maket12/ads-service/authservice/internal/app/usecase"
+	"github.com/maket12/ads-service/authservice/internal/domain/model"
+	"github.com/maket12/ads-service/authservice/internal/domain/port/mocks"
+	pkgerrs "github.com/maket12/ads-service/pkg/errs"
 	"testing"
 
 	"github.com/google/uuid"
@@ -60,7 +60,7 @@ func TestValidateAccessTokenUC_Execute(t *testing.T) {
 				a.tokenGenerator.On("ValidateAccessTokenInput", mock.Anything, "expired-or-fake-token").
 					Return(uuid.Nil, "", assert.AnError)
 			},
-			wantErr: uc_errors.ErrInvalidAccessToken,
+			wantErr: ucerrs.ErrInvalidAccessToken,
 		},
 		{
 			name: "Fail - account Not Found In DB",
@@ -71,9 +71,9 @@ func TestValidateAccessTokenUC_Execute(t *testing.T) {
 				a.tokenGenerator.On("ValidateAccessTokenInput", mock.Anything, accessToken).
 					Return(accountID, role, nil)
 				a.account.On("GetByID", mock.Anything, accountID).
-					Return(nil, errs.ErrObjectNotFound)
+					Return(nil, pkgerrs.ErrObjectNotFound)
 			},
-			wantErr: uc_errors.ErrInvalidAccessToken,
+			wantErr: ucerrs.ErrInvalidAccessToken,
 		},
 		{
 			name: "Fail - account Is Banned",
@@ -86,7 +86,7 @@ func TestValidateAccessTokenUC_Execute(t *testing.T) {
 				a.account.On("GetByID", mock.Anything, accountID).
 					Return(bannedAcc, nil)
 			},
-			wantErr: uc_errors.ErrCannotLogin,
+			wantErr: ucerrs.ErrCannotLogin,
 		},
 		{
 			name: "Fail - Database Error",
@@ -99,7 +99,7 @@ func TestValidateAccessTokenUC_Execute(t *testing.T) {
 				a.account.On("GetByID", mock.Anything, accountID).
 					Return(nil, assert.AnError)
 			},
-			wantErr: uc_errors.ErrGetAccountByIDDB,
+			wantErr: ucerrs.ErrGetAccountByIDDB,
 		},
 	}
 

@@ -1,14 +1,14 @@
 package postgres
 
 import (
-	"ads/pkg/errs"
-	pkgpostgres "ads/pkg/postgres"
-	"ads/userservice/internal/adapter/out/postgres/mapper"
-	"ads/userservice/internal/adapter/out/postgres/sqlc"
-	"ads/userservice/internal/domain/model"
 	"context"
 	"database/sql"
 	"errors"
+	pkgerrs "github.com/maket12/ads-service/pkg/errs"
+	pkgpostgres "github.com/maket12/ads-service/pkg/postgres"
+	"github.com/maket12/ads-service/userservice/internal/adapter/out/postgres/mapper"
+	"github.com/maket12/ads-service/userservice/internal/adapter/out/postgres/sqlc"
+	"github.com/maket12/ads-service/userservice/internal/domain/model"
 
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5/pgconn"
@@ -31,7 +31,7 @@ func (r *ProfileRepository) Create(ctx context.Context, profile *model.Profile) 
 		var pgErr *pgconn.PgError
 		if errors.As(err, &pgErr) {
 			if pgErr.Code == "23505" {
-				return errs.NewObjectAlreadyExistsErrorWithReason(
+				return pkgerrs.NewObjectAlreadyExistsErrorWithReason(
 					"profile", pgErr,
 				)
 			}
@@ -46,7 +46,7 @@ func (r *ProfileRepository) Get(ctx context.Context, accountID uuid.UUID) (*mode
 	rawProfile, err := r.q.GetProfile(ctx, accountID)
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
-			return nil, errs.NewObjectNotFoundError("profile", accountID)
+			return nil, pkgerrs.NewObjectNotFoundError("profile", accountID)
 		}
 		return nil, err
 	}

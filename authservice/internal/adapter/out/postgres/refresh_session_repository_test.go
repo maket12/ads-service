@@ -1,13 +1,13 @@
 package postgres_test
 
 import (
-	adapterpostgres "ads/authservice/internal/adapter/out/postgres"
-	"ads/authservice/internal/domain/model"
-	"ads/authservice/migrations"
-	"ads/pkg/errs"
-	pkgpostgres "ads/pkg/postgres"
 	"context"
 	"errors"
+	adapterpostgres "github.com/maket12/ads-service/authservice/internal/adapter/out/postgres"
+	"github.com/maket12/ads-service/authservice/internal/domain/model"
+	"github.com/maket12/ads-service/authservice/migrations"
+	pkgerrs "github.com/maket12/ads-service/pkg/errs"
+	pkgpostgres "github.com/maket12/ads-service/pkg/postgres"
 	"testing"
 	"time"
 
@@ -182,7 +182,7 @@ func (s *RefreshSessionsRepoSuite) TestGetByHash_NotFound() {
 	// Get a non-existing session
 	_, err := s.repo.GetByHash(s.ctx, s.testSession.RefreshTokenHash())
 	s.Require().Error(err)
-	s.Require().ErrorIs(err, errs.ErrObjectNotFound)
+	s.Require().ErrorIs(err, pkgerrs.ErrObjectNotFound)
 }
 
 func (s *RefreshSessionsRepoSuite) TestRevoke() {
@@ -270,7 +270,7 @@ func (s *RefreshSessionsRepoSuite) TestDeleteExpired() {
 	// Ensure it was deleted
 	_, err = s.repo.GetByID(s.ctx, s.testSession.ID())
 	s.Require().Error(err)
-	s.Require().ErrorIs(err, errs.ErrObjectNotFound)
+	s.Require().ErrorIs(err, pkgerrs.ErrObjectNotFound)
 }
 
 func (s *RefreshSessionsRepoSuite) TestListActiveForAccount() {

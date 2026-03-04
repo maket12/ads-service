@@ -1,10 +1,10 @@
 package usecase
 
 import (
-	"ads/adservice/internal/app/dto"
-	"ads/adservice/internal/app/uc_errors"
-	"ads/adservice/internal/domain/port"
 	"context"
+	"github.com/maket12/ads-service/adservice/internal/app/dto"
+	ucerrs "github.com/maket12/ads-service/adservice/internal/app/errs"
+	"github.com/maket12/ads-service/adservice/internal/domain/port"
 )
 
 type DeleteAllAdsUC struct {
@@ -18,8 +18,8 @@ func NewDeleteAllAdsUC(ad port.AdRepository) *DeleteAllAdsUC {
 func (uc *DeleteAllAdsUC) Execute(ctx context.Context, in dto.DeleteAllAdsInput) (dto.DeleteAllAdsOutput, error) {
 	// Delete all ads
 	if err := uc.ad.DeleteAll(ctx, in.SellerID); err != nil {
-		return dto.DeleteAllAdsOutput{Success: false}, uc_errors.Wrap(
-			uc_errors.ErrDeleteAllAdsDB, err,
+		return dto.DeleteAllAdsOutput{Success: false}, ucerrs.Wrap(
+			ucerrs.ErrDeleteAllAdsDB, err,
 		)
 	}
 

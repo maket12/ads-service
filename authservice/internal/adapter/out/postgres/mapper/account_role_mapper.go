@@ -1,8 +1,8 @@
 package mapper
 
 import (
-	"ads/authservice/internal/adapter/out/postgres/sqlc"
-	"ads/authservice/internal/domain/model"
+	"github.com/maket12/ads-service/authservice/internal/adapter/out/postgres/sqlc"
+	"github.com/maket12/ads-service/authservice/internal/domain/model"
 )
 
 func MapAccountRoleToSQLCCreate(accountRole *model.AccountRole) sqlc.CreateAccountRoleParams {

@@ -1,12 +1,12 @@
 package rabbitmq
 
 import (
-	"ads/pkg/rabbitmq"
-	"ads/userservice/internal/app/dto"
-	"ads/userservice/internal/app/usecase"
 	"context"
 	"encoding/json"
 	"fmt"
+	"github.com/maket12/ads-service/pkg/rabbitmq"
+	"github.com/maket12/ads-service/userservice/internal/app/dto"
+	"github.com/maket12/ads-service/userservice/internal/app/usecase"
 	"log/slog"
 
 	amqp "github.com/rabbitmq/amqp091-go"

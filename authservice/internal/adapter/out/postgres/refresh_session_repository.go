@@ -1,14 +1,14 @@
 package postgres
 
 import (
-	"ads/authservice/internal/adapter/out/postgres/mapper"
-	"ads/authservice/internal/adapter/out/postgres/sqlc"
-	"ads/authservice/internal/domain/model"
-	"ads/pkg/errs"
-	pkgpostgres "ads/pkg/postgres"
 	"context"
 	"database/sql"
 	"errors"
+	"github.com/maket12/ads-service/authservice/internal/adapter/out/postgres/mapper"
+	"github.com/maket12/ads-service/authservice/internal/adapter/out/postgres/sqlc"
+	"github.com/maket12/ads-service/authservice/internal/domain/model"
+	pkgerrs "github.com/maket12/ads-service/pkg/errs"
+	pkgpostgres "github.com/maket12/ads-service/pkg/postgres"
 	"time"
 
 	"github.com/google/uuid"
@@ -32,7 +32,7 @@ func (r *RefreshSessionRepository) GetByHash(ctx context.Context, tokenHash stri
 	rawSession, err := r.q.GetRefreshSessionByHash(ctx, tokenHash)
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
-			return nil, errs.NewObjectNotFoundError("refresh_session", tokenHash)
+			return nil, pkgerrs.NewObjectNotFoundError("refresh_session", tokenHash)
 		}
 		return nil, err
 	}
@@ -44,7 +44,7 @@ func (r *RefreshSessionRepository) GetByID(ctx context.Context, tokenID uuid.UUI
 	rawSession, err := r.q.GetRefreshSessionByID(ctx, tokenID)
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
-			return nil, errs.NewObjectNotFoundError("refresh_session", tokenID)
+			return nil, pkgerrs.NewObjectNotFoundError("refresh_session", tokenID)
 		}
 		return nil, err
 	}

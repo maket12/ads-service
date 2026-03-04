@@ -2,7 +2,7 @@ syntax = "proto3";
 
 package ad;
 
-option go_package = "ads/pkg/generated/ad_v1;ad_v1";
+option go_package = "github.com/maket12/ads-service/pkg/generated/ad_v1;ad_v1";
 
 import "google/protobuf/timestamp.proto";
 

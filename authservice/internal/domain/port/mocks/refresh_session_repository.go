@@ -3,7 +3,7 @@
 package mocks
 
 import (
-	model "ads/authservice/internal/domain/model"
+	model "github.com/maket12/ads-service/authservice/internal/domain/model"
 	context "context"
 
 	mock "github.com/stretchr/testify/mock"

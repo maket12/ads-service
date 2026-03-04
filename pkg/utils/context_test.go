@@ -1,8 +1,8 @@
 package utils_test
 
 import (
-	"ads/pkg/utils"
 	"context"
+	"github.com/maket12/ads-service/pkg/utils"
 	"testing"
 
 	"github.com/google/uuid"

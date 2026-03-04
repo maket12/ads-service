@@ -2,7 +2,7 @@ syntax = "proto3";
 
 package auth;
 
-option go_package = "ads/pkg/generated/auth_v1;auth_v1";
+option go_package = "github.com/maket12/ads-service/pkg/generated/auth_v1;auth_v1";
 
 service AuthService {
   rpc Register (RegisterRequest) returns (RegisterResponse);

@@ -1,10 +1,10 @@
 package rabbitmq
 
 import (
-	"ads/pkg/rabbitmq"
 	"context"
 	"encoding/json"
 	"fmt"
+	"github.com/maket12/ads-service/pkg/rabbitmq"
 
 	"github.com/google/uuid"
 	amqp "github.com/rabbitmq/amqp091-go"

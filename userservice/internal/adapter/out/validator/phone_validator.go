@@ -1,8 +1,8 @@
 package validator
 
 import (
-	"ads/pkg/errs"
 	"context"
+	pkgerrs "github.com/maket12/ads-service/pkg/errs"
 
 	"github.com/nyaruka/phonenumbers"
 )
@@ -19,11 +19,11 @@ func NewPhoneValidator(defaultRegion string) *PhoneValidator {
 func (v *PhoneValidator) Validate(_ context.Context, phone string) (string, error) {
 	num, err := phonenumbers.Parse(phone, v.defaultRegion)
 	if err != nil {
-		return "", errs.NewValueInvalidErrorWithReason("phone", err)
+		return "", pkgerrs.NewValueInvalidErrorWithReason("phone", err)
 	}
 
 	if !phonenumbers.IsValidNumber(num) {
-		return "", errs.NewValueInvalidError("phone")
+		return "", pkgerrs.NewValueInvalidError("phone")
 	}
 
 	return phonenumbers.Format(num, phonenumbers.E164), nil

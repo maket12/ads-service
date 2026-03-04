@@ -1,13 +1,13 @@
 package postgres_test
 
 import (
-	adapterpostgres "ads/adservice/internal/adapter/out/postgres"
-	"ads/adservice/internal/domain/model"
-	"ads/adservice/migrations"
-	"ads/pkg/errs"
-	pkgpostgres "ads/pkg/postgres"
 	"context"
 	"errors"
+	adapterpostgres "github.com/maket12/ads-service/adservice/internal/adapter/out/postgres"
+	"github.com/maket12/ads-service/adservice/internal/domain/model"
+	"github.com/maket12/ads-service/adservice/migrations"
+	pkgerrs "github.com/maket12/ads-service/pkg/errs"
+	pkgpostgres "github.com/maket12/ads-service/pkg/postgres"
 	"testing"
 	"time"
 
@@ -135,7 +135,7 @@ func (s *AdRepoSuite) TestGet_NotFound() {
 	ad, err := s.repo.Get(s.ctx, unexistingAdID)
 
 	s.Require().Error(err)
-	s.Require().ErrorIs(err, errs.ErrObjectNotFound)
+	s.Require().ErrorIs(err, pkgerrs.ErrObjectNotFound)
 	s.Require().Nil(ad)
 }
 
@@ -191,7 +191,7 @@ func (s *AdRepoSuite) TestDelete() {
 	_, err = s.repo.Get(s.ctx, s.testAd.ID())
 
 	s.Require().Error(err)
-	s.Require().ErrorIs(err, errs.ErrObjectNotFound)
+	s.Require().ErrorIs(err, pkgerrs.ErrObjectNotFound)
 }
 
 func (s *AdRepoSuite) TestDeleteAllAds() {
@@ -214,11 +214,11 @@ func (s *AdRepoSuite) TestDeleteAllAds() {
 	// Ensure delete was successful
 	_, err = s.repo.Get(s.ctx, s.testAd.ID())
 	s.Require().Error(err)
-	s.Require().ErrorIs(err, errs.ErrObjectNotFound)
+	s.Require().ErrorIs(err, pkgerrs.ErrObjectNotFound)
 
 	_, err = s.repo.Get(s.ctx, s.testAd.ID())
 	s.Require().Error(err)
-	s.Require().ErrorIs(err, errs.ErrObjectNotFound)
+	s.Require().ErrorIs(err, pkgerrs.ErrObjectNotFound)
 }
 
 func (s *AdRepoSuite) TestListAds() {

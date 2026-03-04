@@ -1,8 +1,8 @@
 package model_test
 
 import (
-	"ads/authservice/internal/domain/model"
-	"ads/pkg/errs"
+	"github.com/maket12/ads-service/authservice/internal/domain/model"
+	pkgerrs "github.com/maket12/ads-service/pkg/errs"
 	"testing"
 	"time"
 
@@ -31,13 +31,13 @@ func TestNewAccount(t *testing.T) {
 		{
 			name:   "empty email",
 			email:  "",
-			expect: errs.ErrValueIsRequired,
+			expect: pkgerrs.ErrValueIsRequired,
 		},
 		{
 			name:         "empty password",
 			email:        "new-email@gmail.com",
 			passwordHash: "",
-			expect:       errs.ErrValueIsRequired,
+			expect:       pkgerrs.ErrValueIsRequired,
 		},
 	}
 
@@ -53,7 +53,7 @@ func TestNewAccount(t *testing.T) {
 				assert.False(t, acc.EmailVerified())
 			} else {
 				require.Error(t, err)
-				assert.ErrorIs(t, err, errs.ErrValueIsRequired)
+				assert.ErrorIs(t, err, pkgerrs.ErrValueIsRequired)
 				assert.Nil(t, acc)
 			}
 		})

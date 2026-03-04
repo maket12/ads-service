@@ -1,12 +1,13 @@
 package usecase
 
 import (
-	"ads/pkg/errs"
-	"ads/userservice/internal/app/dto"
-	"ads/userservice/internal/app/uc_errors"
-	"ads/userservice/internal/domain/port"
 	"context"
 	"errors"
+
+	pkgerrs "github.com/maket12/ads-service/pkg/errs"
+	"github.com/maket12/ads-service/userservice/internal/app/dto"
+	ucerrs "github.com/maket12/ads-service/userservice/internal/app/errs"
+	"github.com/maket12/ads-service/userservice/internal/domain/port"
 )
 
 type UpdateProfileUC struct {
@@ -28,12 +29,12 @@ func (uc *UpdateProfileUC) Execute(ctx context.Context, in dto.UpdateProfileInpu
 	// Get from db
 	profile, err := uc.profile.Get(ctx, in.AccountID)
 	if err != nil {
-		if errors.Is(err, errs.ErrObjectNotFound) {
+		if errors.Is(err, pkgerrs.ErrObjectNotFound) {
 			return dto.UpdateProfileOutput{Success: false},
-				uc_errors.ErrInvalidAccountID
+				ucerrs.ErrInvalidAccountID
 		}
 		return dto.UpdateProfileOutput{Success: false},
-			uc_errors.Wrap(uc_errors.ErrGetProfileDB, err)
+			ucerrs.Wrap(ucerrs.ErrGetProfileDB, err)
 	}
 
 	// Phone number validation
@@ -42,7 +43,7 @@ func (uc *UpdateProfileUC) Execute(ctx context.Context, in dto.UpdateProfileInpu
 		normPhone, err := uc.phoneValidator.Validate(ctx, *in.Phone)
 		if err != nil {
 			return dto.UpdateProfileOutput{Success: false},
-				uc_errors.ErrInvalidPhoneNumber
+				ucerrs.ErrInvalidPhoneNumber
 		}
 		validatedPhone = &normPhone
 	}
@@ -56,12 +57,12 @@ func (uc *UpdateProfileUC) Execute(ctx context.Context, in dto.UpdateProfileInpu
 		in.Bio,
 	)
 	if err != nil {
-		return dto.UpdateProfileOutput{Success: false}, uc_errors.ErrInvalidProfileData
+		return dto.UpdateProfileOutput{Success: false}, ucerrs.ErrInvalidProfileData
 	}
 
 	if err := uc.profile.Update(ctx, profile); err != nil {
 		return dto.UpdateProfileOutput{Success: false},
-			uc_errors.Wrap(uc_errors.ErrUpdateProfileDB, err)
+			ucerrs.Wrap(ucerrs.ErrUpdateProfileDB, err)
 	}
 
 	return dto.UpdateProfileOutput{Success: true}, nil

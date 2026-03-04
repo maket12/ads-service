@@ -1,9 +1,9 @@
 package graph
 
 import (
-	"ads/pkg/generated/ad_v1"
-	"ads/pkg/generated/auth_v1"
-	"ads/pkg/generated/user_v1"
+	"github.com/maket12/ads-service/pkg/generated/ad_v1"
+	"github.com/maket12/ads-service/pkg/generated/auth_v1"
+	"github.com/maket12/ads-service/pkg/generated/user_v1"
 )
 
 // This file will not be regenerated automatically.

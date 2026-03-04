@@ -1,8 +1,8 @@
 package model_test
 
 import (
-	"ads/authservice/internal/domain/model"
-	"ads/pkg/errs"
+	"github.com/maket12/ads-service/authservice/internal/domain/model"
+	pkgerrs "github.com/maket12/ads-service/pkg/errs"
 	"strings"
 	"testing"
 
@@ -29,7 +29,7 @@ func TestNewAccountRole(t *testing.T) {
 		{
 			name:      "nullable account id",
 			accountID: uuid.Nil,
-			expect:    errs.ErrValueIsInvalid,
+			expect:    pkgerrs.ErrValueIsInvalid,
 		},
 	}
 
@@ -43,7 +43,7 @@ func TestNewAccountRole(t *testing.T) {
 				assert.Equal(t, model.RoleUser, accRole.Role())
 			} else {
 				require.Error(t, err)
-				assert.ErrorIs(t, err, errs.ErrValueIsInvalid)
+				assert.ErrorIs(t, err, pkgerrs.ErrValueIsInvalid)
 				assert.Nil(t, accRole)
 			}
 		})
@@ -78,7 +78,7 @@ func TestAccountRole_Assign(t *testing.T) {
 		{
 			name:   "invalid role value",
 			role:   "unknown",
-			expect: errs.ErrValueIsInvalid,
+			expect: pkgerrs.ErrValueIsInvalid,
 		},
 	}
 
@@ -93,7 +93,7 @@ func TestAccountRole_Assign(t *testing.T) {
 				assert.Equal(t, model.Role(strings.ToLower(tt.role)), accRole.Role())
 			} else {
 				require.Error(t, err)
-				assert.ErrorIs(t, err, errs.ErrValueIsInvalid)
+				assert.ErrorIs(t, err, pkgerrs.ErrValueIsInvalid)
 				assert.NotEqual(t, model.Role(tt.role), accRole.Role())
 			}
 		})

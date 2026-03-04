@@ -1,8 +1,8 @@
 package model
 
 import (
-	"ads/pkg/errs"
 	"errors"
+	pkgerrs "github.com/maket12/ads-service/pkg/errs"
 	"time"
 
 	"github.com/google/uuid"
@@ -33,19 +33,19 @@ func NewRefreshSession(
 	ttl time.Duration,
 ) (*RefreshSession, error) {
 	if id == uuid.Nil {
-		return nil, errs.NewValueInvalidError("session_id")
+		return nil, pkgerrs.NewValueInvalidError("session_id")
 	}
 	if accountID == uuid.Nil {
-		return nil, errs.NewValueInvalidError("account_id")
+		return nil, pkgerrs.NewValueInvalidError("account_id")
 	}
 	if refreshTokenHash == "" {
-		return nil, errs.NewValueRequiredError("refresh_token_hash")
+		return nil, pkgerrs.NewValueRequiredError("refresh_token_hash")
 	}
 	if rotatedFrom != nil && *rotatedFrom == uuid.Nil {
-		return nil, errs.NewValueInvalidError("rotated_from")
+		return nil, pkgerrs.NewValueInvalidError("rotated_from")
 	}
 	if ttl <= 0 {
-		return nil, errs.NewValueInvalidError("ttl")
+		return nil, pkgerrs.NewValueInvalidError("ttl")
 	}
 
 	now := time.Now()
@@ -108,7 +108,7 @@ func (r *RefreshSession) Revoke(reason *string) error {
 	}
 
 	if reason != nil && *reason == "" {
-		return errs.NewValueInvalidError("revoke_reason")
+		return pkgerrs.NewValueInvalidError("revoke_reason")
 	}
 
 	now := time.Now()

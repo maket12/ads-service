@@ -5,10 +5,10 @@ import (
 	"errors"
 	"testing"
 
-	"ads/authservice/internal/app/dto"
-	"ads/authservice/internal/app/uc_errors"
-	"ads/authservice/internal/app/usecase"
-	"ads/authservice/internal/domain/port/mocks"
+	"github.com/maket12/ads-service/authservice/internal/app/dto"
+	ucerrs "github.com/maket12/ads-service/authservice/internal/app/errs"
+	"github.com/maket12/ads-service/authservice/internal/app/usecase"
+	"github.com/maket12/ads-service/authservice/internal/domain/port/mocks"
 
 	"github.com/google/uuid"
 	"github.com/stretchr/testify/assert"
@@ -63,7 +63,7 @@ func TestRegisterUC_Execute(t *testing.T) {
 				a.passwordHasher.On("Hash", "123").
 					Return("", errors.New("salt error"))
 			},
-			wantErr: uc_errors.ErrHashPassword,
+			wantErr: ucerrs.ErrHashPassword,
 		},
 		{
 			name: "Error - create account",
@@ -77,7 +77,7 @@ func TestRegisterUC_Execute(t *testing.T) {
 				a.account.On("Create", mock.Anything, mock.Anything).
 					Return(errors.New("db error"))
 			},
-			wantErr: uc_errors.ErrCreateAccountDB,
+			wantErr: ucerrs.ErrCreateAccountDB,
 		},
 		{
 			name: "Error - create account role",
@@ -93,7 +93,7 @@ func TestRegisterUC_Execute(t *testing.T) {
 				a.accountRole.On("Create", mock.Anything, mock.Anything).
 					Return(errors.New("db role error"))
 			},
-			wantErr: uc_errors.ErrCreateAccountRoleDB,
+			wantErr: ucerrs.ErrCreateAccountRoleDB,
 		},
 		{
 			name: "Error - create a rabbitmq event",
@@ -115,7 +115,7 @@ func TestRegisterUC_Execute(t *testing.T) {
 				a.accountPublisher.On("PublishAccountCreate", mock.Anything, mock.Anything).
 					Return(errors.New("account publisher error"))
 			},
-			wantErr: uc_errors.ErrPublishEvent,
+			wantErr: ucerrs.ErrPublishEvent,
 		},
 	}
 

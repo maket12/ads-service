@@ -1,7 +1,7 @@
 package model
 
 import (
-	"ads/pkg/errs"
+	pkgerrs "github.com/maket12/ads-service/pkg/errs"
 	"time"
 
 	"github.com/google/uuid"
@@ -21,7 +21,7 @@ type Profile struct {
 
 func NewProfile(accountID uuid.UUID) (*Profile, error) {
 	if accountID == uuid.Nil {
-		return nil, errs.NewValueInvalidError("account_id")
+		return nil, pkgerrs.NewValueInvalidError("account_id")
 	}
 	return &Profile{
 		accountID: accountID,
@@ -60,19 +60,19 @@ func (p *Profile) Update(
 	avatarURL, bio *string,
 ) error {
 	if firstName != nil && len(*firstName) < 3 {
-		return errs.NewValueInvalidError("first_name")
+		return pkgerrs.NewValueInvalidError("first_name")
 	}
 	if lastName != nil && len(*lastName) < 3 {
-		return errs.NewValueInvalidError("last_name")
+		return pkgerrs.NewValueInvalidError("last_name")
 	}
 	if phone != nil && *phone == "" {
-		return errs.NewValueInvalidError("phone")
+		return pkgerrs.NewValueInvalidError("phone")
 	}
 	if avatarURL != nil && *avatarURL == "" {
-		return errs.NewValueInvalidError("avatar_url")
+		return pkgerrs.NewValueInvalidError("avatar_url")
 	}
 	if bio != nil && *bio == "" {
-		return errs.NewValueInvalidError("bio")
+		return pkgerrs.NewValueInvalidError("bio")
 	}
 
 	if firstName != nil {

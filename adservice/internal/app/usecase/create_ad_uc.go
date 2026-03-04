@@ -1,11 +1,11 @@
 package usecase
 
 import (
-	"ads/adservice/internal/app/dto"
-	"ads/adservice/internal/app/uc_errors"
-	"ads/adservice/internal/domain/model"
-	"ads/adservice/internal/domain/port"
 	"context"
+	"github.com/maket12/ads-service/adservice/internal/app/dto"
+	ucerrs "github.com/maket12/ads-service/adservice/internal/app/errs"
+	"github.com/maket12/ads-service/adservice/internal/domain/model"
+	"github.com/maket12/ads-service/adservice/internal/domain/port"
 )
 
 type CreateAdUC struct {
@@ -29,21 +29,21 @@ func (uc *CreateAdUC) Execute(ctx context.Context, in dto.CreateAdInput) (dto.Cr
 		in.Description, in.Price, in.Images,
 	)
 	if err != nil {
-		return dto.CreateAdOutput{}, uc_errors.Wrap(
-			uc_errors.ErrInvalidInput, err,
+		return dto.CreateAdOutput{}, ucerrs.Wrap(
+			ucerrs.ErrInvalidInput, err,
 		)
 	}
 
 	// Save into database
 	if err := uc.ad.Create(ctx, ad); err != nil {
-		return dto.CreateAdOutput{}, uc_errors.Wrap(
-			uc_errors.ErrCreateAdDB, err,
+		return dto.CreateAdOutput{}, ucerrs.Wrap(
+			ucerrs.ErrCreateAdDB, err,
 		)
 	}
 
 	// Save images into database
 	if err := uc.media.Save(ctx, ad.ID(), ad.Images()); err != nil {
-		return dto.CreateAdOutput{}, uc_errors.Wrap(uc_errors.ErrSaveImagesDB, err)
+		return dto.CreateAdOutput{}, ucerrs.Wrap(ucerrs.ErrSaveImagesDB, err)
 	}
 
 	// Response

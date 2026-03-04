@@ -1,13 +1,13 @@
 package main
 
 import (
-	"ads/gateway/cmd/app/config"
-	"ads/gateway/graph"
-	"ads/pkg/generated/ad_v1"
-	"ads/pkg/generated/auth_v1"
-	"ads/pkg/generated/user_v1"
-	"ads/pkg/utils"
 	"fmt"
+	"github.com/maket12/ads-service/gateway/cmd/app/config"
+	"github.com/maket12/ads-service/gateway/graph"
+	"github.com/maket12/ads-service/pkg/generated/ad_v1"
+	"github.com/maket12/ads-service/pkg/generated/auth_v1"
+	"github.com/maket12/ads-service/pkg/generated/user_v1"
+	"github.com/maket12/ads-service/pkg/utils"
 	"log"
 	"net/http"
 	"strings"

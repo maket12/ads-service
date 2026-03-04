@@ -1,8 +1,8 @@
 package model
 
 import (
-	"ads/pkg/errs"
 	"errors"
+	pkgerrs "github.com/maket12/ads-service/pkg/errs"
 	"time"
 
 	"github.com/google/uuid"
@@ -50,27 +50,27 @@ func NewAd(
 	images []string,
 ) (*Ad, error) {
 	if sellerID == uuid.Nil {
-		return nil, errs.NewValueInvalidError("seller_id")
+		return nil, pkgerrs.NewValueInvalidError("seller_id")
 	}
 	if title == "" {
-		return nil, errs.NewValueRequiredError("title")
+		return nil, pkgerrs.NewValueRequiredError("title")
 	}
 	if len(title) < minTitleLen {
-		return nil, errs.NewValueInvalidError("title")
+		return nil, pkgerrs.NewValueInvalidError("title")
 	}
 	if description != nil {
 		if len(*description) == 0 {
-			return nil, errs.NewValueRequiredError("description")
+			return nil, pkgerrs.NewValueRequiredError("description")
 		} else if len(*description) > maxDescriptionLen {
-			return nil, errs.NewValueInvalidError("description")
+			return nil, pkgerrs.NewValueInvalidError("description")
 		}
 	}
 	if price < 0 {
-		return nil, errs.NewValueInvalidError("price")
+		return nil, pkgerrs.NewValueInvalidError("price")
 	}
 	if images != nil {
 		if len(images) == 0 {
-			return nil, errs.NewValueInvalidError("images")
+			return nil, pkgerrs.NewValueInvalidError("images")
 		}
 	}
 
@@ -188,13 +188,13 @@ func (ad *Ad) Delete() error {
 
 func (ad *Ad) Update(title, description *string, price *int64, images []string) error {
 	if title != nil && len(*title) < minTitleLen {
-		return errs.NewValueInvalidError("title")
+		return pkgerrs.NewValueInvalidError("title")
 	}
 	if description != nil && len(*description) > maxDescriptionLen {
-		return errs.NewValueInvalidError("description")
+		return pkgerrs.NewValueInvalidError("description")
 	}
 	if price != nil && *price < 0 {
-		return errs.NewValueInvalidError("price")
+		return pkgerrs.NewValueInvalidError("price")
 	}
 
 	if title != nil {

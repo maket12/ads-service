@@ -1,13 +1,13 @@
 package usecase
 
 import (
-	"ads/authservice/internal/app/dto"
-	"ads/authservice/internal/app/uc_errors"
-	"ads/authservice/internal/domain/model"
-	"ads/authservice/internal/domain/port"
-	"ads/pkg/errs"
 	"context"
 	"errors"
+	"github.com/maket12/ads-service/authservice/internal/app/dto"
+	ucerrs "github.com/maket12/ads-service/authservice/internal/app/errs"
+	"github.com/maket12/ads-service/authservice/internal/domain/model"
+	"github.com/maket12/ads-service/authservice/internal/domain/port"
+	pkgerrs "github.com/maket12/ads-service/pkg/errs"
 )
 
 type RegisterUC struct {
@@ -35,44 +35,44 @@ func (uc *RegisterUC) Execute(ctx context.Context, in dto.RegisterInput) (dto.Re
 	// Hashing the password
 	hashedPassword, err := uc.passwordHasher.Hash(in.Password)
 	if err != nil {
-		return dto.RegisterOutput{}, uc_errors.Wrap(
-			uc_errors.ErrHashPassword, err,
+		return dto.RegisterOutput{}, ucerrs.Wrap(
+			ucerrs.ErrHashPassword, err,
 		)
 	}
 
 	// Creating rich-models with validation
 	account, err := model.NewAccount(in.Email, hashedPassword)
 	if err != nil {
-		return dto.RegisterOutput{}, uc_errors.Wrap(
-			uc_errors.ErrInvalidInput, err,
+		return dto.RegisterOutput{}, ucerrs.Wrap(
+			ucerrs.ErrInvalidInput, err,
 		)
 	}
 	accountRole, err := model.NewAccountRole(account.ID())
 	if err != nil {
-		return dto.RegisterOutput{}, uc_errors.Wrap(
-			uc_errors.ErrInvalidInput, err,
+		return dto.RegisterOutput{}, ucerrs.Wrap(
+			ucerrs.ErrInvalidInput, err,
 		)
 	}
 
 	// Save all into database
 	if err := uc.account.Create(ctx, account); err != nil {
-		if errors.Is(err, errs.ErrObjectAlreadyExists) {
-			return dto.RegisterOutput{}, uc_errors.ErrAccountAlreadyExists
+		if errors.Is(err, pkgerrs.ErrObjectAlreadyExists) {
+			return dto.RegisterOutput{}, ucerrs.ErrAccountAlreadyExists
 		}
-		return dto.RegisterOutput{}, uc_errors.Wrap(
-			uc_errors.ErrCreateAccountDB, err,
+		return dto.RegisterOutput{}, ucerrs.Wrap(
+			ucerrs.ErrCreateAccountDB, err,
 		)
 	}
 	if err := uc.accountRole.Create(ctx, accountRole); err != nil {
-		return dto.RegisterOutput{}, uc_errors.Wrap(
-			uc_errors.ErrCreateAccountRoleDB, err,
+		return dto.RegisterOutput{}, ucerrs.Wrap(
+			ucerrs.ErrCreateAccountRoleDB, err,
 		)
 	}
 
 	// Send even to rabbitmq (create profile)
 	if err := uc.accountPublisher.PublishAccountCreate(ctx, account.ID()); err != nil {
 		return dto.RegisterOutput{},
-			uc_errors.Wrap(uc_errors.ErrPublishEvent, err)
+			ucerrs.Wrap(ucerrs.ErrPublishEvent, err)
 	}
 
 	// Response

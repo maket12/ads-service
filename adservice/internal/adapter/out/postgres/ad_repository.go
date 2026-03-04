@@ -1,14 +1,14 @@
 package postgres
 
 import (
-	"ads/adservice/internal/adapter/out/postgres/mapper"
-	"ads/adservice/internal/adapter/out/postgres/sqlc"
-	"ads/adservice/internal/domain/model"
-	"ads/pkg/errs"
-	pkgpostgres "ads/pkg/postgres"
 	"context"
 	"database/sql"
 	"errors"
+	"github.com/maket12/ads-service/adservice/internal/adapter/out/postgres/mapper"
+	"github.com/maket12/ads-service/adservice/internal/adapter/out/postgres/sqlc"
+	"github.com/maket12/ads-service/adservice/internal/domain/model"
+	pkgerrs "github.com/maket12/ads-service/pkg/errs"
+	pkgpostgres "github.com/maket12/ads-service/pkg/postgres"
 
 	"github.com/google/uuid"
 )
@@ -31,7 +31,7 @@ func (r *AdRepository) Get(ctx context.Context, id uuid.UUID) (*model.Ad, error)
 	rawAd, err := r.q.GetAd(ctx, id)
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
-			return nil, errs.NewObjectNotFoundError("ad", id)
+			return nil, pkgerrs.NewObjectNotFoundError("ad", id)
 		}
 		return nil, err
 	}

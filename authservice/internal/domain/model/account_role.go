@@ -1,7 +1,7 @@
 package model
 
 import (
-	"ads/pkg/errs"
+	pkgerrs "github.com/maket12/ads-service/pkg/errs"
 	"strings"
 
 	"github.com/google/uuid"
@@ -25,7 +25,7 @@ type AccountRole struct {
 
 func NewAccountRole(accountID uuid.UUID) (*AccountRole, error) {
 	if accountID == uuid.Nil {
-		return nil, errs.NewValueInvalidError("account_id")
+		return nil, pkgerrs.NewValueInvalidError("account_id")
 	}
 	return &AccountRole{
 		accountID: accountID,
@@ -50,7 +50,7 @@ func (a *AccountRole) Role() Role           { return a.role }
 func (a *AccountRole) Assign(rawRole string) error {
 	lowerRawRole := strings.ToLower(rawRole)
 	if lowerRawRole != "user" && lowerRawRole != "admin" {
-		return errs.NewValueInvalidError("role")
+		return pkgerrs.NewValueInvalidError("role")
 	}
 	a.role = Role(lowerRawRole)
 	return nil

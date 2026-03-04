@@ -1,9 +1,9 @@
 package mapper
 
 import (
-	"ads/authservice/internal/adapter/out/postgres/sqlc"
-	"ads/authservice/internal/domain/model"
 	"database/sql"
+	"github.com/maket12/ads-service/authservice/internal/adapter/out/postgres/sqlc"
+	"github.com/maket12/ads-service/authservice/internal/domain/model"
 	"time"
 )
 

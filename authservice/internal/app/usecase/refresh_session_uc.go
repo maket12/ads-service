@@ -1,14 +1,14 @@
 package usecase
 
 import (
-	"ads/authservice/internal/app/dto"
-	"ads/authservice/internal/app/uc_errors"
-	"ads/authservice/internal/app/utils"
-	"ads/authservice/internal/domain/model"
-	"ads/authservice/internal/domain/port"
-	"ads/pkg/errs"
 	"context"
 	"errors"
+	"github.com/maket12/ads-service/authservice/internal/app/dto"
+	ucerrs "github.com/maket12/ads-service/authservice/internal/app/errs"
+	"github.com/maket12/ads-service/authservice/internal/app/utils"
+	"github.com/maket12/ads-service/authservice/internal/domain/model"
+	"github.com/maket12/ads-service/authservice/internal/domain/port"
+	pkgerrs "github.com/maket12/ads-service/pkg/errs"
 	"time"
 
 	"github.com/google/uuid"
@@ -42,17 +42,17 @@ func (uc *RefreshSessionUC) Execute(ctx context.Context, in dto.RefreshSessionIn
 		ctx, in.OldRefreshToken,
 	)
 	if err != nil {
-		return dto.RefreshSessionOutput{}, uc_errors.ErrInvalidRefreshToken
+		return dto.RefreshSessionOutput{}, ucerrs.ErrInvalidRefreshToken
 	}
 
 	oldSession, err := uc.refreshSession.GetByID(ctx, oldSessionID)
 
 	if err != nil {
-		if errors.Is(err, errs.ErrObjectNotFound) {
-			return dto.RefreshSessionOutput{}, uc_errors.ErrInvalidRefreshToken
+		if errors.Is(err, pkgerrs.ErrObjectNotFound) {
+			return dto.RefreshSessionOutput{}, ucerrs.ErrInvalidRefreshToken
 		}
-		return dto.RefreshSessionOutput{}, uc_errors.Wrap(
-			uc_errors.ErrGetRefreshSessionByIDDB, err,
+		return dto.RefreshSessionOutput{}, ucerrs.Wrap(
+			ucerrs.ErrGetRefreshSessionByIDDB, err,
 		)
 	}
 
@@ -60,31 +60,31 @@ func (uc *RefreshSessionUC) Execute(ctx context.Context, in dto.RefreshSessionIn
 	if !oldSession.IsActive() ||
 		!utils.ComparePtr(oldSession.IP(), in.IP) ||
 		!utils.ComparePtr(oldSession.UserAgent(), in.UserAgent) {
-		return dto.RefreshSessionOutput{}, uc_errors.ErrInvalidRefreshToken
+		return dto.RefreshSessionOutput{}, ucerrs.ErrInvalidRefreshToken
 	}
 
 	if utils.HashToken(in.OldRefreshToken) != oldSession.RefreshTokenHash() {
-		return dto.RefreshSessionOutput{}, uc_errors.ErrInvalidRefreshToken
+		return dto.RefreshSessionOutput{}, ucerrs.ErrInvalidRefreshToken
 	}
 
 	var reason = "token rotation"
 	if err := oldSession.Revoke(&reason); err != nil {
-		return dto.RefreshSessionOutput{}, uc_errors.Wrap(
-			uc_errors.ErrCannotRevoke, err,
+		return dto.RefreshSessionOutput{}, ucerrs.Wrap(
+			ucerrs.ErrCannotRevoke, err,
 		)
 	}
 
 	if err := uc.refreshSession.Revoke(ctx, oldSession); err != nil {
-		return dto.RefreshSessionOutput{}, uc_errors.Wrap(
-			uc_errors.ErrRevokeRefreshSessionDB, err,
+		return dto.RefreshSessionOutput{}, ucerrs.Wrap(
+			ucerrs.ErrRevokeRefreshSessionDB, err,
 		)
 	}
 
 	// Get account role
 	accRole, err := uc.accountRole.Get(ctx, accountID)
 	if err != nil {
-		return dto.RefreshSessionOutput{}, uc_errors.Wrap(
-			uc_errors.ErrGetAccountRoleDB, err,
+		return dto.RefreshSessionOutput{}, ucerrs.Wrap(
+			ucerrs.ErrGetAccountRoleDB, err,
 		)
 	}
 
@@ -93,8 +93,8 @@ func (uc *RefreshSessionUC) Execute(ctx context.Context, in dto.RefreshSessionIn
 		ctx, accountID, accRole.Role().String(),
 	)
 	if err != nil {
-		return dto.RefreshSessionOutput{}, uc_errors.Wrap(
-			uc_errors.ErrGenerateAccessToken, err,
+		return dto.RefreshSessionOutput{}, ucerrs.Wrap(
+			ucerrs.ErrGenerateAccessToken, err,
 		)
 	}
 
@@ -103,8 +103,8 @@ func (uc *RefreshSessionUC) Execute(ctx context.Context, in dto.RefreshSessionIn
 		ctx, accountID, sessionID,
 	)
 	if err != nil {
-		return dto.RefreshSessionOutput{}, uc_errors.Wrap(
-			uc_errors.ErrGenerateRefreshToken, err,
+		return dto.RefreshSessionOutput{}, ucerrs.Wrap(
+			ucerrs.ErrGenerateRefreshToken, err,
 		)
 	}
 
@@ -116,14 +116,14 @@ func (uc *RefreshSessionUC) Execute(ctx context.Context, in dto.RefreshSessionIn
 		in.IP, in.UserAgent, uc.refreshSessionTTL,
 	)
 	if err != nil {
-		return dto.RefreshSessionOutput{}, uc_errors.Wrap(
-			uc_errors.ErrInvalidInput, err,
+		return dto.RefreshSessionOutput{}, ucerrs.Wrap(
+			ucerrs.ErrInvalidInput, err,
 		)
 	}
 
 	if err := uc.refreshSession.Create(ctx, refreshSession); err != nil {
-		return dto.RefreshSessionOutput{}, uc_errors.Wrap(
-			uc_errors.ErrCreateRefreshSessionDB, err,
+		return dto.RefreshSessionOutput{}, ucerrs.Wrap(
+			ucerrs.ErrCreateRefreshSessionDB, err,
 		)
 	}
 

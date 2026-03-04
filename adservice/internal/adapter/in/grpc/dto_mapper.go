@@ -1,8 +1,8 @@
 package grpc
 
 import (
-	"ads/adservice/internal/app/dto"
-	"ads/pkg/generated/ad_v1"
+	"github.com/maket12/ads-service/adservice/internal/app/dto"
+	"github.com/maket12/ads-service/pkg/generated/ad_v1"
 
 	"github.com/google/uuid"
 	"google.golang.org/protobuf/types/known/timestamppb"

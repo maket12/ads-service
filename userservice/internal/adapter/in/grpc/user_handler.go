@@ -1,11 +1,11 @@
 package grpc
 
 import (
-	"ads/pkg/generated/user_v1"
-	"ads/pkg/utils"
-	"ads/userservice/internal/app/dto"
-	"ads/userservice/internal/app/usecase"
 	"context"
+	"github.com/maket12/ads-service/pkg/generated/user_v1"
+	"github.com/maket12/ads-service/pkg/utils"
+	"github.com/maket12/ads-service/userservice/internal/app/dto"
+	"github.com/maket12/ads-service/userservice/internal/app/usecase"
 	"log/slog"
 
 	"github.com/google/uuid"

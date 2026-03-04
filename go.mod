@@ -1,4 +1,4 @@
-module ads
+module github.com/maket12/ads-service
 
 go 1.25.0
 

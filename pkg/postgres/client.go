@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"time"
 
+	// Register of driver pgx for using database/sql
 	_ "github.com/jackc/pgx/v5/stdlib"
 )
 

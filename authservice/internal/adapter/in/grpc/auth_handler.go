@@ -1,9 +1,9 @@
 package grpc
 
 import (
-	"ads/authservice/internal/app/usecase"
-	"ads/pkg/generated/auth_v1"
 	"context"
+	"github.com/maket12/ads-service/authservice/internal/app/usecase"
+	"github.com/maket12/ads-service/pkg/generated/auth_v1"
 	"log/slog"
 
 	"google.golang.org/grpc/status"

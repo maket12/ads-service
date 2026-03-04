@@ -1,8 +1,8 @@
 package validator_test
 
 import (
-	"ads/userservice/internal/adapter/out/validator"
 	"context"
+	"github.com/maket12/ads-service/userservice/internal/adapter/out/validator"
 	"testing"
 
 	"github.com/stretchr/testify/assert"

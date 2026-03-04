@@ -1,4 +1,4 @@
-package uc_errors
+package errs
 
 import "errors"
 

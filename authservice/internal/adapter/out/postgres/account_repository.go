@@ -1,14 +1,14 @@
 package postgres
 
 import (
-	"ads/authservice/internal/adapter/out/postgres/mapper"
-	"ads/authservice/internal/adapter/out/postgres/sqlc"
-	"ads/authservice/internal/domain/model"
-	"ads/pkg/errs"
-	pkgpostgres "ads/pkg/postgres"
 	"context"
 	"database/sql"
 	"errors"
+	"github.com/maket12/ads-service/authservice/internal/adapter/out/postgres/mapper"
+	"github.com/maket12/ads-service/authservice/internal/adapter/out/postgres/sqlc"
+	"github.com/maket12/ads-service/authservice/internal/domain/model"
+	pkgerrs "github.com/maket12/ads-service/pkg/errs"
+	pkgpostgres "github.com/maket12/ads-service/pkg/postgres"
 	"time"
 
 	"github.com/google/uuid"
@@ -32,7 +32,7 @@ func (r *AccountRepository) Create(ctx context.Context, account *model.Account) 
 		var pgErr *pgconn.PgError
 		if errors.As(err, &pgErr) {
 			if pgErr.Code == "23505" {
-				return errs.NewObjectAlreadyExistsErrorWithReason(
+				return pkgerrs.NewObjectAlreadyExistsErrorWithReason(
 					"account", pgErr,
 				)
 			}
@@ -47,7 +47,7 @@ func (r *AccountRepository) GetByEmail(ctx context.Context, email string) (*mode
 	rawAcc, err := r.q.GetAccountByEmail(ctx, email)
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
-			return nil, errs.NewObjectNotFoundError("account", email)
+			return nil, pkgerrs.NewObjectNotFoundError("account", email)
 		}
 		return nil, err
 	}
@@ -61,7 +61,7 @@ func (r *AccountRepository) GetByID(ctx context.Context, id uuid.UUID) (*model.A
 	rawAcc, err := r.q.GetAccountByID(ctx, id)
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
-			return nil, errs.NewObjectNotFoundError("account", id)
+			return nil, pkgerrs.NewObjectNotFoundError("account", id)
 		}
 		return nil, err
 	}

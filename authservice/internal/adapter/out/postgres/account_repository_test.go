@@ -1,13 +1,13 @@
 package postgres_test
 
 import (
-	adapterpostgres "ads/authservice/internal/adapter/out/postgres"
-	"ads/authservice/internal/domain/model"
-	"ads/authservice/migrations"
-	"ads/pkg/errs"
-	pkgpostgres "ads/pkg/postgres"
 	"context"
 	"errors"
+	adapterpostgres "github.com/maket12/ads-service/authservice/internal/adapter/out/postgres"
+	"github.com/maket12/ads-service/authservice/internal/domain/model"
+	"github.com/maket12/ads-service/authservice/migrations"
+	pkgerrs "github.com/maket12/ads-service/pkg/errs"
+	pkgpostgres "github.com/maket12/ads-service/pkg/postgres"
 	"strings"
 	"testing"
 	"time"
@@ -160,7 +160,7 @@ func (s *AccountsRepoSuite) TestGetByEmail_NotFound() {
 	_, err := s.repo.GetByEmail(s.ctx, unexistingEmail)
 
 	s.Require().Error(err)
-	s.Require().ErrorIs(err, errs.ErrObjectNotFound)
+	s.Require().ErrorIs(err, pkgerrs.ErrObjectNotFound)
 }
 
 func (s *AccountsRepoSuite) TestMarkLogin() {

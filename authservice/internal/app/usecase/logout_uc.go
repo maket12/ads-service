@@ -1,13 +1,13 @@
 package usecase
 
 import (
-	"ads/authservice/internal/app/dto"
-	"ads/authservice/internal/app/uc_errors"
-	"ads/authservice/internal/app/utils"
-	"ads/authservice/internal/domain/port"
-	"ads/pkg/errs"
 	"context"
 	"errors"
+	"github.com/maket12/ads-service/authservice/internal/app/dto"
+	ucerrs "github.com/maket12/ads-service/authservice/internal/app/errs"
+	"github.com/maket12/ads-service/authservice/internal/app/utils"
+	"github.com/maket12/ads-service/authservice/internal/domain/port"
+	pkgerrs "github.com/maket12/ads-service/pkg/errs"
 )
 
 type LogoutUC struct {
@@ -31,36 +31,36 @@ func (uc *LogoutUC) Execute(ctx context.Context, in dto.LogoutInput) (dto.Logout
 		ctx, in.RefreshToken,
 	)
 	if err != nil {
-		return dto.LogoutOutput{}, uc_errors.ErrInvalidRefreshToken
+		return dto.LogoutOutput{}, ucerrs.ErrInvalidRefreshToken
 	}
 
 	session, err := uc.refreshSession.GetByID(ctx, oldSessionID)
 	if err != nil {
-		if errors.Is(err, errs.ErrObjectNotFound) {
-			return dto.LogoutOutput{}, uc_errors.ErrInvalidRefreshToken
+		if errors.Is(err, pkgerrs.ErrObjectNotFound) {
+			return dto.LogoutOutput{}, ucerrs.ErrInvalidRefreshToken
 		}
-		return dto.LogoutOutput{}, uc_errors.Wrap(
-			uc_errors.ErrGetRefreshSessionByIDDB, err,
+		return dto.LogoutOutput{}, ucerrs.Wrap(
+			ucerrs.ErrGetRefreshSessionByIDDB, err,
 		)
 	}
 
 	// Validate and revoke
 	if !session.IsActive() {
-		return dto.LogoutOutput{}, uc_errors.ErrInvalidRefreshToken
+		return dto.LogoutOutput{}, ucerrs.ErrInvalidRefreshToken
 	}
 
 	if utils.HashToken(in.RefreshToken) != session.RefreshTokenHash() {
-		return dto.LogoutOutput{}, uc_errors.ErrInvalidRefreshToken
+		return dto.LogoutOutput{}, ucerrs.ErrInvalidRefreshToken
 	}
 
 	var reason = "logout"
 	if err := session.Revoke(&reason); err != nil {
-		return dto.LogoutOutput{}, uc_errors.ErrCannotRevoke
+		return dto.LogoutOutput{}, ucerrs.ErrCannotRevoke
 	}
 
 	if err := uc.refreshSession.Revoke(ctx, session); err != nil {
-		return dto.LogoutOutput{}, uc_errors.Wrap(
-			uc_errors.ErrRevokeRefreshSessionDB, err,
+		return dto.LogoutOutput{}, ucerrs.Wrap(
+			ucerrs.ErrRevokeRefreshSessionDB, err,
 		)
 	}
 

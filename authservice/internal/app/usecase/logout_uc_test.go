@@ -1,13 +1,13 @@
 package usecase_test
 
 import (
-	"ads/authservice/internal/app/dto"
-	"ads/authservice/internal/app/uc_errors"
-	"ads/authservice/internal/app/usecase"
-	"ads/authservice/internal/app/utils"
-	"ads/authservice/internal/domain/model"
-	"ads/authservice/internal/domain/port/mocks"
 	"context"
+	"github.com/maket12/ads-service/authservice/internal/app/dto"
+	ucerrs "github.com/maket12/ads-service/authservice/internal/app/errs"
+	"github.com/maket12/ads-service/authservice/internal/app/usecase"
+	"github.com/maket12/ads-service/authservice/internal/app/utils"
+	"github.com/maket12/ads-service/authservice/internal/domain/model"
+	"github.com/maket12/ads-service/authservice/internal/domain/port/mocks"
 	"testing"
 	"time"
 
@@ -62,9 +62,9 @@ func TestLogoutUC_Execute(t *testing.T) {
 			input: dto.LogoutInput{RefreshToken: "invalid"},
 			prepare: func(a adapter) {
 				a.tokenGenerator.On("ValidateRefreshToken", mock.Anything, "invalid").
-					Return(uuid.Nil, uuid.Nil, uc_errors.ErrInvalidRefreshToken)
+					Return(uuid.Nil, uuid.Nil, ucerrs.ErrInvalidRefreshToken)
 			},
-			wantErr: uc_errors.ErrInvalidRefreshToken,
+			wantErr: ucerrs.ErrInvalidRefreshToken,
 		},
 		{
 			name:  "Fail - Session Already Inactive",
@@ -79,7 +79,7 @@ func TestLogoutUC_Execute(t *testing.T) {
 				a.refreshSession.On("GetByID", mock.Anything, sessionID).
 					Return(inactiveSession, nil)
 			},
-			wantErr: uc_errors.ErrInvalidRefreshToken,
+			wantErr: ucerrs.ErrInvalidRefreshToken,
 		},
 		{
 			name:  "Fail - Token Hash Mismatch",
@@ -90,7 +90,7 @@ func TestLogoutUC_Execute(t *testing.T) {
 				a.refreshSession.On("GetByID", mock.Anything, sessionID).
 					Return(activeSession, nil)
 			},
-			wantErr: uc_errors.ErrInvalidRefreshToken,
+			wantErr: ucerrs.ErrInvalidRefreshToken,
 		},
 	}
 

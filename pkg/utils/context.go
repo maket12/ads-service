@@ -1,9 +1,9 @@
 package utils
 
 import (
-	"ads/pkg/errs"
 	"context"
 	"errors"
+	pkgerrs "github.com/maket12/ads-service/pkg/errs"
 
 	"github.com/google/uuid"
 	"google.golang.org/grpc/metadata"
@@ -29,17 +29,17 @@ var (
 func ExtractAccountID(ctx context.Context) (uuid.UUID, error) {
 	md, ok := metadata.FromIncomingContext(ctx)
 	if !ok {
-		return uuid.Nil, errs.NewNotAuthenticatedErrorWithReason(ErrMetadataIsMissing)
+		return uuid.Nil, pkgerrs.NewNotAuthenticatedErrorWithReason(ErrMetadataIsMissing)
 	}
 
 	vals := md.Get("x-account-id")
 	if len(vals) == 0 {
-		return uuid.Nil, errs.NewNotAuthenticatedErrorWithReason(ErrAccountIDNotSpecified)
+		return uuid.Nil, pkgerrs.NewNotAuthenticatedErrorWithReason(ErrAccountIDNotSpecified)
 	}
 
 	id, err := uuid.Parse(vals[0])
 	if err != nil {
-		return uuid.Nil, errs.NewNotAuthenticatedErrorWithReason(ErrInvalidAccountID)
+		return uuid.Nil, pkgerrs.NewNotAuthenticatedErrorWithReason(ErrInvalidAccountID)
 	}
 
 	return id, nil
@@ -49,12 +49,12 @@ func ExtractAccountID(ctx context.Context) (uuid.UUID, error) {
 func ExtractAccountRole(ctx context.Context) (string, error) {
 	md, ok := metadata.FromIncomingContext(ctx)
 	if !ok {
-		return "", errs.NewNotAuthenticatedErrorWithReason(ErrMetadataIsMissing)
+		return "", pkgerrs.NewNotAuthenticatedErrorWithReason(ErrMetadataIsMissing)
 	}
 
 	vals := md.Get("x-account-role")
 	if len(vals) == 0 {
-		return "", errs.NewNotAuthenticatedErrorWithReason(ErrAccountRoleNotSpecified)
+		return "", pkgerrs.NewNotAuthenticatedErrorWithReason(ErrAccountRoleNotSpecified)
 	}
 
 	return vals[0], nil

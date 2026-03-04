@@ -1,12 +1,13 @@
 package usecase
 
 import (
-	"ads/pkg/errs"
-	"ads/userservice/internal/app/dto"
-	"ads/userservice/internal/app/uc_errors"
-	"ads/userservice/internal/domain/port"
 	"context"
 	"errors"
+
+	pkgerrs "github.com/maket12/ads-service/pkg/errs"
+	"github.com/maket12/ads-service/userservice/internal/app/dto"
+	ucerrs "github.com/maket12/ads-service/userservice/internal/app/errs"
+	"github.com/maket12/ads-service/userservice/internal/domain/port"
 )
 
 type GetProfileUC struct {
@@ -20,11 +21,11 @@ func NewGetProfileUC(profile port.ProfileRepository) *GetProfileUC {
 func (uc *GetProfileUC) Execute(ctx context.Context, in dto.GetProfileInput) (dto.GetProfileOutput, error) {
 	profile, err := uc.profile.Get(ctx, in.AccountID)
 	if err != nil {
-		if errors.Is(err, errs.ErrObjectNotFound) {
-			return dto.GetProfileOutput{}, uc_errors.ErrInvalidAccountID
+		if errors.Is(err, pkgerrs.ErrObjectNotFound) {
+			return dto.GetProfileOutput{}, ucerrs.ErrInvalidAccountID
 		}
 		return dto.GetProfileOutput{},
-			uc_errors.Wrap(uc_errors.ErrGetProfileDB, err)
+			ucerrs.Wrap(ucerrs.ErrGetProfileDB, err)
 	}
 	return dto.GetProfileOutput{
 		AccountID: profile.AccountID(),

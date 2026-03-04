@@ -1,8 +1,8 @@
 package model_test
 
 import (
-	"ads/authservice/internal/domain/model"
-	"ads/pkg/errs"
+	"github.com/maket12/ads-service/authservice/internal/domain/model"
+	pkgerrs "github.com/maket12/ads-service/pkg/errs"
 	"testing"
 	"time"
 
@@ -46,7 +46,7 @@ func TestNewRefreshSession(t *testing.T) {
 			accountID: uuid.New(),
 			tokenHash: "hashed",
 			ttl:       time.Minute,
-			expect:    errs.ErrValueIsInvalid,
+			expect:    pkgerrs.ErrValueIsInvalid,
 		},
 		{
 			name:      "nullable account id",
@@ -54,7 +54,7 @@ func TestNewRefreshSession(t *testing.T) {
 			accountID: uuid.Nil,
 			tokenHash: "hashed",
 			ttl:       time.Minute,
-			expect:    errs.ErrValueIsInvalid,
+			expect:    pkgerrs.ErrValueIsInvalid,
 		},
 		{
 			name:      "empty token hash",
@@ -62,7 +62,7 @@ func TestNewRefreshSession(t *testing.T) {
 			accountID: uuid.New(),
 			tokenHash: "",
 			ttl:       time.Minute,
-			expect:    errs.ErrValueIsRequired,
+			expect:    pkgerrs.ErrValueIsRequired,
 		},
 		{
 			name:        "nullable rotated from",
@@ -71,7 +71,7 @@ func TestNewRefreshSession(t *testing.T) {
 			tokenHash:   "hashed",
 			rotatedFrom: &uuid.Nil,
 			ttl:         time.Minute,
-			expect:      errs.ErrValueIsInvalid,
+			expect:      pkgerrs.ErrValueIsInvalid,
 		},
 		{
 			name:      "invalid ttl (not positive)",
@@ -81,7 +81,7 @@ func TestNewRefreshSession(t *testing.T) {
 			ip:        vPtr("123.021.234.0"),
 			userAgent: vPtr("Mozilla/5.0"),
 			ttl:       time.Minute * -1,
-			expect:    errs.ErrValueIsInvalid,
+			expect:    pkgerrs.ErrValueIsInvalid,
 		},
 	}
 
@@ -242,7 +242,7 @@ func TestRefreshSession_Revoke(t *testing.T) {
 			name:      "error - empty reason",
 			revokedAt: nil,
 			reason:    vPtr(""),
-			expect:    errs.ErrValueIsInvalid,
+			expect:    pkgerrs.ErrValueIsInvalid,
 		},
 	}
 

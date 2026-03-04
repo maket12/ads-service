@@ -1,8 +1,8 @@
 package model_test
 
 import (
-	"ads/adservice/internal/domain/model"
-	"ads/pkg/errs"
+	"github.com/maket12/ads-service/adservice/internal/domain/model"
+	pkgerrs "github.com/maket12/ads-service/pkg/errs"
 	"strings"
 	"testing"
 	"time"
@@ -50,33 +50,33 @@ func TestNewAd(t *testing.T) {
 		{
 			name:     "nullable seller id",
 			sellerID: uuid.Nil,
-			expect:   errs.ErrValueIsInvalid,
+			expect:   pkgerrs.ErrValueIsInvalid,
 		},
 		{
 			name:     "empty title",
 			sellerID: testSelID,
 			title:    "",
-			expect:   errs.ErrValueIsRequired,
+			expect:   pkgerrs.ErrValueIsRequired,
 		},
 		{
 			name:     "invalid title",
 			sellerID: testSelID,
 			title:    "Sell", // a small string
-			expect:   errs.ErrValueIsInvalid,
+			expect:   pkgerrs.ErrValueIsInvalid,
 		},
 		{
 			name:        "empty description",
 			sellerID:    testSelID,
 			title:       testTitle,
 			description: vPtr(""),
-			expect:      errs.ErrValueIsRequired,
+			expect:      pkgerrs.ErrValueIsRequired,
 		},
 		{
 			name:        "invalid description",
 			sellerID:    testSelID,
 			title:       testTitle,
 			description: vPtr(strings.Repeat(testDesc, 45)), // a large string
-			expect:      errs.ErrValueIsInvalid,
+			expect:      pkgerrs.ErrValueIsInvalid,
 		},
 		{
 			name:        "invalid price",
@@ -84,7 +84,7 @@ func TestNewAd(t *testing.T) {
 			title:       testTitle,
 			description: nil,
 			price:       testPrice * -1, // negative price
-			expect:      errs.ErrValueIsInvalid,
+			expect:      pkgerrs.ErrValueIsInvalid,
 		},
 		{
 			name:        "invalid images",
@@ -93,7 +93,7 @@ func TestNewAd(t *testing.T) {
 			description: nil,
 			price:       testPrice,
 			images:      make([]string, 0),
-			expect:      errs.ErrValueIsInvalid,
+			expect:      pkgerrs.ErrValueIsInvalid,
 		},
 	}
 
@@ -220,20 +220,20 @@ func TestAd_Update(t *testing.T) {
 		{
 			name:   "invalid title",
 			title:  vPtr("Sell"), // a small string
-			expect: errs.ErrValueIsInvalid,
+			expect: pkgerrs.ErrValueIsInvalid,
 		},
 		{
 			name:        "invalid description",
 			title:       vPtr(testTitle),
 			description: vPtr(strings.Repeat(testDesc, 45)), // a large string
-			expect:      errs.ErrValueIsInvalid,
+			expect:      pkgerrs.ErrValueIsInvalid,
 		},
 		{
 			name:        "invalid price",
 			title:       vPtr(testTitle),
 			description: nil,
 			price:       vPtr(testPrice * -1), // negative price
-			expect:      errs.ErrValueIsInvalid,
+			expect:      pkgerrs.ErrValueIsInvalid,
 		},
 	}
 

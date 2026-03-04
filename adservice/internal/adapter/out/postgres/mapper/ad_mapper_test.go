@@ -1,10 +1,10 @@
 package mapper_test
 
 import (
-	"ads/adservice/internal/adapter/out/postgres/mapper"
-	"ads/adservice/internal/adapter/out/postgres/sqlc"
-	"ads/adservice/internal/domain/model"
 	"database/sql"
+	"github.com/maket12/ads-service/adservice/internal/adapter/out/postgres/mapper"
+	"github.com/maket12/ads-service/adservice/internal/adapter/out/postgres/sqlc"
+	"github.com/maket12/ads-service/adservice/internal/domain/model"
 	"testing"
 	"time"
 

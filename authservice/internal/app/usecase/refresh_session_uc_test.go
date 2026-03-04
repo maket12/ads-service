@@ -1,14 +1,14 @@
 package usecase_test
 
 import (
-	"ads/authservice/internal/app/dto"
-	"ads/authservice/internal/app/uc_errors"
-	"ads/authservice/internal/app/usecase"
-	"ads/authservice/internal/app/utils"
-	"ads/authservice/internal/domain/model"
-	"ads/authservice/internal/domain/port/mocks"
-	"ads/pkg/errs"
 	"context"
+	"github.com/maket12/ads-service/authservice/internal/app/dto"
+	ucerrs "github.com/maket12/ads-service/authservice/internal/app/errs"
+	"github.com/maket12/ads-service/authservice/internal/app/usecase"
+	"github.com/maket12/ads-service/authservice/internal/app/utils"
+	"github.com/maket12/ads-service/authservice/internal/domain/model"
+	"github.com/maket12/ads-service/authservice/internal/domain/port/mocks"
+	pkgerrs "github.com/maket12/ads-service/pkg/errs"
 	"testing"
 	"time"
 
@@ -92,7 +92,7 @@ func TestRefreshSessionUC_Execute(t *testing.T) {
 				a.refreshSession.On("GetByID", mock.Anything, oldSessionID).
 					Return(activeOldSession, nil)
 			},
-			wantErr: uc_errors.ErrInvalidRefreshToken,
+			wantErr: ucerrs.ErrInvalidRefreshToken,
 		},
 		{
 			name: "Fail - UserAgent Mismatch",
@@ -107,7 +107,7 @@ func TestRefreshSessionUC_Execute(t *testing.T) {
 				a.refreshSession.On("GetByID", mock.Anything, oldSessionID).
 					Return(activeOldSession, nil)
 			},
-			wantErr: uc_errors.ErrInvalidRefreshToken,
+			wantErr: ucerrs.ErrInvalidRefreshToken,
 		},
 		{
 			name: "Fail - Old Token Hash Mismatch",
@@ -122,7 +122,7 @@ func TestRefreshSessionUC_Execute(t *testing.T) {
 				a.refreshSession.On("GetByID", mock.Anything, oldSessionID).
 					Return(activeOldSession, nil)
 			},
-			wantErr: uc_errors.ErrInvalidRefreshToken,
+			wantErr: ucerrs.ErrInvalidRefreshToken,
 		},
 		{
 			name:  "Fail - Session Not Found",
@@ -131,9 +131,9 @@ func TestRefreshSessionUC_Execute(t *testing.T) {
 				a.tokenGenerator.On("ValidateRefreshToken", mock.Anything, oldToken).
 					Return(accountID, oldSessionID, nil)
 				a.refreshSession.On("GetByID", mock.Anything, oldSessionID).
-					Return(nil, errs.ErrObjectNotFound)
+					Return(nil, pkgerrs.ErrObjectNotFound)
 			},
-			wantErr: uc_errors.ErrInvalidRefreshToken,
+			wantErr: ucerrs.ErrInvalidRefreshToken,
 		},
 	}
 

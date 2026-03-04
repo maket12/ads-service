@@ -1,12 +1,12 @@
 package usecase
 
 import (
-	"ads/adservice/internal/app/dto"
-	"ads/adservice/internal/app/uc_errors"
-	"ads/adservice/internal/domain/port"
-	"ads/pkg/errs"
 	"context"
 	"errors"
+	"github.com/maket12/ads-service/adservice/internal/app/dto"
+	ucerrs "github.com/maket12/ads-service/adservice/internal/app/errs"
+	"github.com/maket12/ads-service/adservice/internal/domain/port"
+	pkgerrs "github.com/maket12/ads-service/pkg/errs"
 )
 
 type DeleteAdUC struct {
@@ -22,45 +22,45 @@ func (uc *DeleteAdUC) Execute(ctx context.Context, in dto.DeleteAdInput) (dto.De
 	// Get from db
 	ad, err := uc.ad.Get(ctx, in.AdID)
 	if err != nil {
-		if errors.Is(err, errs.ErrObjectNotFound) {
-			return dto.DeleteAdOutput{Success: false}, uc_errors.ErrInvalidAdID
+		if errors.Is(err, pkgerrs.ErrObjectNotFound) {
+			return dto.DeleteAdOutput{Success: false}, ucerrs.ErrInvalidAdID
 		}
-		return dto.DeleteAdOutput{Success: false}, uc_errors.Wrap(
-			uc_errors.ErrGetAdDB, err,
+		return dto.DeleteAdOutput{Success: false}, ucerrs.Wrap(
+			ucerrs.ErrGetAdDB, err,
 		)
 	}
 
 	// Check if current user can delete this ad
 	if ad.SellerID() != in.SellerID {
-		return dto.DeleteAdOutput{Success: false}, uc_errors.ErrAccessDenied
+		return dto.DeleteAdOutput{Success: false}, ucerrs.ErrAccessDenied
 	}
 
 	// Scenario №1: Delete status from database (if not published yet)
 	if ad.IsOnModeration() {
 		err = uc.ad.Delete(ctx, ad.ID())
 		if err != nil {
-			return dto.DeleteAdOutput{Success: false}, uc_errors.Wrap(
-				uc_errors.ErrDeleteAdDB, err,
+			return dto.DeleteAdOutput{Success: false}, ucerrs.Wrap(
+				ucerrs.ErrDeleteAdDB, err,
 			)
 		}
 
 		err = uc.media.Delete(ctx, ad.ID())
 		if err != nil {
-			return dto.DeleteAdOutput{Success: false}, uc_errors.Wrap(
-				uc_errors.ErrDeleteImagesDB, err,
+			return dto.DeleteAdOutput{Success: false}, ucerrs.Wrap(
+				ucerrs.ErrDeleteImagesDB, err,
 			)
 		}
 	} else {
 		// Scenario №2: Update status (deleted)
 		err = ad.Delete()
 		if err != nil {
-			return dto.DeleteAdOutput{Success: false}, uc_errors.ErrCannotDelete
+			return dto.DeleteAdOutput{Success: false}, ucerrs.ErrCannotDelete
 		}
 
 		err = uc.ad.UpdateStatus(ctx, ad)
 		if err != nil {
-			return dto.DeleteAdOutput{Success: false}, uc_errors.Wrap(
-				uc_errors.ErrUpdateAdStatusDB, err,
+			return dto.DeleteAdOutput{Success: false}, ucerrs.Wrap(
+				ucerrs.ErrUpdateAdStatusDB, err,
 			)
 		}
 	}

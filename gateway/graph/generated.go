@@ -3,10 +3,10 @@
 package graph
 
 import (
-	"ads/gateway/graph/model"
-	"ads/pkg/generated/ad_v1"
-	"ads/pkg/generated/auth_v1"
-	"ads/pkg/generated/user_v1"
+	"github.com/maket12/ads-service/gateway/graph/model"
+	"github.com/maket12/ads-service/pkg/generated/ad_v1"
+	"github.com/maket12/ads-service/pkg/generated/auth_v1"
+	"github.com/maket12/ads-service/pkg/generated/user_v1"
 	"bytes"
 	"context"
 	"embed"

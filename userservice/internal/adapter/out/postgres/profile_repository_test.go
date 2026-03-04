@@ -1,13 +1,13 @@
 package postgres_test
 
 import (
-	"ads/pkg/errs"
-	pkgpostgres "ads/pkg/postgres"
-	adapterpostgres "ads/userservice/internal/adapter/out/postgres"
-	"ads/userservice/internal/domain/model"
-	"ads/userservice/migrations"
 	"context"
 	"errors"
+	pkgerrs "github.com/maket12/ads-service/pkg/errs"
+	pkgpostgres "github.com/maket12/ads-service/pkg/postgres"
+	adapterpostgres "github.com/maket12/ads-service/userservice/internal/adapter/out/postgres"
+	"github.com/maket12/ads-service/userservice/internal/domain/model"
+	"github.com/maket12/ads-service/userservice/migrations"
 	"testing"
 	"time"
 
@@ -128,7 +128,7 @@ func (s *AccountsRepoSuite) TestCreate_Duplicate() {
 	// Trying to create the same profile again (same account id)
 	err := s.repo.Create(s.ctx, s.testProfile)
 	s.Require().Error(err)
-	s.Require().ErrorIs(err, errs.ErrObjectAlreadyExists)
+	s.Require().ErrorIs(err, pkgerrs.ErrObjectAlreadyExists)
 }
 
 func (s *AccountsRepoSuite) TestGet_NotFound() {
@@ -137,7 +137,7 @@ func (s *AccountsRepoSuite) TestGet_NotFound() {
 	_, err := s.repo.Get(s.ctx, unexistingAccountID)
 
 	s.Require().Error(err)
-	s.Require().ErrorIs(err, errs.ErrObjectNotFound)
+	s.Require().ErrorIs(err, pkgerrs.ErrObjectNotFound)
 }
 
 func (s *AccountsRepoSuite) TestUpdate() {
@@ -182,7 +182,7 @@ func (s *AccountsRepoSuite) TestDelete() {
 	_, err = s.repo.Get(s.ctx, s.testProfile.AccountID())
 
 	s.Require().Error(err)
-	s.Require().ErrorIs(err, errs.ErrObjectNotFound)
+	s.Require().ErrorIs(err, pkgerrs.ErrObjectNotFound)
 }
 
 func (s *AccountsRepoSuite) TestListProfiles() {

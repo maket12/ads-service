@@ -1,9 +1,9 @@
 package mongodb
 
 import (
-	pkgmongo "ads/pkg/mongodb"
 	"context"
 	"errors"
+	pkgmongo "github.com/maket12/ads-service/pkg/mongodb"
 
 	"github.com/google/uuid"
 	"go.mongodb.org/mongo-driver/v2/bson"

@@ -1,8 +1,8 @@
 package grpc
 
 import (
-	"ads/authservice/internal/app/dto"
-	"ads/pkg/generated/auth_v1"
+	"github.com/maket12/ads-service/authservice/internal/app/dto"
+	"github.com/maket12/ads-service/pkg/generated/auth_v1"
 
 	"github.com/google/uuid"
 )

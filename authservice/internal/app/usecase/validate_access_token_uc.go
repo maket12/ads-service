@@ -1,12 +1,12 @@
 package usecase
 
 import (
-	"ads/authservice/internal/app/dto"
-	"ads/authservice/internal/app/uc_errors"
-	"ads/authservice/internal/domain/port"
-	"ads/pkg/errs"
 	"context"
 	"errors"
+	"github.com/maket12/ads-service/authservice/internal/app/dto"
+	ucerrs "github.com/maket12/ads-service/authservice/internal/app/errs"
+	"github.com/maket12/ads-service/authservice/internal/domain/port"
+	pkgerrs "github.com/maket12/ads-service/pkg/errs"
 )
 
 type ValidateAccessTokenUC struct {
@@ -30,21 +30,21 @@ func (uc *ValidateAccessTokenUC) Execute(ctx context.Context, in dto.ValidateAcc
 		ctx, in.AccessToken,
 	)
 	if err != nil {
-		return dto.ValidateAccessTokenOutput{}, uc_errors.ErrInvalidAccessToken
+		return dto.ValidateAccessTokenOutput{}, ucerrs.ErrInvalidAccessToken
 	}
 
 	// Get account and check if it is not active
 	account, err := uc.account.GetByID(ctx, accountID)
 	if err != nil {
-		if errors.Is(err, errs.ErrObjectNotFound) {
-			return dto.ValidateAccessTokenOutput{}, uc_errors.ErrInvalidAccessToken
+		if errors.Is(err, pkgerrs.ErrObjectNotFound) {
+			return dto.ValidateAccessTokenOutput{}, ucerrs.ErrInvalidAccessToken
 		}
-		return dto.ValidateAccessTokenOutput{}, uc_errors.Wrap(
-			uc_errors.ErrGetAccountByIDDB, err,
+		return dto.ValidateAccessTokenOutput{}, ucerrs.Wrap(
+			ucerrs.ErrGetAccountByIDDB, err,
 		)
 	}
 	if !account.CanLogin() {
-		return dto.ValidateAccessTokenOutput{}, uc_errors.ErrCannotLogin
+		return dto.ValidateAccessTokenOutput{}, ucerrs.ErrCannotLogin
 	}
 
 	// Output

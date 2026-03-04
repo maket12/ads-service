@@ -1,14 +1,14 @@
 package usecase
 
 import (
-	"ads/authservice/internal/app/dto"
-	"ads/authservice/internal/app/uc_errors"
-	"ads/authservice/internal/app/utils"
-	"ads/authservice/internal/domain/model"
-	"ads/authservice/internal/domain/port"
-	"ads/pkg/errs"
 	"context"
 	"errors"
+	"github.com/maket12/ads-service/authservice/internal/app/dto"
+	ucerrs "github.com/maket12/ads-service/authservice/internal/app/errs"
+	"github.com/maket12/ads-service/authservice/internal/app/utils"
+	"github.com/maket12/ads-service/authservice/internal/domain/model"
+	"github.com/maket12/ads-service/authservice/internal/domain/port"
+	pkgerrs "github.com/maket12/ads-service/pkg/errs"
 	"time"
 
 	"github.com/google/uuid"
@@ -47,35 +47,35 @@ func (uc *LoginUC) Execute(ctx context.Context, in dto.LoginInput) (dto.LoginOut
 	account, err := uc.account.GetByEmail(ctx, in.Email)
 
 	if err != nil {
-		if errors.Is(err, errs.ErrObjectNotFound) {
-			return dto.LoginOutput{}, uc_errors.ErrInvalidCredentials
+		if errors.Is(err, pkgerrs.ErrObjectNotFound) {
+			return dto.LoginOutput{}, ucerrs.ErrInvalidCredentials
 		}
-		return dto.LoginOutput{}, uc_errors.Wrap(
-			uc_errors.ErrGetAccountByEmailDB, err,
+		return dto.LoginOutput{}, ucerrs.Wrap(
+			ucerrs.ErrGetAccountByEmailDB, err,
 		)
 	}
 
 	if !uc.passwordHasher.Compare(account.PasswordHash(), in.Password) {
-		return dto.LoginOutput{}, uc_errors.ErrInvalidCredentials
+		return dto.LoginOutput{}, ucerrs.ErrInvalidCredentials
 	}
 
 	// Account validation
 	if ok := account.CanLogin(); !ok {
-		return dto.LoginOutput{}, uc_errors.ErrCannotLogin
+		return dto.LoginOutput{}, ucerrs.ErrCannotLogin
 	}
 
 	// Update account
 	account.MarkLogin()
 	if err := uc.account.MarkLogin(ctx, account); err != nil {
-		return dto.LoginOutput{}, uc_errors.Wrap(
-			uc_errors.ErrUpdateAccountDB, err,
+		return dto.LoginOutput{}, ucerrs.Wrap(
+			ucerrs.ErrUpdateAccountDB, err,
 		)
 	}
 
 	// Find an account role
 	accRole, err := uc.accountRole.Get(ctx, account.ID())
 	if err != nil {
-		return dto.LoginOutput{}, uc_errors.Wrap(uc_errors.ErrGetAccountRoleDB, err)
+		return dto.LoginOutput{}, ucerrs.Wrap(ucerrs.ErrGetAccountRoleDB, err)
 	}
 
 	// Generate tokens
@@ -83,8 +83,8 @@ func (uc *LoginUC) Execute(ctx context.Context, in dto.LoginInput) (dto.LoginOut
 		ctx, account.ID(), accRole.Role().String(),
 	)
 	if err != nil {
-		return dto.LoginOutput{}, uc_errors.Wrap(
-			uc_errors.ErrGenerateAccessToken, err,
+		return dto.LoginOutput{}, ucerrs.Wrap(
+			ucerrs.ErrGenerateAccessToken, err,
 		)
 	}
 
@@ -93,8 +93,8 @@ func (uc *LoginUC) Execute(ctx context.Context, in dto.LoginInput) (dto.LoginOut
 		ctx, account.ID(), sessionID,
 	)
 	if err != nil {
-		return dto.LoginOutput{}, uc_errors.Wrap(
-			uc_errors.ErrGenerateRefreshToken, err,
+		return dto.LoginOutput{}, ucerrs.Wrap(
+			ucerrs.ErrGenerateRefreshToken, err,
 		)
 	}
 
@@ -106,14 +106,14 @@ func (uc *LoginUC) Execute(ctx context.Context, in dto.LoginInput) (dto.LoginOut
 		in.IP, in.UserAgent, uc.refreshSessionTTL,
 	)
 	if err != nil {
-		return dto.LoginOutput{}, uc_errors.Wrap(
-			uc_errors.ErrInvalidInput, err,
+		return dto.LoginOutput{}, ucerrs.Wrap(
+			ucerrs.ErrInvalidInput, err,
 		)
 	}
 
 	if err := uc.refreshSession.Create(ctx, refreshSession); err != nil {
-		return dto.LoginOutput{}, uc_errors.Wrap(
-			uc_errors.ErrCreateRefreshSessionDB, err,
+		return dto.LoginOutput{}, ucerrs.Wrap(
+			ucerrs.ErrCreateRefreshSessionDB, err,
 		)
 	}
 

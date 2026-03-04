@@ -1,12 +1,12 @@
 package usecase
 
 import (
-	"ads/authservice/internal/app/dto"
-	"ads/authservice/internal/app/uc_errors"
-	"ads/authservice/internal/domain/port"
-	"ads/pkg/errs"
 	"context"
 	"errors"
+	"github.com/maket12/ads-service/authservice/internal/app/dto"
+	ucerrs "github.com/maket12/ads-service/authservice/internal/app/errs"
+	"github.com/maket12/ads-service/authservice/internal/domain/port"
+	pkgerrs "github.com/maket12/ads-service/pkg/errs"
 )
 
 type AssignRoleUC struct {
@@ -21,24 +21,24 @@ func (uc *AssignRoleUC) Execute(ctx context.Context, in dto.AssignRoleInput) (dt
 	// Get role
 	accRole, err := uc.accountRole.Get(ctx, in.AccountID)
 	if err != nil {
-		if errors.Is(err, errs.ErrObjectNotFound) {
+		if errors.Is(err, pkgerrs.ErrObjectNotFound) {
 			return dto.AssignRoleOutput{Assign: false},
-				uc_errors.ErrInvalidAccountID
+				ucerrs.ErrInvalidAccountID
 		}
 		return dto.AssignRoleOutput{Assign: false},
-			uc_errors.Wrap(uc_errors.ErrGetAccountRoleDB, err)
+			ucerrs.Wrap(ucerrs.ErrGetAccountRoleDB, err)
 	}
 
 	// Assign
 	if err := accRole.Assign(in.Role); err != nil {
 		return dto.AssignRoleOutput{Assign: false},
-			uc_errors.ErrCannotAssign
+			ucerrs.ErrCannotAssign
 	}
 
 	// Update db
 	if err := uc.accountRole.Update(ctx, accRole); err != nil {
 		return dto.AssignRoleOutput{Assign: false},
-			uc_errors.Wrap(uc_errors.ErrUpdateAccountRoleDB, err)
+			ucerrs.Wrap(ucerrs.ErrUpdateAccountRoleDB, err)
 	}
 
 	// Output

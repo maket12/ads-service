@@ -1,14 +1,14 @@
 package postgres
 
 import (
-	"ads/authservice/internal/adapter/out/postgres/mapper"
-	"ads/authservice/internal/adapter/out/postgres/sqlc"
-	"ads/authservice/internal/domain/model"
-	"ads/pkg/errs"
-	pkgpostgres "ads/pkg/postgres"
 	"context"
 	"database/sql"
 	"errors"
+	"github.com/maket12/ads-service/authservice/internal/adapter/out/postgres/mapper"
+	"github.com/maket12/ads-service/authservice/internal/adapter/out/postgres/sqlc"
+	"github.com/maket12/ads-service/authservice/internal/domain/model"
+	pkgerrs "github.com/maket12/ads-service/pkg/errs"
+	pkgpostgres "github.com/maket12/ads-service/pkg/postgres"
 
 	"github.com/google/uuid"
 )
@@ -31,7 +31,7 @@ func (r *AccountRoleRepository) Get(ctx context.Context, accountID uuid.UUID) (*
 	rawAccRole, err := r.q.GetAccountRole(ctx, accountID)
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
-			return nil, errs.NewObjectNotFoundError("account_role", accountID)
+			return nil, pkgerrs.NewObjectNotFoundError("account_role", accountID)
 		}
 		return nil, err
 	}
