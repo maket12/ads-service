@@ -30,6 +30,11 @@ func (uc *DeleteAdUC) Execute(ctx context.Context, in dto.DeleteAdInput) (dto.De
 		)
 	}
 
+	// Check if current user can delete this ad
+	if ad.SellerID() != in.SellerID {
+		return dto.DeleteAdOutput{Success: false}, uc_errors.ErrAccessDenied
+	}
+
 	// Scenario №1: Delete status from database (if not published yet)
 	if ad.IsOnModeration() {
 		err = uc.ad.Delete(ctx, ad.ID())

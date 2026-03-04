@@ -71,7 +71,7 @@ type ComplexityRoot struct {
 
 	Mutation struct {
 		AssignRole     func(childComplexity int, accountID string, role string) int
-		CreateAd       func(childComplexity int, sellerID string, title string, description *string, price float64, images []*string) int
+		CreateAd       func(childComplexity int, title string, description *string, price float64, images []*string) int
 		Login          func(childComplexity int, email string, password string, ip *string, userAgent *string) int
 		Logout         func(childComplexity int, refreshToken string) int
 		RefreshSession func(childComplexity int, oldRefreshToken string, ip *string, userAgent *string) int
@@ -117,7 +117,7 @@ type MutationResolver interface {
 	RefreshSession(ctx context.Context, oldRefreshToken string, ip *string, userAgent *string) (*auth_v1.RefreshSessionResponse, error)
 	AssignRole(ctx context.Context, accountID string, role string) (bool, error)
 	UpdateProfile(ctx context.Context, firstName *string, lastName *string, phone *string, avatarURL *string, bio *string) (bool, error)
-	CreateAd(ctx context.Context, sellerID string, title string, description *string, price float64, images []*string) (string, error)
+	CreateAd(ctx context.Context, title string, description *string, price float64, images []*string) (string, error)
 	UpdateAd(ctx context.Context, adID string, title *string, description *string, price *float64, images []*string) (bool, error)
 	UpdateAdStatus(ctx context.Context, adID string, adStatus model.AdStatus) (bool, error)
 }
@@ -240,7 +240,7 @@ func (e *executableSchema) Complexity(ctx context.Context, typeName, field strin
 			return 0, false
 		}
 
-		return e.complexity.Mutation.CreateAd(childComplexity, args["sellerId"].(string), args["title"].(string), args["description"].(*string), args["price"].(float64), args["images"].([]*string)), true
+		return e.complexity.Mutation.CreateAd(childComplexity, args["title"].(string), args["description"].(*string), args["price"].(float64), args["images"].([]*string)), true
 	case "Mutation.login":
 		if e.complexity.Mutation.Login == nil {
 			break
@@ -541,31 +541,26 @@ func (ec *executionContext) field_Mutation_assignRole_args(ctx context.Context, 
 func (ec *executionContext) field_Mutation_createAd_args(ctx context.Context, rawArgs map[string]any) (map[string]any, error) {
 	var err error
 	args := map[string]any{}
-	arg0, err := graphql.ProcessArgField(ctx, rawArgs, "sellerId", ec.unmarshalNID2string)
+	arg0, err := graphql.ProcessArgField(ctx, rawArgs, "title", ec.unmarshalNString2string)
 	if err != nil {
 		return nil, err
 	}
-	args["sellerId"] = arg0
-	arg1, err := graphql.ProcessArgField(ctx, rawArgs, "title", ec.unmarshalNString2string)
+	args["title"] = arg0
+	arg1, err := graphql.ProcessArgField(ctx, rawArgs, "description", ec.unmarshalOString2ᚖstring)
 	if err != nil {
 		return nil, err
 	}
-	args["title"] = arg1
-	arg2, err := graphql.ProcessArgField(ctx, rawArgs, "description", ec.unmarshalOString2ᚖstring)
+	args["description"] = arg1
+	arg2, err := graphql.ProcessArgField(ctx, rawArgs, "price", ec.unmarshalNFloat2float64)
 	if err != nil {
 		return nil, err
 	}
-	args["description"] = arg2
-	arg3, err := graphql.ProcessArgField(ctx, rawArgs, "price", ec.unmarshalNFloat2float64)
+	args["price"] = arg2
+	arg3, err := graphql.ProcessArgField(ctx, rawArgs, "images", ec.unmarshalNString2ᚕᚖstring)
 	if err != nil {
 		return nil, err
 	}
-	args["price"] = arg3
-	arg4, err := graphql.ProcessArgField(ctx, rawArgs, "images", ec.unmarshalNString2ᚕᚖstring)
-	if err != nil {
-		return nil, err
-	}
-	args["images"] = arg4
+	args["images"] = arg3
 	return args, nil
 }
 
@@ -1380,7 +1375,7 @@ func (ec *executionContext) _Mutation_createAd(ctx context.Context, field graphq
 		ec.fieldContext_Mutation_createAd,
 		func(ctx context.Context) (any, error) {
 			fc := graphql.GetFieldContext(ctx)
-			return ec.resolvers.Mutation().CreateAd(ctx, fc.Args["sellerId"].(string), fc.Args["title"].(string), fc.Args["description"].(*string), fc.Args["price"].(float64), fc.Args["images"].([]*string))
+			return ec.resolvers.Mutation().CreateAd(ctx, fc.Args["title"].(string), fc.Args["description"].(*string), fc.Args["price"].(float64), fc.Args["images"].([]*string))
 		},
 		nil,
 		ec.marshalNID2string,
@@ -1505,9 +1500,9 @@ func (ec *executionContext) _Query_me(ctx context.Context, field graphql.Collect
 			return ec.resolvers.Query().Me(ctx)
 		},
 		nil,
-		ec.marshalNUser2ᚖadsᚋpkgᚋgeneratedᚋuser_v1ᚐGetProfileResponse,
+		ec.marshalOUser2ᚖadsᚋpkgᚋgeneratedᚋuser_v1ᚐGetProfileResponse,
 		true,
-		true,
+		false,
 	)
 }
 
@@ -1553,9 +1548,9 @@ func (ec *executionContext) _Query_ad(ctx context.Context, field graphql.Collect
 			return ec.resolvers.Query().Ad(ctx, fc.Args["adId"].(string))
 		},
 		nil,
-		ec.marshalNAd2ᚖadsᚋpkgᚋgeneratedᚋad_v1ᚐGetAdResponse,
+		ec.marshalOAd2ᚖadsᚋpkgᚋgeneratedᚋad_v1ᚐGetAdResponse,
 		true,
-		true,
+		false,
 	)
 }
 
@@ -3820,16 +3815,13 @@ func (ec *executionContext) _Query(ctx context.Context, sel ast.SelectionSet) gr
 		case "me":
 			field := field
 
-			innerFunc := func(ctx context.Context, fs *graphql.FieldSet) (res graphql.Marshaler) {
+			innerFunc := func(ctx context.Context, _ *graphql.FieldSet) (res graphql.Marshaler) {
 				defer func() {
 					if r := recover(); r != nil {
 						ec.Error(ctx, ec.Recover(ctx, r))
 					}
 				}()
 				res = ec._Query_me(ctx, field)
-				if res == graphql.Null {
-					atomic.AddUint32(&fs.Invalids, 1)
-				}
 				return res
 			}
 
@@ -3842,16 +3834,13 @@ func (ec *executionContext) _Query(ctx context.Context, sel ast.SelectionSet) gr
 		case "ad":
 			field := field
 
-			innerFunc := func(ctx context.Context, fs *graphql.FieldSet) (res graphql.Marshaler) {
+			innerFunc := func(ctx context.Context, _ *graphql.FieldSet) (res graphql.Marshaler) {
 				defer func() {
 					if r := recover(); r != nil {
 						ec.Error(ctx, ec.Recover(ctx, r))
 					}
 				}()
 				res = ec._Query_ad(ctx, field)
-				if res == graphql.Null {
-					atomic.AddUint32(&fs.Invalids, 1)
-				}
 				return res
 			}
 
@@ -4417,20 +4406,6 @@ func (ec *executionContext) ___Type(ctx context.Context, sel ast.SelectionSet, o
 
 // region    ***************************** type.gotpl *****************************
 
-func (ec *executionContext) marshalNAd2adsᚋpkgᚋgeneratedᚋad_v1ᚐGetAdResponse(ctx context.Context, sel ast.SelectionSet, v ad_v1.GetAdResponse) graphql.Marshaler {
-	return ec._Ad(ctx, sel, &v)
-}
-
-func (ec *executionContext) marshalNAd2ᚖadsᚋpkgᚋgeneratedᚋad_v1ᚐGetAdResponse(ctx context.Context, sel ast.SelectionSet, v *ad_v1.GetAdResponse) graphql.Marshaler {
-	if v == nil {
-		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
-			graphql.AddErrorf(ctx, "the requested element is null which the schema does not allow")
-		}
-		return graphql.Null
-	}
-	return ec._Ad(ctx, sel, v)
-}
-
 func (ec *executionContext) unmarshalNAdStatus2adsᚋgatewayᚋgraphᚋmodelᚐAdStatus(ctx context.Context, v any) (model.AdStatus, error) {
 	var res model.AdStatus
 	err := res.UnmarshalGQL(v)
@@ -4579,20 +4554,6 @@ func (ec *executionContext) marshalNString2ᚕᚖstring(ctx context.Context, sel
 	}
 
 	return ret
-}
-
-func (ec *executionContext) marshalNUser2adsᚋpkgᚋgeneratedᚋuser_v1ᚐGetProfileResponse(ctx context.Context, sel ast.SelectionSet, v user_v1.GetProfileResponse) graphql.Marshaler {
-	return ec._User(ctx, sel, &v)
-}
-
-func (ec *executionContext) marshalNUser2ᚖadsᚋpkgᚋgeneratedᚋuser_v1ᚐGetProfileResponse(ctx context.Context, sel ast.SelectionSet, v *user_v1.GetProfileResponse) graphql.Marshaler {
-	if v == nil {
-		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
-			graphql.AddErrorf(ctx, "the requested element is null which the schema does not allow")
-		}
-		return graphql.Null
-	}
-	return ec._User(ctx, sel, v)
 }
 
 func (ec *executionContext) marshalN__Directive2githubᚗcomᚋ99designsᚋgqlgenᚋgraphqlᚋintrospectionᚐDirective(ctx context.Context, sel ast.SelectionSet, v introspection.Directive) graphql.Marshaler {
@@ -4848,6 +4809,13 @@ func (ec *executionContext) marshalN__TypeKind2string(ctx context.Context, sel a
 	return res
 }
 
+func (ec *executionContext) marshalOAd2ᚖadsᚋpkgᚋgeneratedᚋad_v1ᚐGetAdResponse(ctx context.Context, sel ast.SelectionSet, v *ad_v1.GetAdResponse) graphql.Marshaler {
+	if v == nil {
+		return graphql.Null
+	}
+	return ec._Ad(ctx, sel, v)
+}
+
 func (ec *executionContext) unmarshalOBoolean2bool(ctx context.Context, v any) (bool, error) {
 	res, err := graphql.UnmarshalBoolean(v)
 	return res, graphql.ErrorOnPath(ctx, err)
@@ -4923,6 +4891,13 @@ func (ec *executionContext) marshalOString2ᚖstring(ctx context.Context, sel as
 	_ = ctx
 	res := graphql.MarshalString(*v)
 	return res
+}
+
+func (ec *executionContext) marshalOUser2ᚖadsᚋpkgᚋgeneratedᚋuser_v1ᚐGetProfileResponse(ctx context.Context, sel ast.SelectionSet, v *user_v1.GetProfileResponse) graphql.Marshaler {
+	if v == nil {
+		return graphql.Null
+	}
+	return ec._User(ctx, sel, v)
 }
 
 func (ec *executionContext) marshalO__EnumValue2ᚕgithubᚗcomᚋ99designsᚋgqlgenᚋgraphqlᚋintrospectionᚐEnumValueᚄ(ctx context.Context, sel ast.SelectionSet, v []introspection.EnumValue) graphql.Marshaler {

@@ -118,9 +118,8 @@ func (r *mutationResolver) UpdateProfile(ctx context.Context, firstName *string,
 	if idVal == nil {
 		return false, fmt.Errorf("unauthorized")
 	}
-	accountID := idVal.(string)
 
-	outCtx := utils.PackAccountIDForGRPC(ctx, accountID)
+	outCtx := utils.PackAccountIDForGRPC(ctx, idVal.(string))
 
 	resp, err := r.UserClient.UpdateProfile(outCtx, &user_v1.UpdateProfileRequest{
 		FirstName: firstName,
@@ -137,7 +136,14 @@ func (r *mutationResolver) UpdateProfile(ctx context.Context, firstName *string,
 }
 
 // CreateAd is the resolver for the createAd field.
-func (r *mutationResolver) CreateAd(ctx context.Context, sellerID string, title string, description *string, price float64, images []*string) (string, error) {
+func (r *mutationResolver) CreateAd(ctx context.Context, title string, description *string, price float64, images []*string) (string, error) {
+	idVal := ctx.Value(utils.AccountIDKey)
+	if idVal == nil {
+		return "", fmt.Errorf("unauthorized")
+	}
+
+	outCtx := utils.PackAccountIDForGRPC(ctx, idVal.(string))
+
 	var imagesFixed []string
 	if len(images) != 0 {
 		for i := range images {
@@ -147,8 +153,7 @@ func (r *mutationResolver) CreateAd(ctx context.Context, sellerID string, title 
 		}
 	}
 
-	resp, err := r.AdClient.CreateAd(ctx, &ad_v1.CreateAdRequest{
-		SellerId:    sellerID,
+	resp, err := r.AdClient.CreateAd(outCtx, &ad_v1.CreateAdRequest{
 		Title:       title,
 		Description: description,
 		Price:       int64(price),
@@ -163,6 +168,13 @@ func (r *mutationResolver) CreateAd(ctx context.Context, sellerID string, title 
 
 // UpdateAd is the resolver for the updateAd field.
 func (r *mutationResolver) UpdateAd(ctx context.Context, adID string, title *string, description *string, price *float64, images []*string) (bool, error) {
+	idVal := ctx.Value(utils.AccountIDKey)
+	if idVal == nil {
+		return false, fmt.Errorf("unauthorized")
+	}
+
+	outCtx := utils.PackAccountIDForGRPC(ctx, idVal.(string))
+
 	var priceFixed int64
 	if price != nil {
 		priceFixed = int64(*price)
@@ -177,7 +189,7 @@ func (r *mutationResolver) UpdateAd(ctx context.Context, adID string, title *str
 		}
 	}
 
-	resp, err := r.AdClient.UpdateAd(ctx, &ad_v1.UpdateAdRequest{
+	resp, err := r.AdClient.UpdateAd(outCtx, &ad_v1.UpdateAdRequest{
 		AdId:        adID,
 		Title:       title,
 		Description: description,
@@ -193,23 +205,30 @@ func (r *mutationResolver) UpdateAd(ctx context.Context, adID string, title *str
 
 // UpdateAdStatus is the resolver for the updateAdStatus field.
 func (r *mutationResolver) UpdateAdStatus(ctx context.Context, adID string, adStatus model.AdStatus) (bool, error) {
+	idVal := ctx.Value(utils.AccountIDKey)
+	if idVal == nil {
+		return false, fmt.Errorf("unauthorized")
+	}
+
+	outCtx := utils.PackAccountIDForGRPC(ctx, idVal.(string))
+
 	switch adStatus {
 	case model.AdStatusPublished:
-		resp, err := r.AdClient.PublishAd(ctx, &ad_v1.PublishAdRequest{AdId: adID})
+		resp, err := r.AdClient.PublishAd(outCtx, &ad_v1.PublishAdRequest{AdId: adID})
 		if err != nil {
 			return false, err
 		}
 		return resp.GetSuccess(), nil
 
 	case model.AdStatusRejected:
-		resp, err := r.AdClient.RejectAd(ctx, &ad_v1.RejectAdRequest{AdId: adID})
+		resp, err := r.AdClient.RejectAd(outCtx, &ad_v1.RejectAdRequest{AdId: adID})
 		if err != nil {
 			return false, err
 		}
 		return resp.GetSuccess(), nil
 
 	case model.AdStatusDeleted:
-		resp, err := r.AdClient.DeleteAd(ctx, &ad_v1.DeleteAdRequest{AdId: adID})
+		resp, err := r.AdClient.DeleteAd(outCtx, &ad_v1.DeleteAdRequest{AdId: adID})
 		if err != nil {
 			return false, err
 		}
@@ -225,16 +244,28 @@ func (r *queryResolver) Me(ctx context.Context) (*user_v1.GetProfileResponse, er
 	if idVal == nil {
 		return nil, fmt.Errorf("unauthorized")
 	}
-	accountID := idVal.(string)
 
-	outCtx := utils.PackAccountIDForGRPC(ctx, accountID)
+	roleVal := ctx.Value(utils.AccountRoleKey)
+	if roleVal == nil {
+		return nil, fmt.Errorf("unauthorized")
+	}
+
+	outCtx := utils.PackAccountIDForGRPC(ctx, idVal.(string))
+	outCtx = utils.PackAccountRoleForGRPC(outCtx, roleVal.(string))
 
 	return r.UserClient.GetProfile(outCtx, &user_v1.GetProfileRequest{})
 }
 
 // Ad is the resolver for the ad field.
 func (r *queryResolver) Ad(ctx context.Context, adID string) (*ad_v1.GetAdResponse, error) {
-	return r.AdClient.GetAd(ctx, &ad_v1.GetAdRequest{AdId: adID})
+	idVal := ctx.Value(utils.AccountIDKey)
+	if idVal == nil {
+		return nil, fmt.Errorf("unauthorized")
+	}
+
+	outCtx := utils.PackAccountIDForGRPC(ctx, idVal.(string))
+
+	return r.AdClient.GetAd(outCtx, &ad_v1.GetAdRequest{AdId: adID})
 }
 
 // ID is the resolver for the id field.
@@ -244,7 +275,7 @@ func (r *userResolver) ID(ctx context.Context, obj *user_v1.GetProfileResponse) 
 
 // Role is the resolver for the role field.
 func (r *userResolver) Role(ctx context.Context, obj *user_v1.GetProfileResponse) (*string, error) {
-	roleVal := ctx.Value(utils.RoleKey)
+	roleVal := ctx.Value(utils.AccountRoleKey)
 	if roleVal == nil {
 		return nil, nil
 	}

@@ -29,6 +29,11 @@ func (uc *PublishAdUC) Execute(ctx context.Context, in dto.PublishAdInput) (dto.
 		)
 	}
 
+	// Check if current user can publish this ad
+	if ad.SellerID() != in.SellerID {
+		return dto.PublishAdOutput{Success: false}, uc_errors.ErrAccessDenied
+	}
+
 	// Publish
 	err = ad.Publish()
 	if err != nil {

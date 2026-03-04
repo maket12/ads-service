@@ -188,9 +188,9 @@ services:
     ports:
       - "${GATEWAY_PORT}:${GATEWAY_PORT}"
     environment:
-      - AUTH_GRPC_ADDR=auth-service:50051
-      - USER_GRPC_ADDR=user-service:50052
-      - AD_GRPC_ADDR=ad-service:50053
+      - AUTH_GRPC_ADDR=auth-service:${AUTH_GRPC_PORT}
+      - USER_GRPC_ADDR=user-service:${USER_GRPC_PORT}
+      - AD_GRPC_ADDR=ad-service:${AD_GRPC_PORT}
     depends_on:
       - auth-service
       - user-service

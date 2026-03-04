@@ -59,7 +59,7 @@ func (uc *LoginUC) Execute(ctx context.Context, in dto.LoginInput) (dto.LoginOut
 		return dto.LoginOutput{}, uc_errors.ErrInvalidCredentials
 	}
 
-	// account validation
+	// Account validation
 	if ok := account.CanLogin(); !ok {
 		return dto.LoginOutput{}, uc_errors.ErrCannotLogin
 	}

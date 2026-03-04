@@ -45,10 +45,10 @@ type Ad {
 
 type Query {
     # rpc GetProfile
-    me: User!
+    me: User
 
     # rpc GetAd
-    ad(adId: ID!): Ad!
+    ad(adId: ID!): Ad
 }
 
 type Mutation {
@@ -96,7 +96,6 @@ type Mutation {
 
     # rpc CreateAd
     createAd(
-        sellerId: ID!
         title: String!
         description: String
         price: Float!

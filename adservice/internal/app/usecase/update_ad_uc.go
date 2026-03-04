@@ -35,6 +35,11 @@ func (uc *UpdateAdUC) Execute(ctx context.Context, in dto.UpdateAdInput) (dto.Up
 		)
 	}
 
+	// Check if current user can update this ad
+	if ad.SellerID() != in.SellerID {
+		return dto.UpdateAdOutput{Success: false}, uc_errors.ErrAccessDenied
+	}
+
 	// Update
 	err = ad.Update(in.Title, in.Description, in.Price, in.Images)
 	if err != nil {

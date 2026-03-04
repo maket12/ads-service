@@ -24,11 +24,10 @@ const (
 
 type CreateAdRequest struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
-	SellerId      string                 `protobuf:"bytes,1,opt,name=seller_id,json=sellerId,proto3" json:"seller_id,omitempty"`
-	Title         string                 `protobuf:"bytes,2,opt,name=title,proto3" json:"title,omitempty"`
-	Description   *string                `protobuf:"bytes,3,opt,name=description,proto3,oneof" json:"description,omitempty"`
-	Price         int64                  `protobuf:"varint,4,opt,name=price,proto3" json:"price,omitempty"`
-	Images        []string               `protobuf:"bytes,5,rep,name=images,proto3" json:"images,omitempty"`
+	Title         string                 `protobuf:"bytes,1,opt,name=title,proto3" json:"title,omitempty"`
+	Description   *string                `protobuf:"bytes,2,opt,name=description,proto3,oneof" json:"description,omitempty"`
+	Price         int64                  `protobuf:"varint,3,opt,name=price,proto3" json:"price,omitempty"`
+	Images        []string               `protobuf:"bytes,4,rep,name=images,proto3" json:"images,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -61,13 +60,6 @@ func (x *CreateAdRequest) ProtoReflect() protoreflect.Message {
 // Deprecated: Use CreateAdRequest.ProtoReflect.Descriptor instead.
 func (*CreateAdRequest) Descriptor() ([]byte, []int) {
 	return file_adservice_proto_rawDescGZIP(), []int{0}
-}
-
-func (x *CreateAdRequest) GetSellerId() string {
-	if x != nil {
-		return x.SellerId
-	}
-	return ""
 }
 
 func (x *CreateAdRequest) GetTitle() string {
@@ -770,13 +762,12 @@ var File_adservice_proto protoreflect.FileDescriptor
 
 const file_adservice_proto_rawDesc = "" +
 	"\n" +
-	"\x0fadservice.proto\x12\x02ad\x1a\x1fgoogle/protobuf/timestamp.proto\"\xa9\x01\n" +
-	"\x0fCreateAdRequest\x12\x1b\n" +
-	"\tseller_id\x18\x01 \x01(\tR\bsellerId\x12\x14\n" +
-	"\x05title\x18\x02 \x01(\tR\x05title\x12%\n" +
-	"\vdescription\x18\x03 \x01(\tH\x00R\vdescription\x88\x01\x01\x12\x14\n" +
-	"\x05price\x18\x04 \x01(\x03R\x05price\x12\x16\n" +
-	"\x06images\x18\x05 \x03(\tR\x06imagesB\x0e\n" +
+	"\x0fadservice.proto\x12\x02ad\x1a\x1fgoogle/protobuf/timestamp.proto\"\x8c\x01\n" +
+	"\x0fCreateAdRequest\x12\x14\n" +
+	"\x05title\x18\x01 \x01(\tR\x05title\x12%\n" +
+	"\vdescription\x18\x02 \x01(\tH\x00R\vdescription\x88\x01\x01\x12\x14\n" +
+	"\x05price\x18\x03 \x01(\x03R\x05price\x12\x16\n" +
+	"\x06images\x18\x04 \x03(\tR\x06imagesB\x0e\n" +
 	"\f_description\"'\n" +
 	"\x10CreateAdResponse\x12\x13\n" +
 	"\x05ad_id\x18\x01 \x01(\tR\x04adId\"#\n" +

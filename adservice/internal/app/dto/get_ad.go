@@ -7,7 +7,8 @@ import (
 )
 
 type GetAdInput struct {
-	AdID uuid.UUID
+	AdID     uuid.UUID
+	SellerID uuid.UUID
 }
 
 type GetAdOutput struct {

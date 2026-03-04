@@ -23,8 +23,8 @@ type Config struct {
 	// JWT
 	AccessSecret  string        `env:"AUTH_ACCESS_SECRET,required"`
 	RefreshSecret string        `env:"AUTH_REFRESH_SECRET,required"`
-	AccessTTL     time.Duration `env:"ACCESS_TTL" envDefault:"15m"`
-	RefreshTTL    time.Duration `env:"REFRESH_TTL" envDefault:"720h"`
+	AccessTTL     time.Duration `env:"AUTH_ACCESS_TTL" envDefault:"15m"`
+	RefreshTTL    time.Duration `env:"AUTH_REFRESH_TTL" envDefault:"720h"`
 
 	// Password hasher
 	PasswordCost int `env:"AUTH_PASSWORD_COST" envDefault:"4"`

@@ -17,11 +17,10 @@ service AdService {
 }
 
 message CreateAdRequest {
-  string seller_id = 1;
-  string title = 2;
-  optional string description = 3;
-  int64 price = 4;
-  repeated string images = 5;
+  string title = 1;
+  optional string description = 2;
+  int64 price = 3;
+  repeated string images = 4;
 }
 
 message CreateAdResponse {

@@ -2,12 +2,14 @@ package grpc
 
 import (
 	"ads/adservice/internal/app/uc_errors"
+	"ads/pkg/errs"
 	"errors"
 
 	"google.golang.org/grpc/codes"
 )
 
-func gRPCError(err error) (codes.Code, string, error) {
+// Parses service error and returns response for grpc
+func gRPCError(err error) *errs.OutErr {
 	var w *uc_errors.WrappedError
 	if errors.As(err, &w) {
 		switch {
@@ -20,25 +22,28 @@ func gRPCError(err error) (codes.Code, string, error) {
 			errors.Is(w.Public, uc_errors.ErrUpdateAdStatusDB),
 			errors.Is(w.Public, uc_errors.ErrDeleteAdDB),
 			errors.Is(w.Public, uc_errors.ErrDeleteAllAdsDB):
-			return codes.Internal, w.Public.Error(), w.Reason
+			return errs.NewOutError(codes.Internal, w.Public.Error(), w.Reason)
 
 		case errors.Is(w.Public, uc_errors.ErrInvalidInput):
-			return codes.InvalidArgument, w.Public.Error(), w.Reason
+			return errs.NewOutError(codes.InvalidArgument, w.Public.Error(), w.Reason)
 
 		default:
-			return codes.Internal, "internal error", w.Reason
+			return errs.NewOutError(codes.Internal, "internal error", w.Reason)
 		}
 	}
 
 	switch {
+	case errors.Is(err, uc_errors.ErrAccessDenied):
+		return errs.NewOutError(codes.PermissionDenied, err.Error(), nil)
+
 	case errors.Is(err, uc_errors.ErrInvalidAdID):
-		return codes.NotFound, err.Error(), nil
+		return errs.NewOutError(codes.NotFound, err.Error(), nil)
 
 	case errors.Is(err, uc_errors.ErrCannotPublish),
 		errors.Is(err, uc_errors.ErrCannotReject),
 		errors.Is(err, uc_errors.ErrCannotDelete):
-		return codes.FailedPrecondition, err.Error(), nil
+		return errs.NewOutError(codes.FailedPrecondition, err.Error(), nil)
 	}
 
-	return codes.Internal, "internal error", nil
+	return errs.NewOutError(codes.Internal, "internal error", nil)
 }

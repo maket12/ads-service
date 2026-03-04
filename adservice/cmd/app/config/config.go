@@ -30,7 +30,7 @@ type Config struct {
 	MongoCollectionName string `env:"AD_MONGO_COLLECTION_NAME,required"`
 
 	// Service
-	GRPCPort    int    `env:"AD_GRPC_PORT" envDefault:"50051"`
+	GRPCPort    int    `env:"AD_GRPC_PORT" envDefault:"50053"`
 	LogLevel    string `env:"AD_LOG_LEVEL" envDefault:"INFO"`
 	Environment string `env:"AD_ENVIRONMENT" envDefault:"development"`
 }
