@@ -2,9 +2,10 @@ package grpc
 
 import (
 	"context"
+	"log/slog"
+
 	"github.com/maket12/ads-service/authservice/internal/app/usecase"
 	"github.com/maket12/ads-service/pkg/generated/auth_v1"
-	"log/slog"
 
 	"google.golang.org/grpc/status"
 )
@@ -12,22 +13,22 @@ import (
 type AuthHandler struct {
 	auth_v1.UnimplementedAuthServiceServer
 	log                   *slog.Logger
-	registerUC            *usecase.RegisterUC
-	loginUC               *usecase.LoginUC
-	logoutUC              *usecase.LogoutUC
-	refreshSessionUC      *usecase.RefreshSessionUC
-	validateAccessTokenUC *usecase.ValidateAccessTokenUC
-	assignRoleUC          *usecase.AssignRoleUC
+	registerUC            usecase.RegisterUseCase
+	loginUC               usecase.LoginUseCase
+	logoutUC              usecase.LogoutUseCase
+	refreshSessionUC      usecase.RefreshSessionUseCase
+	validateAccessTokenUC usecase.ValidateAccessTokenUseCase
+	assignRoleUC          usecase.AssignRoleUseCase
 }
 
 func NewAuthHandler(
 	log *slog.Logger,
-	registerUC *usecase.RegisterUC,
-	loginUC *usecase.LoginUC,
-	logoutUC *usecase.LogoutUC,
-	refreshSessionUC *usecase.RefreshSessionUC,
-	validateAccessTokenUC *usecase.ValidateAccessTokenUC,
-	assignRoleUC *usecase.AssignRoleUC,
+	registerUC usecase.RegisterUseCase,
+	loginUC usecase.LoginUseCase,
+	logoutUC usecase.LogoutUseCase,
+	refreshSessionUC usecase.RefreshSessionUseCase,
+	validateAccessTokenUC usecase.ValidateAccessTokenUseCase,
+	assignRoleUC usecase.AssignRoleUseCase,
 ) *AuthHandler {
 	return &AuthHandler{
 		log:                   log,

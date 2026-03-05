@@ -2,10 +2,11 @@ package mapper
 
 import (
 	"database/sql"
-	"github.com/maket12/ads-service/authservice/internal/adapter/out/postgres/sqlc"
-	"github.com/maket12/ads-service/authservice/internal/domain/model"
 	"net"
 	"time"
+
+	"github.com/maket12/ads-service/authservice/internal/adapter/out/postgres/sqlc"
+	"github.com/maket12/ads-service/authservice/internal/domain/model"
 
 	"github.com/google/uuid"
 	"github.com/sqlc-dev/pqtype"

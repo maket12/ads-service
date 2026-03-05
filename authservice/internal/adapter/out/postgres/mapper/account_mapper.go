@@ -2,9 +2,10 @@ package mapper
 
 import (
 	"database/sql"
+	"time"
+
 	"github.com/maket12/ads-service/authservice/internal/adapter/out/postgres/sqlc"
 	"github.com/maket12/ads-service/authservice/internal/domain/model"
-	"time"
 )
 
 func MapAccountToSQLCCreate(account *model.Account) sqlc.CreateAccountParams {

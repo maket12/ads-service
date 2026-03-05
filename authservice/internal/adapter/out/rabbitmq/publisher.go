@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+
 	"github.com/maket12/ads-service/pkg/rabbitmq"
 
 	"github.com/google/uuid"
