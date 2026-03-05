@@ -76,3 +76,75 @@ func TestAH_Register(t *testing.T) {
 		})
 	}
 }
+
+func TestAH_Login(t *testing.T) {
+	testAccess := "access-token"
+	testRefresh := "refresh_token"
+
+	type testCase struct {
+		name      string
+		request   *auth_v1.LoginRequest
+		setupMock func(m *mocks.LoginUseCase)
+		wantCode  codes.Code
+		wantResp  *auth_v1.LoginResponse
+	}
+	testCases := []testCase{
+		{
+			name: "Success login",
+			request: &auth_v1.LoginRequest{
+				Email:    "zaizai@yummy.com",
+				Password: "i bother ShiShi",
+			},
+			setupMock: func(m *mocks.LoginUseCase) {
+				m.On("Execute", mock.Anything, mock.Anything).
+					Return(dto.LoginOutput{
+						AccessToken:  testAccess,
+						RefreshToken: testRefresh,
+					}, nil)
+			},
+			wantCode: codes.OK,
+			wantResp: &auth_v1.LoginResponse{
+				AccessToken:  testAccess,
+				RefreshToken: testRefresh,
+			},
+		},
+		{
+			name: "Failure - internal error",
+			request: &auth_v1.LoginRequest{
+				Email:    "zaizai@yummy.com",
+				Password: "i bother ShiShi",
+			},
+			setupMock: func(m *mocks.LoginUseCase) {
+				m.On("Execute", mock.Anything, mock.Anything).
+					Return(dto.LoginOutput{}, ucerrs.ErrGenerateAccessToken)
+			},
+			wantCode: codes.Internal,
+			wantResp: &auth_v1.LoginResponse{
+				AccessToken:  "",
+				RefreshToken: "",
+			},
+		},
+	}
+
+	for _, tt := range testCases {
+		t.Run(tt.name, func(t *testing.T) {
+			mockLogin := mocks.NewLoginUseCase(t)
+			if tt.setupMock != nil {
+				tt.setupMock(mockLogin)
+			}
+
+			handler := grpc.NewAuthHandler(
+				slog.Default(), nil, mockLogin,
+				nil, nil, nil,
+				nil,
+			)
+
+			resp, err := handler.Login(context.Background(), tt.request)
+
+			if tt.wantCode == codes.OK {
+				assert.NoError(t, err)
+				assert.Equal(t, tt.wantResp, resp)
+			}
+		})
+	}
+}
