@@ -12,14 +12,15 @@ import (
 
 	"context"
 	"fmt"
-	pkgpostgres "github.com/maket12/ads-service/pkg/postgres"
-	pkgrabbitmq "github.com/maket12/ads-service/pkg/rabbitmq"
 	"log"
 	"log/slog"
 	"net"
 	"os"
 	"os/signal"
 	"syscall"
+
+	pkgpostgres "github.com/maket12/ads-service/pkg/postgres"
+	pkgrabbitmq "github.com/maket12/ads-service/pkg/rabbitmq"
 
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/reflection"

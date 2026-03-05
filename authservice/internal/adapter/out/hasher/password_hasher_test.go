@@ -1,8 +1,9 @@
 package hasher_test
 
 import (
-	"github.com/maket12/ads-service/authservice/internal/adapter/out/hasher"
 	"testing"
+
+	"github.com/maket12/ads-service/authservice/internal/adapter/out/hasher"
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"

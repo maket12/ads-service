@@ -2,11 +2,12 @@ package grpc
 
 import (
 	"context"
+	"log/slog"
+
 	"github.com/maket12/ads-service/pkg/generated/user_v1"
 	"github.com/maket12/ads-service/pkg/utils"
 	"github.com/maket12/ads-service/userservice/internal/app/dto"
 	"github.com/maket12/ads-service/userservice/internal/app/usecase"
-	"log/slog"
 
 	"github.com/google/uuid"
 	"google.golang.org/grpc/status"

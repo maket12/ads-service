@@ -3,13 +3,14 @@ package postgres_test
 import (
 	"context"
 	"errors"
+	"testing"
+	"time"
+
 	pkgerrs "github.com/maket12/ads-service/pkg/errs"
 	pkgpostgres "github.com/maket12/ads-service/pkg/postgres"
 	adapterpostgres "github.com/maket12/ads-service/userservice/internal/adapter/out/postgres"
 	"github.com/maket12/ads-service/userservice/internal/domain/model"
 	"github.com/maket12/ads-service/userservice/migrations"
-	"testing"
-	"time"
 
 	"github.com/golang-migrate/migrate/v4"
 	_ "github.com/golang-migrate/migrate/v4/database/postgres"

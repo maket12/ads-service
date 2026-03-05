@@ -3,6 +3,13 @@ package main
 import (
 	"context"
 	"fmt"
+	"log"
+	"log/slog"
+	"net"
+	"os"
+	"os/signal"
+	"syscall"
+
 	"github.com/maket12/ads-service/adservice/cmd/app/config"
 	adaptergrpc "github.com/maket12/ads-service/adservice/internal/adapter/in/grpc"
 	adaptermongo "github.com/maket12/ads-service/adservice/internal/adapter/out/mongodb"
@@ -11,12 +18,6 @@ import (
 	"github.com/maket12/ads-service/pkg/generated/ad_v1"
 	pkgmongodb "github.com/maket12/ads-service/pkg/mongodb"
 	pkgpostgres "github.com/maket12/ads-service/pkg/postgres"
-	"log"
-	"log/slog"
-	"net"
-	"os"
-	"os/signal"
-	"syscall"
 
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/reflection"

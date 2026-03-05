@@ -4,12 +4,13 @@ import (
 	"context"
 	"database/sql"
 	"errors"
+	"time"
+
 	"github.com/maket12/ads-service/authservice/internal/adapter/out/postgres/mapper"
 	"github.com/maket12/ads-service/authservice/internal/adapter/out/postgres/sqlc"
 	"github.com/maket12/ads-service/authservice/internal/domain/model"
 	pkgerrs "github.com/maket12/ads-service/pkg/errs"
 	pkgpostgres "github.com/maket12/ads-service/pkg/postgres"
-	"time"
 
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5/pgconn"

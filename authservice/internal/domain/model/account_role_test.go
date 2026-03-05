@@ -1,10 +1,11 @@
 package model_test
 
 import (
-	"github.com/maket12/ads-service/authservice/internal/domain/model"
-	pkgerrs "github.com/maket12/ads-service/pkg/errs"
 	"strings"
 	"testing"
+
+	"github.com/maket12/ads-service/authservice/internal/domain/model"
+	pkgerrs "github.com/maket12/ads-service/pkg/errs"
 
 	"github.com/google/uuid"
 	"github.com/stretchr/testify/assert"

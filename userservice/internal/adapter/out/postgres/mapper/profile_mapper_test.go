@@ -2,11 +2,12 @@ package mapper_test
 
 import (
 	"database/sql"
+	"testing"
+	"time"
+
 	"github.com/maket12/ads-service/userservice/internal/adapter/out/postgres/mapper"
 	"github.com/maket12/ads-service/userservice/internal/adapter/out/postgres/sqlc"
 	"github.com/maket12/ads-service/userservice/internal/domain/model"
-	"testing"
-	"time"
 
 	"github.com/google/uuid"
 	"github.com/stretchr/testify/assert"

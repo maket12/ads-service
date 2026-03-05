@@ -8,12 +8,13 @@ package graph
 import (
 	"context"
 	"fmt"
+	"time"
+
 	"github.com/maket12/ads-service/gateway/graph/model"
 	"github.com/maket12/ads-service/pkg/generated/ad_v1"
 	"github.com/maket12/ads-service/pkg/generated/auth_v1"
 	"github.com/maket12/ads-service/pkg/generated/user_v1"
 	"github.com/maket12/ads-service/pkg/utils"
-	"time"
 )
 
 // Price is the resolver for the price field.

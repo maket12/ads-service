@@ -2,9 +2,10 @@ package mongodb_test
 
 import (
 	"context"
+	"testing"
+
 	adaptermongodb "github.com/maket12/ads-service/adservice/internal/adapter/out/mongodb"
 	pkgmongodb "github.com/maket12/ads-service/pkg/mongodb"
-	"testing"
 
 	"github.com/google/uuid"
 	"github.com/stretchr/testify/suite"

@@ -2,9 +2,10 @@ package mapper
 
 import (
 	"database/sql"
+	"time"
+
 	"github.com/maket12/ads-service/userservice/internal/adapter/out/postgres/sqlc"
 	"github.com/maket12/ads-service/userservice/internal/domain/model"
-	"time"
 )
 
 func MapProfileToSQLCCreate(profile *model.Profile) sqlc.CreateProfileParams {

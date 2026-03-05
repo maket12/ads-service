@@ -2,8 +2,9 @@ package utils_test
 
 import (
 	"context"
-	"github.com/maket12/ads-service/pkg/utils"
 	"testing"
+
+	"github.com/maket12/ads-service/pkg/utils"
 
 	"github.com/google/uuid"
 	"github.com/stretchr/testify/assert"

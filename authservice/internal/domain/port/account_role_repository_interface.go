@@ -2,6 +2,7 @@ package port
 
 import (
 	"context"
+
 	"github.com/maket12/ads-service/authservice/internal/domain/model"
 
 	"github.com/google/uuid"

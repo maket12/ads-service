@@ -4,6 +4,7 @@ import (
 	"context"
 	"database/sql"
 	"errors"
+
 	"github.com/maket12/ads-service/adservice/internal/adapter/out/postgres/mapper"
 	"github.com/maket12/ads-service/adservice/internal/adapter/out/postgres/sqlc"
 	"github.com/maket12/ads-service/adservice/internal/domain/model"

@@ -2,6 +2,7 @@ package mapper
 
 import (
 	"database/sql"
+
 	"github.com/maket12/ads-service/adservice/internal/adapter/out/postgres/sqlc"
 	"github.com/maket12/ads-service/adservice/internal/domain/model"
 

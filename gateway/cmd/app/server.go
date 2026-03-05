@@ -2,15 +2,16 @@ package main
 
 import (
 	"fmt"
+	"log"
+	"net/http"
+	"strings"
+
 	"github.com/maket12/ads-service/gateway/cmd/app/config"
 	"github.com/maket12/ads-service/gateway/graph"
 	"github.com/maket12/ads-service/pkg/generated/ad_v1"
 	"github.com/maket12/ads-service/pkg/generated/auth_v1"
 	"github.com/maket12/ads-service/pkg/generated/user_v1"
 	"github.com/maket12/ads-service/pkg/utils"
-	"log"
-	"net/http"
-	"strings"
 
 	"github.com/99designs/gqlgen/graphql/handler"
 	"github.com/99designs/gqlgen/graphql/playground"

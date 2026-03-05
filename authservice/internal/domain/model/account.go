@@ -1,8 +1,9 @@
 package model
 
 import (
-	pkgerrs "github.com/maket12/ads-service/pkg/errs"
 	"time"
+
+	pkgerrs "github.com/maket12/ads-service/pkg/errs"
 
 	"github.com/google/uuid"
 )

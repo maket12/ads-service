@@ -2,8 +2,9 @@ package validator_test
 
 import (
 	"context"
-	"github.com/maket12/ads-service/userservice/internal/adapter/out/validator"
 	"testing"
+
+	"github.com/maket12/ads-service/userservice/internal/adapter/out/validator"
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"

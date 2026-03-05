@@ -4,10 +4,11 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"log/slog"
+
 	"github.com/maket12/ads-service/pkg/rabbitmq"
 	"github.com/maket12/ads-service/userservice/internal/app/dto"
 	"github.com/maket12/ads-service/userservice/internal/app/usecase"
-	"log/slog"
 
 	amqp "github.com/rabbitmq/amqp091-go"
 )
