@@ -51,6 +51,10 @@ type Client struct {
 }
 
 func NewClient(config *Config) (*Client, error) {
+	if config == nil {
+		return nil, fmt.Errorf("db config is not specified")
+	}
+
 	var dsn = config.dsn()
 
 	db, err := sql.Open("pgx", dsn)
@@ -58,15 +62,9 @@ func NewClient(config *Config) (*Client, error) {
 		return nil, fmt.Errorf("failed to open db connection: %w", err)
 	}
 
-	if config != nil {
-		db.SetMaxOpenConns(config.OpenConn)
-		db.SetMaxIdleConns(config.IdleConn)
-		db.SetConnMaxLifetime(config.ConnLifeTime)
-	} else {
-		db.SetMaxOpenConns(25)
-		db.SetMaxIdleConns(25)
-		db.SetConnMaxLifetime(time.Minute * 5)
-	}
+	db.SetMaxOpenConns(config.OpenConn)
+	db.SetMaxIdleConns(config.IdleConn)
+	db.SetConnMaxLifetime(config.ConnLifeTime)
 
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
