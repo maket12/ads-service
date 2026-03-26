@@ -28,10 +28,10 @@ func NewValueInvalidError(paramName string) *ValueInvalidError {
 func (e *ValueInvalidError) Error() string {
 	if e.Reason != nil {
 		return fmt.Sprintf("%s: %s (reason: %v)",
-			ErrValueIsRequired, e.ParamName, e.Reason,
+			ErrValueIsInvalid, e.ParamName, e.Reason,
 		)
 	}
-	return fmt.Sprintf("%s: %s", ErrValueIsRequired, e.ParamName)
+	return fmt.Sprintf("%s: %s", ErrValueIsInvalid, e.ParamName)
 }
 
 func (e *ValueInvalidError) Unwrap() error {
