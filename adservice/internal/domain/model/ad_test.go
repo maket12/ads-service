@@ -7,19 +7,14 @@ import (
 
 	"github.com/maket12/ads-service/adservice/internal/domain/model"
 	pkgerrs "github.com/maket12/ads-service/pkg/errs"
+	"github.com/maket12/ads-service/pkg/utils"
 
 	"github.com/google/uuid"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
 
-func vPtr[T any](v T) *T {
-	return &v
-}
-
 func TestNewAd(t *testing.T) {
-	t.Parallel()
-
 	type testCase struct {
 		name        string
 		sellerID    uuid.UUID
@@ -43,7 +38,7 @@ func TestNewAd(t *testing.T) {
 			name:        "success",
 			sellerID:    testSelID,
 			title:       testTitle,
-			description: vPtr(testDesc),
+			description: utils.VPtr(testDesc),
 			price:       testPrice,
 			images:      testImages,
 			expect:      nil,
@@ -69,14 +64,14 @@ func TestNewAd(t *testing.T) {
 			name:        "empty description",
 			sellerID:    testSelID,
 			title:       testTitle,
-			description: vPtr(""),
+			description: utils.VPtr(""),
 			expect:      pkgerrs.ErrValueIsRequired,
 		},
 		{
 			name:        "invalid description",
 			sellerID:    testSelID,
 			title:       testTitle,
-			description: vPtr(strings.Repeat(testDesc, 45)), // a large string
+			description: utils.VPtr(strings.Repeat(testDesc, 45)), // a large string
 			expect:      pkgerrs.ErrValueIsInvalid,
 		},
 		{
@@ -123,8 +118,6 @@ func TestNewAd(t *testing.T) {
 }
 
 func TestAd_Publish(t *testing.T) {
-	t.Parallel()
-
 	testAd := model.RestoreAd(
 		uuid.New(), uuid.New(), "Sell a car", nil,
 		int64(100000), model.AdOnModeration, nil,
@@ -143,8 +136,6 @@ func TestAd_Publish(t *testing.T) {
 }
 
 func TestAd_Reject(t *testing.T) {
-	t.Parallel()
-
 	testAd := model.RestoreAd(
 		uuid.New(), uuid.New(), "Sell a car", nil,
 		int64(100000), model.AdOnModeration, nil,
@@ -163,8 +154,6 @@ func TestAd_Reject(t *testing.T) {
 }
 
 func TestAd_Delete(t *testing.T) {
-	t.Parallel()
-
 	testAd := model.RestoreAd(
 		uuid.New(), uuid.New(), "Sell a car", nil,
 		int64(100000), model.AdPublished, nil,
@@ -183,8 +172,6 @@ func TestAd_Delete(t *testing.T) {
 }
 
 func TestAd_Update(t *testing.T) {
-	t.Parallel()
-
 	type testCase struct {
 		name        string
 		title       *string
@@ -204,9 +191,9 @@ func TestAd_Update(t *testing.T) {
 	var tests = []testCase{
 		{
 			name:        "success",
-			title:       vPtr(testTitle),
-			description: vPtr(testDesc),
-			price:       vPtr(testPrice),
+			title:       utils.VPtr(testTitle),
+			description: utils.VPtr(testDesc),
+			price:       utils.VPtr(testPrice),
 			images:      testImages,
 			expect:      nil,
 		},
@@ -220,20 +207,20 @@ func TestAd_Update(t *testing.T) {
 		},
 		{
 			name:   "invalid title",
-			title:  vPtr("Sell"), // a small string
+			title:  utils.VPtr("Sell"), // a short string
 			expect: pkgerrs.ErrValueIsInvalid,
 		},
 		{
 			name:        "invalid description",
-			title:       vPtr(testTitle),
-			description: vPtr(strings.Repeat(testDesc, 45)), // a large string
+			title:       utils.VPtr(testTitle),
+			description: utils.VPtr(strings.Repeat(testDesc, 45)), // a large string
 			expect:      pkgerrs.ErrValueIsInvalid,
 		},
 		{
 			name:        "invalid price",
-			title:       vPtr(testTitle),
+			title:       utils.VPtr(testTitle),
 			description: nil,
-			price:       vPtr(testPrice * -1), // negative price
+			price:       utils.VPtr(testPrice * -1), // negative price
 			expect:      pkgerrs.ErrValueIsInvalid,
 		},
 	}
@@ -242,7 +229,7 @@ func TestAd_Update(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			ad, _ := model.NewAd(
 				uuid.New(), "Shanghai night tour",
-				vPtr("You will never forget it!"),
+				utils.VPtr("You will never forget it!"),
 				int64(1000), nil,
 			)
 

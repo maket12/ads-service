@@ -3,9 +3,8 @@ package model
 import (
 	"time"
 
-	pkgerrs "github.com/maket12/ads-service/pkg/errs"
-
 	"github.com/google/uuid"
+	pkgerrs "github.com/maket12/ads-service/pkg/errs"
 )
 
 type AccountStatus string

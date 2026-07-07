@@ -5,6 +5,7 @@ import (
 	"time"
 
 	pkgerrs "github.com/maket12/ads-service/pkg/errs"
+	"github.com/maket12/ads-service/pkg/utils"
 	"github.com/maket12/ads-service/userservice/internal/domain/model"
 
 	"github.com/google/uuid"
@@ -13,8 +14,6 @@ import (
 )
 
 func TestNewProfile(t *testing.T) {
-	t.Parallel()
-
 	type testCase struct {
 		name      string
 		accountID uuid.UUID
@@ -51,11 +50,6 @@ func TestNewProfile(t *testing.T) {
 }
 
 func TestProfile_Update(t *testing.T) {
-	t.Parallel()
-
-	// Helper
-	strPtr := func(s string) *string { return &s }
-
 	type testCase struct {
 		name      string
 		firstName *string
@@ -68,21 +62,21 @@ func TestProfile_Update(t *testing.T) {
 
 	var (
 		testAccID     = uuid.New()
-		testFirstName = "Vladimir"
-		testLastName  = "Ziabkin"
-		testPhone     = "+79137918725"
-		testAvatarURL = "https://img.com/a-stunning-cyberpunk-scenery.jpg"
-		testBio       = "programmer, seller, digital nomad"
+		testFirstName = utils.VPtr("Vladimir")
+		testLastName  = utils.VPtr("Ziabkin")
+		testPhone     = utils.VPtr("+79137918725")
+		testAvatarURL = utils.VPtr("https://img.com/a-stunning-cyberpunk-scenery.jpg")
+		testBio       = utils.VPtr("programmer, seller, digital nomad")
 	)
 
 	var tests = []testCase{
 		{
 			name:      "success",
-			firstName: &testFirstName,
-			lastName:  &testLastName,
-			phone:     &testPhone,
-			avatarURL: &testAvatarURL,
-			bio:       &testBio,
+			firstName: testFirstName,
+			lastName:  testLastName,
+			phone:     testPhone,
+			avatarURL: testAvatarURL,
+			bio:       testBio,
 			expect:    nil,
 		},
 		{
@@ -96,47 +90,47 @@ func TestProfile_Update(t *testing.T) {
 		},
 		{
 			name:      "failure - invalid first name",
-			firstName: strPtr("A"),
-			lastName:  &testLastName,
-			phone:     &testPhone,
-			avatarURL: &testAvatarURL,
-			bio:       &testBio,
+			firstName: utils.VPtr("A"),
+			lastName:  testLastName,
+			phone:     testPhone,
+			avatarURL: testAvatarURL,
+			bio:       testBio,
 			expect:    pkgerrs.ErrValueIsInvalid,
 		},
 		{
 			name:      "failure - invalid last name",
-			firstName: &testFirstName,
-			lastName:  strPtr("A"),
-			phone:     &testPhone,
-			avatarURL: &testAvatarURL,
-			bio:       &testBio,
+			firstName: testFirstName,
+			lastName:  utils.VPtr("A"),
+			phone:     testPhone,
+			avatarURL: testAvatarURL,
+			bio:       testBio,
 			expect:    pkgerrs.ErrValueIsInvalid,
 		},
 		{
 			name:      "failure - invalid phone",
-			firstName: &testFirstName,
-			lastName:  &testLastName,
-			phone:     strPtr(""),
-			avatarURL: &testAvatarURL,
-			bio:       &testBio,
+			firstName: testFirstName,
+			lastName:  testLastName,
+			phone:     utils.VPtr(""),
+			avatarURL: testAvatarURL,
+			bio:       testBio,
 			expect:    pkgerrs.ErrValueIsInvalid,
 		},
 		{
 			name:      "failure - invalid avatar url",
-			firstName: &testFirstName,
-			lastName:  &testLastName,
-			phone:     &testPhone,
-			avatarURL: strPtr(""),
-			bio:       &testBio,
+			firstName: testFirstName,
+			lastName:  testLastName,
+			phone:     testPhone,
+			avatarURL: utils.VPtr(""),
+			bio:       testBio,
 			expect:    pkgerrs.ErrValueIsInvalid,
 		},
 		{
 			name:      "failure - invalid bio",
-			firstName: &testFirstName,
-			lastName:  &testLastName,
-			phone:     &testPhone,
-			avatarURL: &testAvatarURL,
-			bio:       strPtr(""),
+			firstName: testFirstName,
+			lastName:  testLastName,
+			phone:     testPhone,
+			avatarURL: testAvatarURL,
+			bio:       utils.VPtr(""),
 			expect:    pkgerrs.ErrValueIsInvalid,
 		},
 	}

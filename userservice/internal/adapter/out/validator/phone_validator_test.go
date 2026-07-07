@@ -11,8 +11,6 @@ import (
 )
 
 func TestNewPhoneValidator(t *testing.T) {
-	t.Parallel()
-
 	type testCase struct {
 		name   string
 		region string
@@ -42,8 +40,6 @@ func TestNewPhoneValidator(t *testing.T) {
 }
 
 func TestPhoneValidator_Validate(t *testing.T) {
-	t.Parallel()
-
 	type testCase struct {
 		name    string
 		phone   string

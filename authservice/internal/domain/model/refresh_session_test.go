@@ -6,20 +6,14 @@ import (
 
 	"github.com/maket12/ads-service/authservice/internal/domain/model"
 	pkgerrs "github.com/maket12/ads-service/pkg/errs"
+	"github.com/maket12/ads-service/pkg/utils"
 
 	"github.com/google/uuid"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
 
-// Helper for taking the pointer
-func vPtr[T any](v T) *T {
-	return &v
-}
-
 func TestNewRefreshSession(t *testing.T) {
-	t.Parallel()
-
 	type testCase struct {
 		name        string
 		id          uuid.UUID
@@ -70,7 +64,7 @@ func TestNewRefreshSession(t *testing.T) {
 			id:          uuid.New(),
 			accountID:   uuid.New(),
 			tokenHash:   "hashed",
-			rotatedFrom: &uuid.Nil,
+			rotatedFrom: utils.VPtr(uuid.Nil),
 			ttl:         time.Minute,
 			expect:      pkgerrs.ErrValueIsInvalid,
 		},
@@ -79,8 +73,8 @@ func TestNewRefreshSession(t *testing.T) {
 			id:        uuid.New(),
 			accountID: uuid.New(),
 			tokenHash: "hashed",
-			ip:        vPtr("123.021.234.0"),
-			userAgent: vPtr("Mozilla/5.0"),
+			ip:        utils.VPtr("123.021.234.0"),
+			userAgent: utils.VPtr("Mozilla/5.0"),
 			ttl:       time.Minute * -1,
 			expect:    pkgerrs.ErrValueIsInvalid,
 		},
@@ -108,8 +102,6 @@ func TestNewRefreshSession(t *testing.T) {
 }
 
 func TestRefreshSession_IsExpired(t *testing.T) {
-	t.Parallel()
-
 	type testCase struct {
 		name      string
 		expiresAt time.Time
@@ -141,8 +133,6 @@ func TestRefreshSession_IsExpired(t *testing.T) {
 }
 
 func TestRefreshSession_IsRevoked(t *testing.T) {
-	t.Parallel()
-
 	type testCase struct {
 		name      string
 		revokedAt *time.Time
@@ -152,7 +142,7 @@ func TestRefreshSession_IsRevoked(t *testing.T) {
 	var tests = []testCase{
 		{
 			name:      "session is revoked - true",
-			revokedAt: vPtr(time.Now()),
+			revokedAt: utils.VPtr(time.Now()),
 			expect:    true,
 		},
 		{
@@ -175,8 +165,6 @@ func TestRefreshSession_IsRevoked(t *testing.T) {
 }
 
 func TestRefreshSession_IsActive(t *testing.T) {
-	t.Parallel()
-
 	type testCase struct {
 		name      string
 		expiresAt time.Time
@@ -200,7 +188,7 @@ func TestRefreshSession_IsActive(t *testing.T) {
 		{
 			name:      "session is not expired, but revoked - false",
 			expiresAt: time.Now().Add(time.Hour * 1),
-			revokedAt: vPtr(time.Now().Add(time.Minute * -1)),
+			revokedAt: utils.VPtr(time.Now().Add(time.Minute * -1)),
 			expect:    false,
 		},
 	}
@@ -217,8 +205,6 @@ func TestRefreshSession_IsActive(t *testing.T) {
 }
 
 func TestRefreshSession_Revoke(t *testing.T) {
-	t.Parallel()
-
 	type testCase struct {
 		name      string
 		revokedAt *time.Time
@@ -230,19 +216,19 @@ func TestRefreshSession_Revoke(t *testing.T) {
 		{
 			name:      "success",
 			revokedAt: nil,
-			reason:    vPtr("tests"),
+			reason:    utils.VPtr("tests"),
 			expect:    nil,
 		},
 		{
 			name:      "error - token is revoked",
-			revokedAt: vPtr(time.Now()),
+			revokedAt: utils.VPtr(time.Now()),
 			reason:    nil,
 			expect:    model.ErrTokenAlreadyRevoked,
 		},
 		{
 			name:      "error - empty reason",
 			revokedAt: nil,
-			reason:    vPtr(""),
+			reason:    utils.VPtr(""),
 			expect:    pkgerrs.ErrValueIsInvalid,
 		},
 	}

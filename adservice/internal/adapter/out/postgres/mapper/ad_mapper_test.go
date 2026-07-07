@@ -15,8 +15,6 @@ import (
 )
 
 func TestMapSQLCToAd(t *testing.T) {
-	t.Parallel()
-
 	raw := sqlc.Ad{
 		ID:       uuid.New(),
 		SellerID: uuid.New(),
@@ -47,8 +45,6 @@ func TestMapSQLCToAd(t *testing.T) {
 }
 
 func TestMapAdToSQLCCreate(t *testing.T) {
-	t.Parallel()
-
 	testDesc := "was built in 1983"
 
 	ad, _ := model.NewAd(
@@ -75,8 +71,6 @@ func TestMapAdToSQLCCreate(t *testing.T) {
 }
 
 func TestMapAdToSQLCUpdate(t *testing.T) {
-	t.Parallel()
-
 	testDesc := "was built in 1983"
 
 	ad, _ := model.NewAd(
@@ -100,8 +94,6 @@ func TestMapAdToSQLCUpdate(t *testing.T) {
 }
 
 func TestMapAdToSQLCUpdateStatus(t *testing.T) {
-	t.Parallel()
-
 	ad, _ := model.NewAd(
 		uuid.New(),
 		"Sell penthouse",
@@ -120,8 +112,6 @@ func TestMapAdToSQLCUpdateStatus(t *testing.T) {
 }
 
 func TestMapToSQLCList(t *testing.T) {
-	t.Parallel()
-
 	testLimit := 10
 	testOffset := 10
 
@@ -134,8 +124,6 @@ func TestMapToSQLCList(t *testing.T) {
 }
 
 func TestMapSQLCToAdsList(t *testing.T) {
-	t.Parallel()
-
 	rawAds := []sqlc.Ad{
 		{
 			ID:          uuid.New(),

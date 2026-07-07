@@ -13,8 +13,6 @@ import (
 )
 
 func TestNewAccount(t *testing.T) {
-	t.Parallel()
-
 	type testCase struct {
 		name         string
 		email        string
@@ -62,8 +60,6 @@ func TestNewAccount(t *testing.T) {
 }
 
 func TestAccount_CanLogin(t *testing.T) {
-	t.Parallel()
-
 	type testCase struct {
 		name     string
 		status   model.AccountStatus
@@ -100,8 +96,6 @@ func TestAccount_CanLogin(t *testing.T) {
 }
 
 func TestAccount_IsBlocked(t *testing.T) {
-	t.Parallel()
-
 	type testCase struct {
 		name     string
 		status   model.AccountStatus
@@ -138,8 +132,6 @@ func TestAccount_IsBlocked(t *testing.T) {
 }
 
 func TestAccount_IsDeleted(t *testing.T) {
-	t.Parallel()
-
 	type testCase struct {
 		name     string
 		status   model.AccountStatus
@@ -176,8 +168,6 @@ func TestAccount_IsDeleted(t *testing.T) {
 }
 
 func TestAccount_StatedChanges(t *testing.T) {
-	t.Parallel()
-
 	// Test account
 	acc, _ := model.NewAccount("test@email.go", "password")
 	initialUpdatedAt := acc.UpdatedAt()

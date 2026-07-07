@@ -13,8 +13,6 @@ import (
 )
 
 func TestNewAccountRole(t *testing.T) {
-	t.Parallel()
-
 	type testCase struct {
 		name      string
 		accountID uuid.UUID
@@ -52,8 +50,6 @@ func TestNewAccountRole(t *testing.T) {
 }
 
 func TestAccountRole_Assign(t *testing.T) {
-	t.Parallel()
-
 	type testCase struct {
 		name   string
 		role   string

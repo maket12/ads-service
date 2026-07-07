@@ -5,6 +5,7 @@ import (
 	"testing"
 	"time"
 
+	"github.com/maket12/ads-service/pkg/utils"
 	"github.com/maket12/ads-service/userservice/internal/adapter/out/postgres/mapper"
 	"github.com/maket12/ads-service/userservice/internal/adapter/out/postgres/sqlc"
 	"github.com/maket12/ads-service/userservice/internal/domain/model"
@@ -14,16 +15,12 @@ import (
 )
 
 func TestMapProfileToSQLCCreate(t *testing.T) {
-	t.Parallel()
-
 	profile, _ := model.NewProfile(uuid.New())
 	mapped := mapper.MapProfileToSQLCCreate(profile)
 	assert.Equal(t, profile.AccountID(), mapped.AccountID)
 }
 
 func TestMapSQLCToProfile(t *testing.T) {
-	t.Parallel()
-
 	raw := sqlc.Profile{
 		AccountID: uuid.New(),
 		FirstName: sql.NullString{
@@ -48,13 +45,9 @@ func TestMapSQLCToProfile(t *testing.T) {
 }
 
 func TestMapProfileToSQLCUpdate(t *testing.T) {
-	t.Parallel()
-
-	var testFirstName = "Vladimir"
-
 	profile, _ := model.NewProfile(uuid.New())
 	_ = profile.Update(
-		&testFirstName, nil, nil, nil, nil,
+		utils.VPtr("Vladimir"), nil, nil, nil, nil,
 	)
 	mapped := mapper.MapProfileToSQLCUpdate(profile)
 
@@ -63,8 +56,6 @@ func TestMapProfileToSQLCUpdate(t *testing.T) {
 }
 
 func TestMapToSQLCList(t *testing.T) {
-	t.Parallel()
-
 	var testLimit, testOffset = 10, 10
 	mapped := mapper.MapToSQLCList(testLimit, testOffset)
 
@@ -73,8 +64,6 @@ func TestMapToSQLCList(t *testing.T) {
 }
 
 func TestMapMapSQLCToProfilesList(t *testing.T) {
-	t.Parallel()
-
 	rawProfiles := []sqlc.Profile{
 		{
 			AccountID: uuid.New(),
