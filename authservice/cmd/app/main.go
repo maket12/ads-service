@@ -3,11 +3,11 @@ package main
 import (
 	"github.com/maket12/ads-service/authservice/cmd/app/config"
 	adaptergrpc "github.com/maket12/ads-service/authservice/internal/adapter/in/grpc"
-	adapterph "github.com/maket12/ads-service/authservice/internal/adapter/out/hasher"
 	adaptertg "github.com/maket12/ads-service/authservice/internal/adapter/out/jwt"
 	adapterdb "github.com/maket12/ads-service/authservice/internal/adapter/out/postgres"
 	adaptermq "github.com/maket12/ads-service/authservice/internal/adapter/out/rabbitmq"
 	"github.com/maket12/ads-service/authservice/internal/app/usecase"
+	infrapassw "github.com/maket12/ads-service/authservice/internal/infrastructure/password"
 	"github.com/maket12/ads-service/pkg/generated/auth_v1"
 
 	"context"
@@ -158,7 +158,7 @@ func runServer(ctx context.Context, cfg *config.Config, logger *slog.Logger) err
 	accountRepo := adapterdb.NewAccountsRepository(pgClient)
 	accountRoleRepo := adapterdb.NewAccountRolesRepository(pgClient)
 	refreshSessionRepo := adapterdb.NewRefreshSessionsRepository(pgClient)
-	passwordHasher := adapterph.NewBcryptHasher(cfg.PasswordCost)
+	passwordHasher := infrapassw.NewHasher(cfg.PasswordCost)
 	tokenGenerator := adaptertg.NewTokenGenerator(
 		cfg.AccessSecret, cfg.RefreshSecret,
 		cfg.AccessTTL, cfg.RefreshTTL,

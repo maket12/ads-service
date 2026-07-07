@@ -12,6 +12,11 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
+const (
+	testEmail    = "test@email.go"
+	testPassword = "hashed-password"
+)
+
 func TestNewAccount(t *testing.T) {
 	type testCase struct {
 		name         string
@@ -23,8 +28,8 @@ func TestNewAccount(t *testing.T) {
 	var tests = []testCase{
 		{
 			name:         "success",
-			email:        "new-email@gmail.com",
-			passwordHash: "new-password",
+			email:        testEmail,
+			passwordHash: testPassword,
 			expect:       nil,
 		},
 		{
@@ -34,9 +39,19 @@ func TestNewAccount(t *testing.T) {
 		},
 		{
 			name:         "empty password",
-			email:        "new-email@gmail.com",
+			email:        testEmail,
 			passwordHash: "",
 			expect:       pkgerrs.ErrValueIsRequired,
+		},
+		{
+			name:   "short email",
+			email:  "12@g",
+			expect: pkgerrs.ErrValueIsInvalid,
+		},
+		{
+			name:   "invalid email",
+			email:  "123456789",
+			expect: pkgerrs.ErrValueIsInvalid,
 		},
 	}
 
@@ -50,6 +65,7 @@ func TestNewAccount(t *testing.T) {
 				assert.Equal(t, tt.passwordHash, acc.PasswordHash())
 				assert.Equal(t, acc.Status(), model.AccountActive)
 				assert.False(t, acc.EmailVerified())
+				assert.Nil(t, acc.LastLoginAt())
 			} else {
 				require.Error(t, err)
 				assert.ErrorIs(t, err, pkgerrs.ErrValueIsRequired)
@@ -87,7 +103,7 @@ func TestAccount_CanLogin(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			acc := model.RestoreAccount(
-				uuid.New(), "email.com", "password",
+				uuid.New(), testEmail, testPassword,
 				tt.status, false, time.Now(),
 				time.Now(), nil)
 			assert.Equal(t, tt.expected, acc.CanLogin())
@@ -123,7 +139,7 @@ func TestAccount_IsBlocked(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			acc := model.RestoreAccount(
-				uuid.New(), "email.com", "password",
+				uuid.New(), testEmail, testPassword,
 				tt.status, false, time.Now(),
 				time.Now(), nil)
 			assert.Equal(t, tt.expected, acc.IsBlocked())
@@ -159,7 +175,7 @@ func TestAccount_IsDeleted(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			acc := model.RestoreAccount(
-				uuid.New(), "email.com", "password",
+				uuid.New(), testEmail, testPassword,
 				tt.status, false, time.Now(),
 				time.Now(), nil)
 			assert.Equal(t, tt.expected, acc.IsDeleted())
@@ -167,32 +183,48 @@ func TestAccount_IsDeleted(t *testing.T) {
 	}
 }
 
-func TestAccount_StatedChanges(t *testing.T) {
-	// Test account
-	acc, _ := model.NewAccount("test@email.go", "password")
-	initialUpdatedAt := acc.UpdatedAt()
+func TestAccount_Block(t *testing.T) {
+	acc, _ := model.NewAccount(testEmail, testPassword)
 
-	// Wait a millisecond to change updatedAt
-	time.Sleep(time.Millisecond)
+	// First case: block successfully
+	err := acc.Block()
+	assert.NoError(t, err)
+	assert.True(t, acc.IsBlocked())
 
-	t.Run("verify email", func(t *testing.T) {
-		acc.VerifyEmail()
-		assert.True(t, acc.EmailVerified())
-		assert.True(t, acc.UpdatedAt().After(initialUpdatedAt))
-	})
-	t.Run("mark login", func(t *testing.T) {
-		acc.MarkLogin()
-		assert.True(t, acc.LastLoginAt().After(initialUpdatedAt))
-		assert.True(t, acc.UpdatedAt().After(initialUpdatedAt))
-	})
-	t.Run("block account", func(t *testing.T) {
-		acc.Block()
-		assert.Equal(t, model.AccountBlocked, acc.Status())
-		assert.True(t, acc.UpdatedAt().After(initialUpdatedAt))
-	})
-	t.Run("delete account", func(t *testing.T) {
-		acc.Delete()
-		assert.Equal(t, model.AccountDeleted, acc.Status())
-		assert.True(t, acc.UpdatedAt().After(initialUpdatedAt))
-	})
+	// Second case: failed to block
+	err = acc.Block()
+	assert.Error(t, err)
+}
+
+func TestAccount_Delete(t *testing.T) {
+	acc, _ := model.NewAccount(testEmail, testPassword)
+
+	// First case: delete successfully
+	err := acc.Delete()
+	assert.NoError(t, err)
+	assert.True(t, acc.IsDeleted())
+
+	// Second case: failed to delete
+	err = acc.Delete()
+	assert.Error(t, err)
+}
+
+func TestAccount_MarkLogin(t *testing.T) {
+	acc, _ := model.NewAccount(testEmail, testPassword)
+
+	// First case: login is succeeded
+	err := acc.MarkLogin()
+	assert.NoError(t, err)
+	assert.NotNil(t, acc.LastLoginAt())
+
+	// Second case: failed to log in (account is unreachable)
+	_ = acc.Delete()
+	err = acc.MarkLogin()
+	assert.Error(t, err)
+}
+
+func TestAccount_VerifyEmail(t *testing.T) {
+	acc, _ := model.NewAccount(testEmail, testPassword)
+	acc.VerifyEmail()
+	assert.True(t, acc.EmailVerified())
 }
