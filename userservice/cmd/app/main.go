@@ -3,6 +3,13 @@ package main
 import (
 	"context"
 	"fmt"
+	"log"
+	"log/slog"
+	"net"
+	"os"
+	"os/signal"
+	"syscall"
+
 	"github.com/maket12/ads-service/pkg/generated/user_v1"
 	pkgpostgres "github.com/maket12/ads-service/pkg/postgres"
 	pkgrabbitmq "github.com/maket12/ads-service/pkg/rabbitmq"
@@ -12,12 +19,6 @@ import (
 	adapterpostgres "github.com/maket12/ads-service/userservice/internal/adapter/out/postgres"
 	adapterphone "github.com/maket12/ads-service/userservice/internal/adapter/out/validator"
 	"github.com/maket12/ads-service/userservice/internal/app/usecase"
-	"log"
-	"log/slog"
-	"net"
-	"os"
-	"os/signal"
-	"syscall"
 
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/reflection"

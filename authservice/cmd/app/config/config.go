@@ -9,25 +9,25 @@ import (
 
 type Config struct {
 	// Database
-	PgHost     string `env:"AUTH_PG_HOST,required"`
-	PgPort     int    `env:"AUTH_PG_PORT" envDefault:"5432"`
-	PgUser     string `env:"AUTH_PG_USER,required"`
-	PgPassword string `env:"AUTH_PG_PASSWORD,required"`
-	PgDBName   string `env:"AUTH_PG_DB_NAME,required"`
-	PgSSLMode  string `env:"AUTH_PG_SSL_MODE" envDefault:"prefer"`
+	PgHost     string `env:"PG_HOST,required"`
+	PgPort     int    `env:"PG_PORT" envDefault:"5431"`
+	PgUser     string `env:"PG_USER,required"`
+	PgPassword string `env:"PG_PASSWORD,required"`
+	PgDBName   string `env:"PG_DB_NAME,required"`
+	PgSSLMode  string `env:"PG_SSL_MODE" envDefault:"prefer"`
 
-	PgOpenConn     int           `env:"AUTH_PG_OPEN_CONNECTIONS" envDefault:"25"`
-	PgIdleConn     int           `env:"AUTH_PG_IDLE_CONNECTIONS" envDefault:"25"`
-	PgConnLifeTime time.Duration `env:"AUTH_PG_CONNECTION_LIFETIME" envDefault:"5m"`
+	PgOpenConn     int           `env:"PG_OPEN_CONNECTIONS" envDefault:"25"`
+	PgIdleConn     int           `env:"PG_IDLE_CONNECTIONS" envDefault:"25"`
+	PgConnLifeTime time.Duration `env:"PG_CONNECTION_LIFETIME" envDefault:"5m"`
 
 	// JWT
-	AccessSecret  string        `env:"AUTH_ACCESS_SECRET,required"`
-	RefreshSecret string        `env:"AUTH_REFRESH_SECRET,required"`
-	AccessTTL     time.Duration `env:"AUTH_ACCESS_TTL" envDefault:"15m"`
-	RefreshTTL    time.Duration `env:"AUTH_REFRESH_TTL" envDefault:"720h"`
+	AccessSecret  string        `env:"ACCESS_SECRET,required"`
+	RefreshSecret string        `env:"REFRESH_SECRET,required"`
+	AccessTTL     time.Duration `env:"ACCESS_TTL" envDefault:"15m"`
+	RefreshTTL    time.Duration `env:"REFRESH_TTL" envDefault:"720h"`
 
 	// Password hasher
-	PasswordCost int `env:"AUTH_PASSWORD_COST" envDefault:"4"`
+	PasswordCost int `env:"PASSWORD_COST" envDefault:"4"`
 
 	// RabbitMQ
 	RabbitHost     string `env:"RABBIT_HOST,required"`

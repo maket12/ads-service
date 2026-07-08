@@ -5,17 +5,15 @@
 package sqlc
 
 import (
-	"database/sql"
-
-	"github.com/google/uuid"
+	"github.com/jackc/pgx/v5/pgtype"
 )
 
 type Profile struct {
-	AccountID uuid.UUID
-	FirstName sql.NullString
-	LastName  sql.NullString
-	Phone     sql.NullString
-	AvatarUrl sql.NullString
-	Bio       sql.NullString
-	UpdatedAt sql.NullTime
+	AccountID pgtype.UUID
+	FirstName pgtype.Text
+	LastName  pgtype.Text
+	Phone     pgtype.Text
+	AvatarUrl pgtype.Text
+	Bio       pgtype.Text
+	UpdatedAt pgtype.Timestamptz
 }

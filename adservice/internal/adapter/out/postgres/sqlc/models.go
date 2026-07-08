@@ -5,65 +5,16 @@
 package sqlc
 
 import (
-	"database/sql"
-	"database/sql/driver"
-	"fmt"
-	"time"
-
-	"github.com/google/uuid"
+	"github.com/jackc/pgx/v5/pgtype"
 )
-
-type AdStatus string
-
-const (
-	AdStatusPublished    AdStatus = "published"
-	AdStatusOnModeration AdStatus = "on_moderation"
-	AdStatusRejected     AdStatus = "rejected"
-	AdStatusDeleted      AdStatus = "deleted"
-)
-
-func (e *AdStatus) Scan(src interface{}) error {
-	switch s := src.(type) {
-	case []byte:
-		*e = AdStatus(s)
-	case string:
-		*e = AdStatus(s)
-	default:
-		return fmt.Errorf("unsupported scan type for AdStatus: %T", src)
-	}
-	return nil
-}
-
-type NullAdStatus struct {
-	AdStatus AdStatus
-	Valid    bool // Valid is true if AdStatus is not NULL
-}
-
-// Scan implements the Scanner interface.
-func (ns *NullAdStatus) Scan(value interface{}) error {
-	if value == nil {
-		ns.AdStatus, ns.Valid = "", false
-		return nil
-	}
-	ns.Valid = true
-	return ns.AdStatus.Scan(value)
-}
-
-// Value implements the driver Valuer interface.
-func (ns NullAdStatus) Value() (driver.Value, error) {
-	if !ns.Valid {
-		return nil, nil
-	}
-	return string(ns.AdStatus), nil
-}
 
 type Ad struct {
-	ID          uuid.UUID
-	SellerID    uuid.UUID
+	ID          pgtype.UUID
+	SellerID    pgtype.UUID
 	Title       string
-	Description sql.NullString
+	Description pgtype.Text
 	Price       int64
-	Status      AdStatus
-	CreatedAt   time.Time
-	UpdatedAt   time.Time
+	Status      interface{}
+	CreatedAt   pgtype.Timestamptz
+	UpdatedAt   pgtype.Timestamptz
 }

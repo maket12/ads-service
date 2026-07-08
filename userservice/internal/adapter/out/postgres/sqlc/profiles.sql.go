@@ -7,9 +7,8 @@ package sqlc
 
 import (
 	"context"
-	"database/sql"
 
-	"github.com/google/uuid"
+	"github.com/jackc/pgx/v5/pgtype"
 )
 
 const createProfile = `-- name: CreateProfile :exec
@@ -28,17 +27,17 @@ INSERT INTO profiles (
 `
 
 type CreateProfileParams struct {
-	AccountID uuid.UUID
-	FirstName sql.NullString
-	LastName  sql.NullString
-	Phone     sql.NullString
-	AvatarUrl sql.NullString
-	Bio       sql.NullString
-	UpdatedAt sql.NullTime
+	AccountID pgtype.UUID
+	FirstName pgtype.Text
+	LastName  pgtype.Text
+	Phone     pgtype.Text
+	AvatarUrl pgtype.Text
+	Bio       pgtype.Text
+	UpdatedAt pgtype.Timestamptz
 }
 
-func (q *Queries) CreateProfile(ctx context.Context, arg CreateProfileParams) error {
-	_, err := q.db.ExecContext(ctx, createProfile,
+func (q *Queries) CreateProfile(ctx context.Context, db DBTX, arg CreateProfileParams) error {
+	_, err := db.Exec(ctx, createProfile,
 		arg.AccountID,
 		arg.FirstName,
 		arg.LastName,
@@ -55,8 +54,8 @@ DELETE FROM profiles
 WHERE account_id = $1
 `
 
-func (q *Queries) DeleteProfile(ctx context.Context, accountID uuid.UUID) error {
-	_, err := q.db.ExecContext(ctx, deleteProfile, accountID)
+func (q *Queries) DeleteProfile(ctx context.Context, db DBTX, accountID pgtype.UUID) error {
+	_, err := db.Exec(ctx, deleteProfile, accountID)
 	return err
 }
 
@@ -73,8 +72,8 @@ FROM profiles
 WHERE account_id = $1
 `
 
-func (q *Queries) GetProfile(ctx context.Context, accountID uuid.UUID) (Profile, error) {
-	row := q.db.QueryRowContext(ctx, getProfile, accountID)
+func (q *Queries) GetProfile(ctx context.Context, db DBTX, accountID pgtype.UUID) (Profile, error) {
+	row := db.QueryRow(ctx, getProfile, accountID)
 	var i Profile
 	err := row.Scan(
 		&i.AccountID,
@@ -107,8 +106,8 @@ type ListProfilesParams struct {
 	Offset int32
 }
 
-func (q *Queries) ListProfiles(ctx context.Context, arg ListProfilesParams) ([]Profile, error) {
-	rows, err := q.db.QueryContext(ctx, listProfiles, arg.Limit, arg.Offset)
+func (q *Queries) ListProfiles(ctx context.Context, db DBTX, arg ListProfilesParams) ([]Profile, error) {
+	rows, err := db.Query(ctx, listProfiles, arg.Limit, arg.Offset)
 	if err != nil {
 		return nil, err
 	}
@@ -129,9 +128,6 @@ func (q *Queries) ListProfiles(ctx context.Context, arg ListProfilesParams) ([]P
 		}
 		items = append(items, i)
 	}
-	if err := rows.Close(); err != nil {
-		return nil, err
-	}
 	if err := rows.Err(); err != nil {
 		return nil, err
 	}
@@ -151,17 +147,17 @@ WHERE account_id = $1
 `
 
 type UpdateProfileParams struct {
-	AccountID uuid.UUID
-	FirstName sql.NullString
-	LastName  sql.NullString
-	Phone     sql.NullString
-	AvatarUrl sql.NullString
-	Bio       sql.NullString
-	UpdatedAt sql.NullTime
+	AccountID pgtype.UUID
+	FirstName pgtype.Text
+	LastName  pgtype.Text
+	Phone     pgtype.Text
+	AvatarUrl pgtype.Text
+	Bio       pgtype.Text
+	UpdatedAt pgtype.Timestamptz
 }
 
-func (q *Queries) UpdateProfile(ctx context.Context, arg UpdateProfileParams) error {
-	_, err := q.db.ExecContext(ctx, updateProfile,
+func (q *Queries) UpdateProfile(ctx context.Context, db DBTX, arg UpdateProfileParams) error {
+	_, err := db.Exec(ctx, updateProfile,
 		arg.AccountID,
 		arg.FirstName,
 		arg.LastName,

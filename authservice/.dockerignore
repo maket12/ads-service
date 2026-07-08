@@ -1,8 +1,0 @@
-.gitignore
-.git
-.idea
-bin
-obj
-*.test
-.dockerignore
-Dockerfile

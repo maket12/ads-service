@@ -7,10 +7,8 @@ package sqlc
 
 import (
 	"context"
-	"database/sql"
-	"time"
 
-	"github.com/google/uuid"
+	"github.com/jackc/pgx/v5/pgtype"
 )
 
 const createAd = `-- name: CreateAd :exec
@@ -29,18 +27,18 @@ INSERT INTO ads (
 `
 
 type CreateAdParams struct {
-	ID          uuid.UUID
-	SellerID    uuid.UUID
+	ID          pgtype.UUID
+	SellerID    pgtype.UUID
 	Title       string
-	Description sql.NullString
+	Description pgtype.Text
 	Price       int64
-	Status      AdStatus
-	CreatedAt   time.Time
-	UpdatedAt   time.Time
+	Status      interface{}
+	CreatedAt   pgtype.Timestamptz
+	UpdatedAt   pgtype.Timestamptz
 }
 
-func (q *Queries) CreateAd(ctx context.Context, arg CreateAdParams) error {
-	_, err := q.db.ExecContext(ctx, createAd,
+func (q *Queries) CreateAd(ctx context.Context, db DBTX, arg CreateAdParams) error {
+	_, err := db.Exec(ctx, createAd,
 		arg.ID,
 		arg.SellerID,
 		arg.Title,
@@ -58,8 +56,8 @@ DELETE FROM ads
 WHERE id = $1
 `
 
-func (q *Queries) DeleteAd(ctx context.Context, id uuid.UUID) error {
-	_, err := q.db.ExecContext(ctx, deleteAd, id)
+func (q *Queries) DeleteAd(ctx context.Context, db DBTX, id pgtype.UUID) error {
+	_, err := db.Exec(ctx, deleteAd, id)
 	return err
 }
 
@@ -68,8 +66,8 @@ DELETE FROM ads
 WHERE seller_id = $1
 `
 
-func (q *Queries) DeleteAllAds(ctx context.Context, sellerID uuid.UUID) error {
-	_, err := q.db.ExecContext(ctx, deleteAllAds, sellerID)
+func (q *Queries) DeleteAllAds(ctx context.Context, db DBTX, sellerID pgtype.UUID) error {
+	_, err := db.Exec(ctx, deleteAllAds, sellerID)
 	return err
 }
 
@@ -87,8 +85,8 @@ FROM ads
 WHERE id = $1
 `
 
-func (q *Queries) GetAd(ctx context.Context, id uuid.UUID) (Ad, error) {
-	row := q.db.QueryRowContext(ctx, getAd, id)
+func (q *Queries) GetAd(ctx context.Context, db DBTX, id pgtype.UUID) (Ad, error) {
+	row := db.QueryRow(ctx, getAd, id)
 	var i Ad
 	err := row.Scan(
 		&i.ID,
@@ -123,8 +121,8 @@ type ListAdsParams struct {
 	Offset int32
 }
 
-func (q *Queries) ListAds(ctx context.Context, arg ListAdsParams) ([]Ad, error) {
-	rows, err := q.db.QueryContext(ctx, listAds, arg.Limit, arg.Offset)
+func (q *Queries) ListAds(ctx context.Context, db DBTX, arg ListAdsParams) ([]Ad, error) {
+	rows, err := db.Query(ctx, listAds, arg.Limit, arg.Offset)
 	if err != nil {
 		return nil, err
 	}
@@ -145,9 +143,6 @@ func (q *Queries) ListAds(ctx context.Context, arg ListAdsParams) ([]Ad, error) 
 			return nil, err
 		}
 		items = append(items, i)
-	}
-	if err := rows.Close(); err != nil {
-		return nil, err
 	}
 	if err := rows.Err(); err != nil {
 		return nil, err
@@ -168,17 +163,17 @@ SELECT
 FROM ads
 WHERE seller_id = $1
 LIMIT $2
-    OFFSET $3
+OFFSET $3
 `
 
 type ListSellerAdsParams struct {
-	SellerID uuid.UUID
+	SellerID pgtype.UUID
 	Limit    int32
 	Offset   int32
 }
 
-func (q *Queries) ListSellerAds(ctx context.Context, arg ListSellerAdsParams) ([]Ad, error) {
-	rows, err := q.db.QueryContext(ctx, listSellerAds, arg.SellerID, arg.Limit, arg.Offset)
+func (q *Queries) ListSellerAds(ctx context.Context, db DBTX, arg ListSellerAdsParams) ([]Ad, error) {
+	rows, err := db.Query(ctx, listSellerAds, arg.SellerID, arg.Limit, arg.Offset)
 	if err != nil {
 		return nil, err
 	}
@@ -200,9 +195,6 @@ func (q *Queries) ListSellerAds(ctx context.Context, arg ListSellerAdsParams) ([
 		}
 		items = append(items, i)
 	}
-	if err := rows.Close(); err != nil {
-		return nil, err
-	}
 	if err := rows.Err(); err != nil {
 		return nil, err
 	}
@@ -220,15 +212,15 @@ WHERE id = $1
 `
 
 type UpdateAdParams struct {
-	ID          uuid.UUID
+	ID          pgtype.UUID
 	Title       string
-	Description sql.NullString
+	Description pgtype.Text
 	Price       int64
-	UpdatedAt   time.Time
+	UpdatedAt   pgtype.Timestamptz
 }
 
-func (q *Queries) UpdateAd(ctx context.Context, arg UpdateAdParams) error {
-	_, err := q.db.ExecContext(ctx, updateAd,
+func (q *Queries) UpdateAd(ctx context.Context, db DBTX, arg UpdateAdParams) error {
+	_, err := db.Exec(ctx, updateAd,
 		arg.ID,
 		arg.Title,
 		arg.Description,
@@ -245,11 +237,11 @@ WHERE id = $1
 `
 
 type UpdateAdStatusParams struct {
-	ID     uuid.UUID
-	Status AdStatus
+	ID     pgtype.UUID
+	Status interface{}
 }
 
-func (q *Queries) UpdateAdStatus(ctx context.Context, arg UpdateAdStatusParams) error {
-	_, err := q.db.ExecContext(ctx, updateAdStatus, arg.ID, arg.Status)
+func (q *Queries) UpdateAdStatus(ctx context.Context, db DBTX, arg UpdateAdStatusParams) error {
+	_, err := db.Exec(ctx, updateAdStatus, arg.ID, arg.Status)
 	return err
 }
