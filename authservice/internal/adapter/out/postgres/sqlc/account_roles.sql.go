@@ -8,7 +8,7 @@ package sqlc
 import (
 	"context"
 
-	"github.com/google/uuid"
+	"github.com/jackc/pgx/v5/pgtype"
 )
 
 const createAccountRole = `-- name: CreateAccountRole :exec
@@ -21,12 +21,12 @@ INSERT INTO account_roles (
 `
 
 type CreateAccountRoleParams struct {
-	AccountID uuid.UUID
-	Role      RoleType
+	AccountID pgtype.UUID
+	Role      interface{}
 }
 
-func (q *Queries) CreateAccountRole(ctx context.Context, arg CreateAccountRoleParams) error {
-	_, err := q.db.ExecContext(ctx, createAccountRole, arg.AccountID, arg.Role)
+func (q *Queries) CreateAccountRole(ctx context.Context, db DBTX, arg CreateAccountRoleParams) error {
+	_, err := db.Exec(ctx, createAccountRole, arg.AccountID, arg.Role)
 	return err
 }
 
@@ -35,8 +35,8 @@ DELETE FROM account_roles
 WHERE account_id = $1
 `
 
-func (q *Queries) DeleteAccountRole(ctx context.Context, accountID uuid.UUID) error {
-	_, err := q.db.ExecContext(ctx, deleteAccountRole, accountID)
+func (q *Queries) DeleteAccountRole(ctx context.Context, db DBTX, accountID pgtype.UUID) error {
+	_, err := db.Exec(ctx, deleteAccountRole, accountID)
 	return err
 }
 
@@ -48,8 +48,8 @@ FROM account_roles
 WHERE account_id = $1
 `
 
-func (q *Queries) GetAccountRole(ctx context.Context, accountID uuid.UUID) (AccountRole, error) {
-	row := q.db.QueryRowContext(ctx, getAccountRole, accountID)
+func (q *Queries) GetAccountRole(ctx context.Context, db DBTX, accountID pgtype.UUID) (AccountRole, error) {
+	row := db.QueryRow(ctx, getAccountRole, accountID)
 	var i AccountRole
 	err := row.Scan(&i.AccountID, &i.Role)
 	return i, err
@@ -62,11 +62,11 @@ WHERE account_id = $1
 `
 
 type UpdateAccountRoleParams struct {
-	AccountID uuid.UUID
-	Role      RoleType
+	AccountID pgtype.UUID
+	Role      interface{}
 }
 
-func (q *Queries) UpdateAccountRole(ctx context.Context, arg UpdateAccountRoleParams) error {
-	_, err := q.db.ExecContext(ctx, updateAccountRole, arg.AccountID, arg.Role)
+func (q *Queries) UpdateAccountRole(ctx context.Context, db DBTX, arg UpdateAccountRoleParams) error {
+	_, err := db.Exec(ctx, updateAccountRole, arg.AccountID, arg.Role)
 	return err
 }

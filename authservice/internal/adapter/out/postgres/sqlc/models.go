@@ -5,125 +5,36 @@
 package sqlc
 
 import (
-	"database/sql"
-	"database/sql/driver"
-	"fmt"
-	"time"
+	"net/netip"
 
-	"github.com/google/uuid"
-	"github.com/sqlc-dev/pqtype"
+	"github.com/jackc/pgx/v5/pgtype"
 )
-
-type AccountStatus string
-
-const (
-	AccountStatusActive  AccountStatus = "active"
-	AccountStatusBlocked AccountStatus = "blocked"
-	AccountStatusDeleted AccountStatus = "deleted"
-)
-
-func (e *AccountStatus) Scan(src interface{}) error {
-	switch s := src.(type) {
-	case []byte:
-		*e = AccountStatus(s)
-	case string:
-		*e = AccountStatus(s)
-	default:
-		return fmt.Errorf("unsupported scan type for AccountStatus: %T", src)
-	}
-	return nil
-}
-
-type NullAccountStatus struct {
-	AccountStatus AccountStatus
-	Valid         bool // Valid is true if AccountStatus is not NULL
-}
-
-// Scan implements the Scanner interface.
-func (ns *NullAccountStatus) Scan(value interface{}) error {
-	if value == nil {
-		ns.AccountStatus, ns.Valid = "", false
-		return nil
-	}
-	ns.Valid = true
-	return ns.AccountStatus.Scan(value)
-}
-
-// Value implements the driver Valuer interface.
-func (ns NullAccountStatus) Value() (driver.Value, error) {
-	if !ns.Valid {
-		return nil, nil
-	}
-	return string(ns.AccountStatus), nil
-}
-
-type RoleType string
-
-const (
-	RoleTypeUser  RoleType = "user"
-	RoleTypeAdmin RoleType = "admin"
-)
-
-func (e *RoleType) Scan(src interface{}) error {
-	switch s := src.(type) {
-	case []byte:
-		*e = RoleType(s)
-	case string:
-		*e = RoleType(s)
-	default:
-		return fmt.Errorf("unsupported scan type for RoleType: %T", src)
-	}
-	return nil
-}
-
-type NullRoleType struct {
-	RoleType RoleType
-	Valid    bool // Valid is true if RoleType is not NULL
-}
-
-// Scan implements the Scanner interface.
-func (ns *NullRoleType) Scan(value interface{}) error {
-	if value == nil {
-		ns.RoleType, ns.Valid = "", false
-		return nil
-	}
-	ns.Valid = true
-	return ns.RoleType.Scan(value)
-}
-
-// Value implements the driver Valuer interface.
-func (ns NullRoleType) Value() (driver.Value, error) {
-	if !ns.Valid {
-		return nil, nil
-	}
-	return string(ns.RoleType), nil
-}
 
 type Account struct {
-	ID            uuid.UUID
+	ID            pgtype.UUID
 	Email         string
 	PasswordHash  string
-	Status        AccountStatus
+	Status        interface{}
 	EmailVerified bool
-	CreatedAt     time.Time
-	UpdatedAt     time.Time
-	LastLoginAt   sql.NullTime
+	CreatedAt     pgtype.Timestamptz
+	UpdatedAt     pgtype.Timestamptz
+	LastLoginAt   pgtype.Timestamptz
 }
 
 type AccountRole struct {
-	AccountID uuid.UUID
-	Role      RoleType
+	AccountID pgtype.UUID
+	Role      interface{}
 }
 
 type RefreshSession struct {
-	ID               uuid.UUID
-	AccountID        uuid.UUID
+	ID               pgtype.UUID
+	AccountID        pgtype.UUID
 	RefreshTokenHash string
-	CreatedAt        time.Time
-	ExpiresAt        time.Time
-	RevokedAt        sql.NullTime
-	RevokeReason     sql.NullString
-	RotatedFrom      uuid.NullUUID
-	Ip               pqtype.Inet
-	UserAgent        sql.NullString
+	CreatedAt        pgtype.Timestamptz
+	ExpiresAt        pgtype.Timestamptz
+	RevokedAt        pgtype.Timestamptz
+	RevokeReason     pgtype.Text
+	RotatedFrom      pgtype.UUID
+	Ip               *netip.Addr
+	UserAgent        pgtype.Text
 }

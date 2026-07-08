@@ -223,7 +223,7 @@ func TestRefreshSession_Revoke(t *testing.T) {
 			name:      "error - token is revoked",
 			revokedAt: utils.VPtr(time.Now()),
 			reason:    nil,
-			expect:    model.ErrTokenAlreadyRevoked,
+			expect:    model.ErrCannotRevokeToken,
 		},
 		{
 			name:      "error - empty reason",

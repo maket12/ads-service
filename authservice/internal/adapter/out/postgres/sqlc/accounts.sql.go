@@ -7,10 +7,8 @@ package sqlc
 
 import (
 	"context"
-	"database/sql"
-	"time"
 
-	"github.com/google/uuid"
+	"github.com/jackc/pgx/v5/pgtype"
 )
 
 const createAccount = `-- name: CreateAccount :exec
@@ -29,18 +27,18 @@ INSERT INTO accounts (
 `
 
 type CreateAccountParams struct {
-	ID            uuid.UUID
+	ID            pgtype.UUID
 	Email         string
 	PasswordHash  string
-	Status        AccountStatus
+	Status        interface{}
 	EmailVerified bool
-	CreatedAt     time.Time
-	UpdatedAt     time.Time
-	LastLoginAt   sql.NullTime
+	CreatedAt     pgtype.Timestamptz
+	UpdatedAt     pgtype.Timestamptz
+	LastLoginAt   pgtype.Timestamptz
 }
 
-func (q *Queries) CreateAccount(ctx context.Context, arg CreateAccountParams) error {
-	_, err := q.db.ExecContext(ctx, createAccount,
+func (q *Queries) CreateAccount(ctx context.Context, db DBTX, arg CreateAccountParams) error {
+	_, err := db.Exec(ctx, createAccount,
 		arg.ID,
 		arg.Email,
 		arg.PasswordHash,
@@ -67,8 +65,8 @@ FROM accounts
 WHERE email = $1
 `
 
-func (q *Queries) GetAccountByEmail(ctx context.Context, email string) (Account, error) {
-	row := q.db.QueryRowContext(ctx, getAccountByEmail, email)
+func (q *Queries) GetAccountByEmail(ctx context.Context, db DBTX, email string) (Account, error) {
+	row := db.QueryRow(ctx, getAccountByEmail, email)
 	var i Account
 	err := row.Scan(
 		&i.ID,
@@ -97,8 +95,8 @@ FROM accounts
 WHERE id = $1
 `
 
-func (q *Queries) GetAccountByID(ctx context.Context, id uuid.UUID) (Account, error) {
-	row := q.db.QueryRowContext(ctx, getAccountByID, id)
+func (q *Queries) GetAccountByID(ctx context.Context, db DBTX, id pgtype.UUID) (Account, error) {
+	row := db.QueryRow(ctx, getAccountByID, id)
 	var i Account
 	err := row.Scan(
 		&i.ID,
@@ -122,13 +120,13 @@ WHERE id = $1
 `
 
 type MarkAccountLoginParams struct {
-	ID          uuid.UUID
-	LastLoginAt sql.NullTime
-	UpdatedAt   time.Time
+	ID          pgtype.UUID
+	LastLoginAt pgtype.Timestamptz
+	UpdatedAt   pgtype.Timestamptz
 }
 
-func (q *Queries) MarkAccountLogin(ctx context.Context, arg MarkAccountLoginParams) error {
-	_, err := q.db.ExecContext(ctx, markAccountLogin, arg.ID, arg.LastLoginAt, arg.UpdatedAt)
+func (q *Queries) MarkAccountLogin(ctx context.Context, db DBTX, arg MarkAccountLoginParams) error {
+	_, err := db.Exec(ctx, markAccountLogin, arg.ID, arg.LastLoginAt, arg.UpdatedAt)
 	return err
 }
 
@@ -141,13 +139,13 @@ WHERE id = $1
 `
 
 type UpdateAccountEmailParams struct {
-	ID        uuid.UUID
+	ID        pgtype.UUID
 	Email     string
-	UpdatedAt time.Time
+	UpdatedAt pgtype.Timestamptz
 }
 
-func (q *Queries) UpdateAccountEmail(ctx context.Context, arg UpdateAccountEmailParams) error {
-	_, err := q.db.ExecContext(ctx, updateAccountEmail, arg.ID, arg.Email, arg.UpdatedAt)
+func (q *Queries) UpdateAccountEmail(ctx context.Context, db DBTX, arg UpdateAccountEmailParams) error {
+	_, err := db.Exec(ctx, updateAccountEmail, arg.ID, arg.Email, arg.UpdatedAt)
 	return err
 }
 
@@ -160,13 +158,13 @@ WHERE id = $1
 `
 
 type UpdateAccountPasswordParams struct {
-	ID           uuid.UUID
+	ID           pgtype.UUID
 	PasswordHash string
-	UpdatedAt    time.Time
+	UpdatedAt    pgtype.Timestamptz
 }
 
-func (q *Queries) UpdateAccountPassword(ctx context.Context, arg UpdateAccountPasswordParams) error {
-	_, err := q.db.ExecContext(ctx, updateAccountPassword, arg.ID, arg.PasswordHash, arg.UpdatedAt)
+func (q *Queries) UpdateAccountPassword(ctx context.Context, db DBTX, arg UpdateAccountPasswordParams) error {
+	_, err := db.Exec(ctx, updateAccountPassword, arg.ID, arg.PasswordHash, arg.UpdatedAt)
 	return err
 }
 
@@ -179,13 +177,13 @@ WHERE id = $1
 `
 
 type UpdateAccountStatusParams struct {
-	ID        uuid.UUID
-	Status    AccountStatus
-	UpdatedAt time.Time
+	ID        pgtype.UUID
+	Status    interface{}
+	UpdatedAt pgtype.Timestamptz
 }
 
-func (q *Queries) UpdateAccountStatus(ctx context.Context, arg UpdateAccountStatusParams) error {
-	_, err := q.db.ExecContext(ctx, updateAccountStatus, arg.ID, arg.Status, arg.UpdatedAt)
+func (q *Queries) UpdateAccountStatus(ctx context.Context, db DBTX, arg UpdateAccountStatusParams) error {
+	_, err := db.Exec(ctx, updateAccountStatus, arg.ID, arg.Status, arg.UpdatedAt)
 	return err
 }
 
@@ -198,11 +196,11 @@ WHERE id = $1
 `
 
 type VerifyAccountEmailParams struct {
-	ID        uuid.UUID
-	UpdatedAt time.Time
+	ID        pgtype.UUID
+	UpdatedAt pgtype.Timestamptz
 }
 
-func (q *Queries) VerifyAccountEmail(ctx context.Context, arg VerifyAccountEmailParams) error {
-	_, err := q.db.ExecContext(ctx, verifyAccountEmail, arg.ID, arg.UpdatedAt)
+func (q *Queries) VerifyAccountEmail(ctx context.Context, db DBTX, arg VerifyAccountEmailParams) error {
+	_, err := db.Exec(ctx, verifyAccountEmail, arg.ID, arg.UpdatedAt)
 	return err
 }

@@ -4,7 +4,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/maket12/meeting-rooms-api/internal/infrastructure/jwt"
+	"github.com/maket12/ads-service/authservice/internal/infrastructure/jwt"
 
 	"github.com/google/uuid"
 	"github.com/stretchr/testify/assert"

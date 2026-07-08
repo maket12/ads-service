@@ -2,81 +2,94 @@ package postgres
 
 import (
 	"context"
-	"database/sql"
 	"fmt"
 	"time"
 
-	// Registration of driver pgx for using database/sql
-	_ "github.com/jackc/pgx/v5/stdlib"
+	"github.com/jackc/pgx/v5/pgxpool"
 )
 
 type Config struct {
-	DBHost     string
-	DBPort     int
-	DBUser     string
-	DBPassword string
-	DBName     string
-	SSLMode    string
+	Host     string
+	Port     int
+	User     string
+	Password string
+	Name     string
+	SSLMode  string
 
-	OpenConn     int
-	IdleConn     int
-	ConnLifeTime time.Duration
+	MaxConn         int
+	MinConn         int
+	MaxConnLifeTime time.Duration
+	MaxConnIdleTime time.Duration
 }
 
 func NewConfig(
-	host string, port int, user, password, name, ssl string,
-	openConn, idleConn int, connLifeTime time.Duration) *Config {
+	host string, port int,
+	user, password, name, ssl string,
+	maxConn, minConn int,
+	maxConnLifeTime, maxConnIdleTime time.Duration,
+) *Config {
 	return &Config{
-		DBHost:       host,
-		DBPort:       port,
-		DBUser:       user,
-		DBPassword:   password,
-		DBName:       name,
-		SSLMode:      ssl,
-		OpenConn:     openConn,
-		IdleConn:     idleConn,
-		ConnLifeTime: connLifeTime,
+		Host:            host,
+		Port:            port,
+		User:            user,
+		Password:        password,
+		Name:            name,
+		SSLMode:         ssl,
+		MaxConn:         maxConn,
+		MinConn:         minConn,
+		MaxConnLifeTime: maxConnLifeTime,
+		MaxConnIdleTime: maxConnIdleTime,
 	}
 }
 
-func (pc *Config) dsn() string {
+// DSN Returns dsn for postgres clients such as https://github.com/jackc/pgx
+func (pc *Config) DSN() string {
 	return fmt.Sprintf(
 		"host=%s port=%d user=%s password=%s dbname=%s sslmode=%s",
-		pc.DBHost, pc.DBPort, pc.DBUser, pc.DBPassword, pc.DBName, pc.SSLMode,
+		pc.Host, pc.Port, pc.User, pc.Password, pc.Name, pc.SSLMode,
+	)
+}
+
+// MigrationDSN Returns dsn for migration tools such as https://github.com/golang-migrate/migrate
+func (pc *Config) MigrationDSN() string {
+	return fmt.Sprintf(
+		"postgres://%s:%s@%s:%d/%s?sslmode=%s",
+		pc.User, pc.Password, pc.Host, pc.Port, pc.Name, pc.SSLMode,
 	)
 }
 
 type Client struct {
-	DB *sql.DB
+	Pool *pgxpool.Pool
 }
 
-func NewClient(config *Config) (*Client, error) {
-	if config == nil {
-		return nil, fmt.Errorf("db config is not specified")
+func NewClient(ctx context.Context, cfg *Config) (*Client, error) {
+	if cfg == nil {
+		return nil, fmt.Errorf("database config is not specified")
 	}
 
-	var dsn = config.dsn()
-
-	db, err := sql.Open("pgx", dsn)
+	poolConfig, err := pgxpool.ParseConfig(cfg.DSN())
 	if err != nil {
-		return nil, fmt.Errorf("failed to open db connection: %w", err)
+		return nil, fmt.Errorf("failed to parse config: %w", err)
 	}
 
-	db.SetMaxOpenConns(config.OpenConn)
-	db.SetMaxIdleConns(config.IdleConn)
-	db.SetConnMaxLifetime(config.ConnLifeTime)
+	poolConfig.MaxConns = int32(cfg.MaxConn)
+	poolConfig.MinConns = int32(cfg.MinConn)
+	poolConfig.MaxConnLifetime = cfg.MaxConnLifeTime
+	poolConfig.MaxConnIdleTime = cfg.MaxConnIdleTime
 
-	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
-	defer cancel()
+	pool, err := pgxpool.NewWithConfig(ctx, poolConfig)
+	if err != nil {
+		return nil, fmt.Errorf("failed to create pool: %w", err)
+	}
 
-	if err := db.PingContext(ctx); err != nil {
-		_ = db.Close()
+	if err = pool.Ping(ctx); err != nil {
+		pool.Close()
 		return nil, fmt.Errorf("failed to ping database: %w", err)
 	}
 
-	return &Client{DB: db}, nil
+	return &Client{Pool: pool}, nil
 }
 
-func (c *Client) Close() error {
-	return c.DB.Close()
+func (c *Client) Close() {
+	c.Pool.Close()
 }

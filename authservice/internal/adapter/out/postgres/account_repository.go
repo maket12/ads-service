@@ -6,6 +6,7 @@ import (
 	"errors"
 	"time"
 
+	trmpgx "github.com/avito-tech/go-transaction-manager/drivers/pgxv5/v2"
 	"github.com/maket12/ads-service/authservice/internal/adapter/out/postgres/mapper"
 	"github.com/maket12/ads-service/authservice/internal/adapter/out/postgres/sqlc"
 	"github.com/maket12/ads-service/authservice/internal/domain/model"
@@ -17,17 +18,21 @@ import (
 )
 
 type AccountRepository struct {
-	q *sqlc.Queries
+	BaseRepository
 }
 
-func NewAccountsRepository(pgClient *pkgpostgres.Client) *AccountRepository {
-	queries := sqlc.New(pgClient.DB)
-	return &AccountRepository{q: queries}
+func NewAccountsRepository(
+	pgClient *pkgpostgres.Client,
+	getter *trmpgx.CtxGetter,
+) *AccountRepository {
+	return &AccountRepository{
+		BaseRepository: NewBaseRepository(pgClient, getter),
+	}
 }
 
 func (r *AccountRepository) Create(ctx context.Context, account *model.Account) error {
 	params := mapper.MapAccountToSQLCCreate(account)
-	err := r.q.CreateAccount(ctx, params)
+	err := r.q.CreateAccount(ctx, r.db(ctx), params)
 
 	if err != nil {
 		var pgErr *pgconn.PgError

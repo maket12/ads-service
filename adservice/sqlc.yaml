@@ -8,7 +8,9 @@ sql:
       go:
         package: "sqlc"
         out: "authservice/internal/adapter/out/postgres/sqlc"
-        sql_package: "database/sql"
+        sql_package: "pgx/v5"
+        emit_interface: true
+        emit_methods_with_db_argument: true
 
   - engine: "postgresql"
     schema: "userservice/migrations"
@@ -17,7 +19,9 @@ sql:
       go:
         package: "sqlc"
         out: "userservice/internal/adapter/out/postgres/sqlc"
-        sql_package: "database/sql"
+        sql_package: "pgx/v5"
+        emit_interface: true
+        emit_methods_with_db_argument: true
 
   - engine: "postgresql"
     schema: "adservice/migrations"
@@ -26,4 +30,6 @@ sql:
       go:
         package: "sqlc"
         out: "adservice/internal/adapter/out/postgres/sqlc"
-        sql_package: "database/sql"
+        sql_package: "pgx/v5"
+        emit_interface: true
+        emit_methods_with_db_argument: true

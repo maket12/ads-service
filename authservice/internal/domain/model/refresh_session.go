@@ -10,7 +10,7 @@ import (
 )
 
 var (
-	ErrTokenAlreadyRevoked = errors.New("token has been revoked earlier")
+	ErrCannotRevokeToken = errors.New("token has been revoked earlier")
 )
 
 // ================ Rich model for Refresh Session ================
@@ -58,6 +58,8 @@ func NewRefreshSession(
 		refreshTokenHash: refreshTokenHash,
 		createdAt:        now,
 		expiresAt:        expiresAt,
+		revokedAt:        nil,
+		revokeReason:     nil,
 		rotatedFrom:      rotatedFrom,
 		ip:               ip,
 		userAgent:        userAgent,
@@ -105,7 +107,7 @@ func (r *RefreshSession) IsRevoked() bool { return r.RevokedAt() != nil }
 
 func (r *RefreshSession) Revoke(reason *string) error {
 	if r.IsRevoked() {
-		return ErrTokenAlreadyRevoked
+		return ErrCannotRevokeToken
 	}
 
 	if reason != nil && *reason == "" {
@@ -115,5 +117,6 @@ func (r *RefreshSession) Revoke(reason *string) error {
 	now := time.Now()
 	r.revokedAt = &now
 	r.revokeReason = reason
+
 	return nil
 }

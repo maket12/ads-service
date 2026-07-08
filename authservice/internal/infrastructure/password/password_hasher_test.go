@@ -3,7 +3,7 @@ package password_test
 import (
 	"testing"
 
-	"github.com/maket12/meeting-rooms-api/internal/infrastructure/password"
+	"github.com/maket12/ads-service/authservice/internal/infrastructure/password"
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"

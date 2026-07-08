@@ -7,11 +7,9 @@ package sqlc
 
 import (
 	"context"
-	"database/sql"
-	"time"
+	"net/netip"
 
-	"github.com/google/uuid"
-	"github.com/sqlc-dev/pqtype"
+	"github.com/jackc/pgx/v5/pgtype"
 )
 
 const createRefreshSession = `-- name: CreateRefreshSession :exec
@@ -32,20 +30,20 @@ INSERT INTO refresh_sessions (
 `
 
 type CreateRefreshSessionParams struct {
-	ID               uuid.UUID
-	AccountID        uuid.UUID
+	ID               pgtype.UUID
+	AccountID        pgtype.UUID
 	RefreshTokenHash string
-	CreatedAt        time.Time
-	ExpiresAt        time.Time
-	RevokedAt        sql.NullTime
-	RevokeReason     sql.NullString
-	RotatedFrom      uuid.NullUUID
-	Ip               pqtype.Inet
-	UserAgent        sql.NullString
+	CreatedAt        pgtype.Timestamptz
+	ExpiresAt        pgtype.Timestamptz
+	RevokedAt        pgtype.Timestamptz
+	RevokeReason     pgtype.Text
+	RotatedFrom      pgtype.UUID
+	Ip               *netip.Addr
+	UserAgent        pgtype.Text
 }
 
-func (q *Queries) CreateRefreshSession(ctx context.Context, arg CreateRefreshSessionParams) error {
-	_, err := q.db.ExecContext(ctx, createRefreshSession,
+func (q *Queries) CreateRefreshSession(ctx context.Context, db DBTX, arg CreateRefreshSessionParams) error {
+	_, err := db.Exec(ctx, createRefreshSession,
 		arg.ID,
 		arg.AccountID,
 		arg.RefreshTokenHash,
@@ -65,8 +63,8 @@ DELETE FROM refresh_sessions
 WHERE expires_at <= $1
 `
 
-func (q *Queries) DeleteExpiredRefreshSessions(ctx context.Context, expiresAt time.Time) error {
-	_, err := q.db.ExecContext(ctx, deleteExpiredRefreshSessions, expiresAt)
+func (q *Queries) DeleteExpiredRefreshSessions(ctx context.Context, db DBTX, expiresAt pgtype.Timestamptz) error {
+	_, err := db.Exec(ctx, deleteExpiredRefreshSessions, expiresAt)
 	return err
 }
 
@@ -86,8 +84,8 @@ FROM refresh_sessions
 WHERE refresh_token_hash = $1
 `
 
-func (q *Queries) GetRefreshSessionByHash(ctx context.Context, refreshTokenHash string) (RefreshSession, error) {
-	row := q.db.QueryRowContext(ctx, getRefreshSessionByHash, refreshTokenHash)
+func (q *Queries) GetRefreshSessionByHash(ctx context.Context, db DBTX, refreshTokenHash string) (RefreshSession, error) {
+	row := db.QueryRow(ctx, getRefreshSessionByHash, refreshTokenHash)
 	var i RefreshSession
 	err := row.Scan(
 		&i.ID,
@@ -120,8 +118,8 @@ FROM refresh_sessions
 WHERE id = $1 LIMIT 1
 `
 
-func (q *Queries) GetRefreshSessionByID(ctx context.Context, id uuid.UUID) (RefreshSession, error) {
-	row := q.db.QueryRowContext(ctx, getRefreshSessionByID, id)
+func (q *Queries) GetRefreshSessionByID(ctx context.Context, db DBTX, id pgtype.UUID) (RefreshSession, error) {
+	row := db.QueryRow(ctx, getRefreshSessionByID, id)
 	var i RefreshSession
 	err := row.Scan(
 		&i.ID,
@@ -158,12 +156,12 @@ ORDER BY created_at DESC
 `
 
 type ListAccountActiveRefreshSessionsParams struct {
-	AccountID uuid.UUID
-	ExpiresAt time.Time
+	AccountID pgtype.UUID
+	ExpiresAt pgtype.Timestamptz
 }
 
-func (q *Queries) ListAccountActiveRefreshSessions(ctx context.Context, arg ListAccountActiveRefreshSessionsParams) ([]RefreshSession, error) {
-	rows, err := q.db.QueryContext(ctx, listAccountActiveRefreshSessions, arg.AccountID, arg.ExpiresAt)
+func (q *Queries) ListAccountActiveRefreshSessions(ctx context.Context, db DBTX, arg ListAccountActiveRefreshSessionsParams) ([]RefreshSession, error) {
+	rows, err := db.Query(ctx, listAccountActiveRefreshSessions, arg.AccountID, arg.ExpiresAt)
 	if err != nil {
 		return nil, err
 	}
@@ -187,9 +185,6 @@ func (q *Queries) ListAccountActiveRefreshSessions(ctx context.Context, arg List
 		}
 		items = append(items, i)
 	}
-	if err := rows.Close(); err != nil {
-		return nil, err
-	}
 	if err := rows.Err(); err != nil {
 		return nil, err
 	}
@@ -206,13 +201,13 @@ WHERE account_id = $1
 `
 
 type RevokeAllAccountRefreshSessionsParams struct {
-	AccountID    uuid.UUID
-	RevokedAt    sql.NullTime
-	RevokeReason sql.NullString
+	AccountID    pgtype.UUID
+	RevokedAt    pgtype.Timestamptz
+	RevokeReason pgtype.Text
 }
 
-func (q *Queries) RevokeAllAccountRefreshSessions(ctx context.Context, arg RevokeAllAccountRefreshSessionsParams) error {
-	_, err := q.db.ExecContext(ctx, revokeAllAccountRefreshSessions, arg.AccountID, arg.RevokedAt, arg.RevokeReason)
+func (q *Queries) RevokeAllAccountRefreshSessions(ctx context.Context, db DBTX, arg RevokeAllAccountRefreshSessionsParams) error {
+	_, err := db.Exec(ctx, revokeAllAccountRefreshSessions, arg.AccountID, arg.RevokedAt, arg.RevokeReason)
 	return err
 }
 
@@ -225,13 +220,13 @@ WHERE id = $1
 `
 
 type RevokeRefreshSessionParams struct {
-	ID           uuid.UUID
-	RevokedAt    sql.NullTime
-	RevokeReason sql.NullString
+	ID           pgtype.UUID
+	RevokedAt    pgtype.Timestamptz
+	RevokeReason pgtype.Text
 }
 
-func (q *Queries) RevokeRefreshSession(ctx context.Context, arg RevokeRefreshSessionParams) error {
-	_, err := q.db.ExecContext(ctx, revokeRefreshSession, arg.ID, arg.RevokedAt, arg.RevokeReason)
+func (q *Queries) RevokeRefreshSession(ctx context.Context, db DBTX, arg RevokeRefreshSessionParams) error {
+	_, err := db.Exec(ctx, revokeRefreshSession, arg.ID, arg.RevokedAt, arg.RevokeReason)
 	return err
 }
 
@@ -257,12 +252,12 @@ WHERE refresh_sessions.id = chain.target_id
 `
 
 type RevokeRefreshSessionDescendantsParams struct {
-	ID           uuid.UUID
-	RevokedAt    sql.NullTime
-	RevokeReason sql.NullString
+	ID           pgtype.UUID
+	RevokedAt    pgtype.Timestamptz
+	RevokeReason pgtype.Text
 }
 
-func (q *Queries) RevokeRefreshSessionDescendants(ctx context.Context, arg RevokeRefreshSessionDescendantsParams) error {
-	_, err := q.db.ExecContext(ctx, revokeRefreshSessionDescendants, arg.ID, arg.RevokedAt, arg.RevokeReason)
+func (q *Queries) RevokeRefreshSessionDescendants(ctx context.Context, db DBTX, arg RevokeRefreshSessionDescendantsParams) error {
+	_, err := db.Exec(ctx, revokeRefreshSessionDescendants, arg.ID, arg.RevokedAt, arg.RevokeReason)
 	return err
 }
