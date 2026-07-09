@@ -19,8 +19,8 @@ import (
 	"os/signal"
 	"syscall"
 
-	pkgpostgres "github.com/maket12/ads-service/pkg/postgres"
-	pkgrabbitmq "github.com/maket12/ads-service/pkg/rabbitmq"
+	pkgpostgres "github.com/maket12/ads-service/authservice/pkg/postgres"
+	pkgrabbitmq "github.com/maket12/ads-service/authservice/pkg/rabbitmq"
 
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/reflection"

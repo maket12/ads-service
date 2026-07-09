@@ -47,35 +47,78 @@ func MapRefreshSessionToSQLCCreate(session *model.RefreshSession) sqlc.CreateRef
 	}
 
 	if session.UserAgent() != nil {
-		userAgent = pgtype.Text{
-			String: *session.UserAgent(),
+		userAgent = pgtype.Text{String: *session.UserAgent(), Valid: true}
+	}
+
+	return sqlc.CreateRefreshSessionParams{
+		ID:               pgtype.UUID{Bytes: session.ID(), Valid: true},
+		AccountID:        pgtype.UUID{Bytes: session.AccountID(), Valid: true},
+		RefreshTokenHash: session.RefreshTokenHash(),
+		CreatedAt:        pgtype.Timestamptz{Time: session.CreatedAt(), Valid: true},
+		ExpiresAt:        pgtype.Timestamptz{Time: session.ExpiresAt(), Valid: true},
+		RevokedAt:        revokedAt,
+		RevokeReason:     revokeReason,
+		RotatedFrom:      rotatedFrom,
+		Ip:               ip,
+		UserAgent:        userAgent,
+	}
+}
+
+func MapRefreshSessionToSQLCRevoke(session *model.RefreshSession) sqlc.RevokeRefreshSessionParams {
+	var (
+		revokedAt    pgtype.Timestamptz
+		revokeReason pgtype.Text
+	)
+
+	if session.RevokedAt() != nil {
+		revokedAt = pgtype.Timestamptz{
+			Time:  *session.RevokedAt(),
+			Valid: true,
+		}
+	}
+
+	if session.RevokeReason() != nil {
+		revokeReason = pgtype.Text{
+			String: *session.RevokeReason(),
 			Valid:  true,
 		}
 	}
 
-	return sqlc.CreateRefreshSessionParams{
-		ID: pgtype.UUID{
-			Bytes: session.ID(),
-			Valid: true,
-		},
-		AccountID: pgtype.UUID{
-			Bytes: session.AccountID(),
-			Valid: true,
-		},
-		RefreshTokenHash: session.RefreshTokenHash(),
-		CreatedAt: pgtype.Timestamptz{
-			Time:  session.CreatedAt(),
-			Valid: true,
-		},
-		ExpiresAt: pgtype.Timestamptz{
-			Time:  session.ExpiresAt(),
-			Valid: true,
-		},
+	return sqlc.RevokeRefreshSessionParams{
+		ID:           pgtype.UUID{Bytes: session.ID(), Valid: true},
 		RevokedAt:    revokedAt,
 		RevokeReason: revokeReason,
-		RotatedFrom:  rotatedFrom,
-		Ip:           ip,
-		UserAgent:    userAgent,
+	}
+}
+
+func MapToSQLCRevokeAllForAccount(accountID uuid.UUID, reason *string) sqlc.RevokeAllAccountRefreshSessionsParams {
+	var revokeReason pgtype.Text
+	if reason != nil {
+		revokeReason = pgtype.Text{
+			String: *reason,
+			Valid:  true,
+		}
+	}
+
+	return sqlc.RevokeAllAccountRefreshSessionsParams{
+		AccountID:    pgtype.UUID{Bytes: accountID, Valid: true},
+		RevokedAt:    pgtype.Timestamptz{Time: time.Now(), Valid: true},
+		RevokeReason: revokeReason,
+	}
+}
+
+func MapToSQLCRevokeDescendants(sessionID uuid.UUID, reason *string) sqlc.RevokeRefreshSessionDescendantsParams {
+	var revokeReason pgtype.Text
+	if reason != nil {
+		revokeReason = pgtype.Text{
+			String: *reason,
+			Valid:  true,
+		}
+	}
+	return sqlc.RevokeRefreshSessionDescendantsParams{
+		ID:           pgtype.UUID{Bytes: sessionID, Valid: true},
+		RevokedAt:    pgtype.Timestamptz{Time: time.Now(), Valid: true},
+		RevokeReason: revokeReason,
 	}
 }
 
@@ -120,4 +163,13 @@ func MapSQLCToRefreshSession(rawSession sqlc.RefreshSession) *model.RefreshSessi
 		ip,
 		userAgent,
 	)
+}
+
+func MapSQLCToListRefreshSession(rawList []sqlc.RefreshSession) []*model.RefreshSession {
+	result := make([]*model.RefreshSession, 0, len(rawList))
+	for i := range rawList {
+		mappedSession := MapSQLCToRefreshSession(rawList[i])
+		result = append(result, mappedSession)
+	}
+	return result
 }

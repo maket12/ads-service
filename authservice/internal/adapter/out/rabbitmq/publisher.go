@@ -5,7 +5,7 @@ import (
 	"encoding/json"
 	"fmt"
 
-	"github.com/maket12/ads-service/pkg/rabbitmq"
+	"github.com/maket12/ads-service/authservice/pkg/rabbitmq"
 
 	"github.com/google/uuid"
 	amqp "github.com/rabbitmq/amqp091-go"

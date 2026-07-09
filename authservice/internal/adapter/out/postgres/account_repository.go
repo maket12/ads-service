@@ -9,8 +9,8 @@ import (
 	"github.com/jackc/pgx/v5/pgtype"
 	"github.com/maket12/ads-service/authservice/internal/adapter/out/postgres/mapper"
 	"github.com/maket12/ads-service/authservice/internal/domain/model"
-	pkgerrs "github.com/maket12/ads-service/pkg/errs"
-	pkgpostgres "github.com/maket12/ads-service/pkg/postgres"
+	pkgerrs "github.com/maket12/ads-service/authservice/pkg/errs"
+	pkgpostgres "github.com/maket12/ads-service/authservice/pkg/postgres"
 
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5/pgconn"
@@ -29,8 +29,8 @@ func NewAccountsRepository(
 
 func (r *AccountRepository) Create(ctx context.Context, account *model.Account) error {
 	params := mapper.MapAccountToSQLCCreate(account)
-	err := r.q.CreateAccount(ctx, r.db(ctx), params)
 
+	err := r.q.CreateAccount(ctx, r.db(ctx), params)
 	if err != nil {
 		var pgErr *pgconn.PgError
 		if errors.As(err, &pgErr) {
@@ -55,18 +55,12 @@ func (r *AccountRepository) GetByEmail(ctx context.Context, email string) (*mode
 		return nil, err
 	}
 
-	account := mapper.MapSQLCToAccount(rawAcc)
-
-	return account, nil
+	return mapper.MapSQLCToAccount(rawAcc), nil
 }
 
 func (r *AccountRepository) GetByID(ctx context.Context, id uuid.UUID) (*model.Account, error) {
-	rawAcc, err := r.q.GetAccountByID(
-		ctx, r.db(ctx),
-		pgtype.UUID{
-			Bytes: id,
-			Valid: true,
-		},
+	rawAcc, err := r.q.GetAccountByID(ctx, r.db(ctx),
+		pgtype.UUID{Bytes: id, Valid: true},
 	)
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
@@ -75,9 +69,7 @@ func (r *AccountRepository) GetByID(ctx context.Context, id uuid.UUID) (*model.A
 		return nil, err
 	}
 
-	account := mapper.MapSQLCToAccount(rawAcc)
-
-	return account, nil
+	return mapper.MapSQLCToAccount(rawAcc), nil
 }
 
 func (r *AccountRepository) MarkLogin(ctx context.Context, account *model.Account) error {

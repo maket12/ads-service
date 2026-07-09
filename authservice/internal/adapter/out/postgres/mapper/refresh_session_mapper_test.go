@@ -255,3 +255,185 @@ func TestMapSQLCToRefreshSession_NilOptionalFields(t *testing.T) {
 
 	require.Equal(t, expected, actual)
 }
+
+func TestMapRefreshSessionToSQLCRevoke(t *testing.T) {
+	id := uuid.New()
+	accountID := uuid.New()
+
+	createdAt := time.Now()
+	expiresAt := createdAt.Add(time.Second)
+	revokedAt := expiresAt.Add(time.Second)
+	revokeReason := "logout"
+
+	session := model.RestoreRefreshSession(
+		id,
+		accountID,
+		"refresh-token-hash",
+		createdAt,
+		expiresAt,
+		&revokedAt,
+		&revokeReason,
+		nil,
+		nil,
+		nil,
+	)
+
+	expected := sqlc.RevokeRefreshSessionParams{
+		ID:           pgtype.UUID{Bytes: id, Valid: true},
+		RevokedAt:    pgtype.Timestamptz{Time: revokedAt, Valid: true},
+		RevokeReason: pgtype.Text{String: revokeReason, Valid: true},
+	}
+
+	actual := mapper.MapRefreshSessionToSQLCRevoke(session)
+
+	require.Equal(t, expected, actual)
+}
+
+func TestMapRefreshSessionToSQLCRevoke_NilOptionalFields(t *testing.T) {
+	id := uuid.New()
+	accountID := uuid.New()
+
+	createdAt := time.Now()
+	expiresAt := createdAt.Add(time.Minute)
+
+	session := model.RestoreRefreshSession(
+		id,
+		accountID,
+		"refresh-token-hash",
+		createdAt,
+		expiresAt,
+		nil,
+		nil,
+		nil,
+		nil,
+		nil,
+	)
+
+	expected := sqlc.RevokeRefreshSessionParams{
+		ID:           pgtype.UUID{Bytes: id, Valid: true},
+		RevokedAt:    pgtype.Timestamptz{},
+		RevokeReason: pgtype.Text{},
+	}
+
+	actual := mapper.MapRefreshSessionToSQLCRevoke(session)
+
+	require.Equal(t, expected, actual)
+}
+
+func TestMapToSQLCRevokeAllForAccount(t *testing.T) {
+	accountID := uuid.New()
+	reason := "security incident"
+
+	before := time.Now()
+	actual := mapper.MapToSQLCRevokeAllForAccount(accountID, &reason)
+	after := time.Now()
+
+	require.Equal(t, pgtype.UUID{Bytes: accountID, Valid: true}, actual.AccountID)
+	require.Equal(t, pgtype.Text{String: reason, Valid: true}, actual.RevokeReason)
+	require.True(t, actual.RevokedAt.Valid)
+	require.WithinRange(t, actual.RevokedAt.Time, before, after)
+}
+
+func TestMapToSQLCRevokeAllForAccount_NilReason(t *testing.T) {
+	accountID := uuid.New()
+
+	before := time.Now()
+	actual := mapper.MapToSQLCRevokeAllForAccount(accountID, nil)
+	after := time.Now()
+
+	require.Equal(t, pgtype.UUID{Bytes: accountID, Valid: true}, actual.AccountID)
+	require.Equal(t, pgtype.Text{}, actual.RevokeReason)
+	require.True(t, actual.RevokedAt.Valid)
+	require.WithinRange(t, actual.RevokedAt.Time, before, after)
+}
+
+func TestMapToSQLCRevokeDescendants(t *testing.T) {
+	sessionID := uuid.New()
+	reason := "rotation"
+
+	before := time.Now()
+	actual := mapper.MapToSQLCRevokeDescendants(sessionID, &reason)
+	after := time.Now()
+
+	require.Equal(t, pgtype.UUID{Bytes: sessionID, Valid: true}, actual.ID)
+	require.Equal(t, pgtype.Text{String: reason, Valid: true}, actual.RevokeReason)
+	require.True(t, actual.RevokedAt.Valid)
+	require.WithinRange(t, actual.RevokedAt.Time, before, after)
+}
+
+func TestMapToSQLCRevokeDescendants_NilReason(t *testing.T) {
+	sessionID := uuid.New()
+
+	before := time.Now()
+	actual := mapper.MapToSQLCRevokeDescendants(sessionID, nil)
+	after := time.Now()
+
+	require.Equal(t, pgtype.UUID{Bytes: sessionID, Valid: true}, actual.ID)
+	require.Equal(t, pgtype.Text{}, actual.RevokeReason)
+	require.True(t, actual.RevokedAt.Valid)
+	require.WithinRange(t, actual.RevokedAt.Time, before, after)
+}
+
+func TestMapSQLCToListRefreshSession(t *testing.T) {
+	id1 := uuid.New()
+	id2 := uuid.New()
+	accountID := uuid.New()
+
+	createdAt := time.Now()
+	expiresAt := createdAt.Add(time.Minute)
+
+	rawList := []sqlc.RefreshSession{
+		{
+			ID:               pgtype.UUID{Bytes: id1, Valid: true},
+			AccountID:        pgtype.UUID{Bytes: accountID, Valid: true},
+			RefreshTokenHash: "hash-1",
+			CreatedAt:        pgtype.Timestamptz{Time: createdAt, Valid: true},
+			ExpiresAt:        pgtype.Timestamptz{Time: expiresAt, Valid: true},
+		},
+		{
+			ID:               pgtype.UUID{Bytes: id2, Valid: true},
+			AccountID:        pgtype.UUID{Bytes: accountID, Valid: true},
+			RefreshTokenHash: "hash-2",
+			CreatedAt:        pgtype.Timestamptz{Time: createdAt, Valid: true},
+			ExpiresAt:        pgtype.Timestamptz{Time: expiresAt, Valid: true},
+		},
+	}
+
+	expected := []*model.RefreshSession{
+		model.RestoreRefreshSession(
+			id1,
+			accountID,
+			"hash-1",
+			createdAt,
+			expiresAt,
+			nil,
+			nil,
+			nil,
+			nil,
+			nil,
+		),
+		model.RestoreRefreshSession(
+			id2,
+			accountID,
+			"hash-2",
+			createdAt,
+			expiresAt,
+			nil,
+			nil,
+			nil,
+			nil,
+			nil,
+		),
+	}
+
+	actual := mapper.MapSQLCToListRefreshSession(rawList)
+
+	require.Equal(t, expected, actual)
+}
+
+func TestMapSQLCToListRefreshSession_Empty(t *testing.T) {
+	actual := mapper.MapSQLCToListRefreshSession([]sqlc.RefreshSession{})
+
+	require.Empty(t, actual)
+	require.NotNil(t, actual)
+}

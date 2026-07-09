@@ -9,8 +9,8 @@ import (
 	"github.com/jackc/pgx/v5/pgtype"
 	"github.com/maket12/ads-service/authservice/internal/adapter/out/postgres/mapper"
 	"github.com/maket12/ads-service/authservice/internal/domain/model"
-	pkgerrs "github.com/maket12/ads-service/pkg/errs"
-	pkgpostgres "github.com/maket12/ads-service/pkg/postgres"
+	pkgerrs "github.com/maket12/ads-service/authservice/pkg/errs"
+	pkgpostgres "github.com/maket12/ads-service/authservice/pkg/postgres"
 
 	"github.com/google/uuid"
 )
@@ -32,11 +32,8 @@ func (r *AccountRoleRepository) Create(ctx context.Context, accountRole *model.A
 }
 
 func (r *AccountRoleRepository) Get(ctx context.Context, accountID uuid.UUID) (*model.AccountRole, error) {
-	rawAccRole, err := r.q.GetAccountRole(
-		ctx, r.db(ctx), pgtype.UUID{
-			Bytes: accountID,
-			Valid: true,
-		},
+	rawAccRole, err := r.q.GetAccountRole(ctx, r.db(ctx),
+		pgtype.UUID{Bytes: accountID, Valid: true},
 	)
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
@@ -53,11 +50,7 @@ func (r *AccountRoleRepository) Update(ctx context.Context, accountRole *model.A
 }
 
 func (r *AccountRoleRepository) Delete(ctx context.Context, accountID uuid.UUID) error {
-	return r.q.DeleteAccountRole(
-		ctx, r.db(ctx),
-		pgtype.UUID{
-			Bytes: accountID,
-			Valid: true,
-		},
+	return r.q.DeleteAccountRole(ctx, r.db(ctx),
+		pgtype.UUID{Bytes: accountID, Valid: true},
 	)
 }

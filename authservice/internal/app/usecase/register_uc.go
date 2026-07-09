@@ -8,7 +8,7 @@ import (
 	ucerrs "github.com/maket12/ads-service/authservice/internal/app/errs"
 	"github.com/maket12/ads-service/authservice/internal/domain/model"
 	"github.com/maket12/ads-service/authservice/internal/domain/port"
-	pkgerrs "github.com/maket12/ads-service/pkg/errs"
+	pkgerrs "github.com/maket12/ads-service/authservice/pkg/errs"
 )
 
 type RegisterUC struct {
@@ -56,7 +56,7 @@ func (uc *RegisterUC) Execute(ctx context.Context, in dto.RegisterInput) (dto.Re
 	}
 
 	// Save all into database
-	if err := uc.account.Create(ctx, account); err != nil {
+	if err = uc.account.Create(ctx, account); err != nil {
 		if errors.Is(err, pkgerrs.ErrObjectAlreadyExists) {
 			return dto.RegisterOutput{}, ucerrs.ErrAccountAlreadyExists
 		}
@@ -64,14 +64,14 @@ func (uc *RegisterUC) Execute(ctx context.Context, in dto.RegisterInput) (dto.Re
 			ucerrs.ErrCreateAccountDB, err,
 		)
 	}
-	if err := uc.accountRole.Create(ctx, accountRole); err != nil {
+	if err = uc.accountRole.Create(ctx, accountRole); err != nil {
 		return dto.RegisterOutput{}, ucerrs.Wrap(
 			ucerrs.ErrCreateAccountRoleDB, err,
 		)
 	}
 
 	// Send even to rabbitmq (create profile)
-	if err := uc.accountPublisher.PublishAccountCreate(ctx, account.ID()); err != nil {
+	if err = uc.accountPublisher.PublishAccountCreate(ctx, account.ID()); err != nil {
 		return dto.RegisterOutput{},
 			ucerrs.Wrap(ucerrs.ErrPublishEvent, err)
 	}

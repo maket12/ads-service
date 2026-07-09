@@ -5,7 +5,7 @@ import (
 	"time"
 
 	"github.com/maket12/ads-service/authservice/internal/domain/model"
-	pkgerrs "github.com/maket12/ads-service/pkg/errs"
+	pkgerrs "github.com/maket12/ads-service/authservice/pkg/errs"
 
 	"github.com/google/uuid"
 	"github.com/stretchr/testify/assert"

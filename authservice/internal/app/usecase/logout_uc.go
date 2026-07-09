@@ -8,7 +8,7 @@ import (
 	ucerrs "github.com/maket12/ads-service/authservice/internal/app/errs"
 	"github.com/maket12/ads-service/authservice/internal/app/utils"
 	"github.com/maket12/ads-service/authservice/internal/domain/port"
-	pkgerrs "github.com/maket12/ads-service/pkg/errs"
+	pkgerrs "github.com/maket12/ads-service/authservice/pkg/errs"
 )
 
 type LogoutUC struct {

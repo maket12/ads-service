@@ -10,7 +10,7 @@ import (
 	"github.com/maket12/ads-service/authservice/internal/app/usecase"
 	"github.com/maket12/ads-service/authservice/internal/domain/model"
 	"github.com/maket12/ads-service/authservice/internal/domain/port/mocks"
-	pkgerrs "github.com/maket12/ads-service/pkg/errs"
+	pkgerrs "github.com/maket12/ads-service/authservice/pkg/errs"
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"

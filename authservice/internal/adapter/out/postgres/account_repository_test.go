@@ -10,8 +10,8 @@ import (
 	adapterpostgres "github.com/maket12/ads-service/authservice/internal/adapter/out/postgres"
 	"github.com/maket12/ads-service/authservice/internal/domain/model"
 	"github.com/maket12/ads-service/authservice/migrations"
-	pkgerrs "github.com/maket12/ads-service/pkg/errs"
-	pkgpostgres "github.com/maket12/ads-service/pkg/postgres"
+	pkgerrs "github.com/maket12/ads-service/authservice/pkg/errs"
+	pkgpostgres "github.com/maket12/ads-service/authservice/pkg/postgres"
 
 	"github.com/golang-migrate/migrate/v4"
 	_ "github.com/golang-migrate/migrate/v4/database/postgres"

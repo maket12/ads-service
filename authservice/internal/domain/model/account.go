@@ -7,7 +7,7 @@ import (
 	"unicode/utf8"
 
 	"github.com/google/uuid"
-	pkgerrs "github.com/maket12/ads-service/pkg/errs"
+	pkgerrs "github.com/maket12/ads-service/authservice/pkg/errs"
 )
 
 var (
