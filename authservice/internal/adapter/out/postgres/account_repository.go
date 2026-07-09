@@ -16,9 +16,7 @@ import (
 	"github.com/jackc/pgx/v5/pgconn"
 )
 
-type AccountRepository struct {
-	BaseRepository
-}
+type AccountRepository struct{ BaseRepository }
 
 func NewAccountsRepository(
 	pgClient *pkgpostgres.Client,

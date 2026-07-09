@@ -16,6 +16,16 @@ func MapAccountRoleToSQLCCreate(accRole *model.AccountRole) sqlc.CreateAccountRo
 	}
 }
 
+func MapAccountRoleToSQLCUpdate(accRole *model.AccountRole) sqlc.UpdateAccountRoleParams {
+	return sqlc.UpdateAccountRoleParams{
+		AccountID: pgtype.UUID{
+			Bytes: accRole.AccountID(),
+			Valid: true,
+		},
+		Role: accRole.Role().String(),
+	}
+}
+
 func MapSQLCToAccountRole(rawAccRole sqlc.AccountRole) *model.AccountRole {
 	accountRole := model.RestoreAccountRole(
 		rawAccRole.AccountID.Bytes,

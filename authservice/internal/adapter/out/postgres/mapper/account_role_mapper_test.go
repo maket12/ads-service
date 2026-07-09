@@ -33,6 +33,27 @@ func TestMapAccountRoleToSQLCCreate(t *testing.T) {
 	require.Equal(t, expected, actual)
 }
 
+func TestMapAccountRoleToSQLCUpdate(t *testing.T) {
+	accountID := uuid.New()
+
+	accRole := model.RestoreAccountRole(
+		accountID,
+		model.RoleUser,
+	)
+
+	expected := sqlc.UpdateAccountRoleParams{
+		AccountID: pgtype.UUID{
+			Bytes: accountID,
+			Valid: true,
+		},
+		Role: model.RoleUser.String(),
+	}
+
+	actual := mapper.MapAccountRoleToSQLCUpdate(accRole)
+
+	require.Equal(t, expected, actual)
+}
+
 func TestMapSQLCToAccountRole(t *testing.T) {
 	accountID := uuid.New()
 
