@@ -24,6 +24,8 @@ const (
 	AccountDeleted AccountStatus = "deleted"
 )
 
+func (s AccountStatus) String() string { return string(s) }
+
 // ================ Rich model for account ================
 
 type Account struct {

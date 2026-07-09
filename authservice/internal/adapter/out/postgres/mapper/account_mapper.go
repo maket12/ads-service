@@ -1,28 +1,75 @@
 package mapper
 
 import (
-	"database/sql"
 	"time"
 
+	"github.com/jackc/pgx/v5/pgtype"
 	"github.com/maket12/ads-service/authservice/internal/adapter/out/postgres/sqlc"
 	"github.com/maket12/ads-service/authservice/internal/domain/model"
 )
 
-func MapAccountToSQLCCreate(account *model.Account) sqlc.CreateAccountParams {
-	var lastLogin sql.NullTime
-	if account.LastLoginAt() != nil {
-		lastLogin = sql.NullTime{Time: *account.LastLoginAt(), Valid: true}
+func MapAccountToSQLCCreate(acc *model.Account) sqlc.CreateAccountParams {
+	var lastLogin pgtype.Timestamptz
+	if acc.LastLoginAt() != nil {
+		lastLogin = pgtype.Timestamptz{
+			Time:  *acc.LastLoginAt(),
+			Valid: true,
+		}
 	}
 
 	return sqlc.CreateAccountParams{
-		ID:            account.ID(),
-		Email:         account.Email(),
-		PasswordHash:  account.PasswordHash(),
-		Status:        sqlc.AccountStatus(account.Status()),
-		EmailVerified: account.EmailVerified(),
-		CreatedAt:     account.CreatedAt(),
-		UpdatedAt:     account.UpdatedAt(),
-		LastLoginAt:   lastLogin,
+		ID: pgtype.UUID{
+			Bytes: acc.ID(),
+			Valid: true,
+		},
+		Email:         acc.Email(),
+		PasswordHash:  acc.PasswordHash(),
+		Status:        acc.Status().String(),
+		EmailVerified: acc.EmailVerified(),
+		CreatedAt: pgtype.Timestamptz{
+			Time:  acc.CreatedAt(),
+			Valid: true,
+		},
+		UpdatedAt: pgtype.Timestamptz{
+			Time:  acc.UpdatedAt(),
+			Valid: true,
+		},
+		LastLoginAt: lastLogin,
+	}
+}
+
+func MapAccountToSQLCMarkLogin(acc *model.Account) sqlc.MarkAccountLoginParams {
+	var lastLoginTime pgtype.Timestamptz
+	if acc.LastLoginAt() != nil {
+		lastLoginTime = pgtype.Timestamptz{
+			Time:  *acc.LastLoginAt(),
+			Valid: true,
+		}
+	}
+
+	return sqlc.MarkAccountLoginParams{
+		ID: pgtype.UUID{
+			Bytes: acc.ID(),
+			Valid: true,
+		},
+		UpdatedAt: pgtype.Timestamptz{
+			Time:  acc.UpdatedAt(),
+			Valid: true,
+		},
+		LastLoginAt: lastLoginTime,
+	}
+}
+
+func MapAccountToSQLCVerifyEmail(acc *model.Account) sqlc.VerifyAccountEmailParams {
+	return sqlc.VerifyAccountEmailParams{
+		ID: pgtype.UUID{
+			Bytes: acc.ID(),
+			Valid: true,
+		},
+		UpdatedAt: pgtype.Timestamptz{
+			Time:  acc.UpdatedAt(),
+			Valid: true,
+		},
 	}
 }
 
@@ -34,16 +81,14 @@ func MapSQLCToAccount(rawAccount sqlc.Account) *model.Account {
 		lastLogin = &t
 	}
 
-	status := model.AccountStatus(rawAccount.Status)
-
 	account := model.RestoreAccount(
-		rawAccount.ID,
+		rawAccount.ID.Bytes,
 		rawAccount.Email,
 		rawAccount.PasswordHash,
-		status,
+		model.AccountStatus(rawAccount.Status),
 		rawAccount.EmailVerified,
-		rawAccount.CreatedAt,
-		rawAccount.UpdatedAt,
+		rawAccount.CreatedAt.Time,
+		rawAccount.UpdatedAt.Time,
 		lastLogin,
 	)
 

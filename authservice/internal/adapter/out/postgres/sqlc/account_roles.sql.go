@@ -22,7 +22,7 @@ INSERT INTO account_roles (
 
 type CreateAccountRoleParams struct {
 	AccountID pgtype.UUID
-	Role      interface{}
+	Role      string
 }
 
 func (q *Queries) CreateAccountRole(ctx context.Context, db DBTX, arg CreateAccountRoleParams) error {
@@ -63,7 +63,7 @@ WHERE account_id = $1
 
 type UpdateAccountRoleParams struct {
 	AccountID pgtype.UUID
-	Role      interface{}
+	Role      string
 }
 
 func (q *Queries) UpdateAccountRole(ctx context.Context, db DBTX, arg UpdateAccountRoleParams) error {

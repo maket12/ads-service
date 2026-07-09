@@ -14,7 +14,7 @@ type Account struct {
 	ID            pgtype.UUID
 	Email         string
 	PasswordHash  string
-	Status        interface{}
+	Status        string
 	EmailVerified bool
 	CreatedAt     pgtype.Timestamptz
 	UpdatedAt     pgtype.Timestamptz
@@ -23,7 +23,7 @@ type Account struct {
 
 type AccountRole struct {
 	AccountID pgtype.UUID
-	Role      interface{}
+	Role      string
 }
 
 type RefreshSession struct {

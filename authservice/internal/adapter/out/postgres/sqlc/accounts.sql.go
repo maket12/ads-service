@@ -30,7 +30,7 @@ type CreateAccountParams struct {
 	ID            pgtype.UUID
 	Email         string
 	PasswordHash  string
-	Status        interface{}
+	Status        string
 	EmailVerified bool
 	CreatedAt     pgtype.Timestamptz
 	UpdatedAt     pgtype.Timestamptz
@@ -178,7 +178,7 @@ WHERE id = $1
 
 type UpdateAccountStatusParams struct {
 	ID        pgtype.UUID
-	Status    interface{}
+	Status    string
 	UpdatedAt pgtype.Timestamptz
 }
 
