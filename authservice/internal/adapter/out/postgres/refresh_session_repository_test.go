@@ -1,98 +1,52 @@
+//go:build integration
+
 package postgres_test
 
 import (
-	"context"
-	"errors"
 	"testing"
 	"time"
 
+	trmpgx "github.com/avito-tech/go-transaction-manager/drivers/pgxv5/v2"
+	"github.com/google/uuid"
 	adapterpostgres "github.com/maket12/ads-service/authservice/internal/adapter/out/postgres"
 	"github.com/maket12/ads-service/authservice/internal/domain/model"
-	"github.com/maket12/ads-service/authservice/migrations"
 	pkgerrs "github.com/maket12/ads-service/authservice/pkg/errs"
-	pkgpostgres "github.com/maket12/ads-service/authservice/pkg/postgres"
-
-	"github.com/golang-migrate/migrate/v4"
-	"github.com/golang-migrate/migrate/v4/source/iofs"
-	"github.com/google/uuid"
 	"github.com/stretchr/testify/suite"
 )
 
 type RefreshSessionsRepoSuite struct {
-	suite.Suite
-	dbClient    *pkgpostgres.Client
+	BaseRepoSuite
 	repo        *adapterpostgres.RefreshSessionRepository
-	ctx         context.Context
-	migrate     *migrate.Migrate
 	testSession *model.RefreshSession
 }
 
 func TestRefreshSessionRepoSuite(t *testing.T) {
-	if testing.Short() {
-		t.Skip("Skipping integration tests in short mode")
-	}
 	suite.Run(t, new(RefreshSessionsRepoSuite))
 }
 
-func (s *RefreshSessionsRepoSuite) setupDatabase() {
-	const targetVersion = 3
-
-	dbConfig := pkgpostgres.NewConfig(
-		"localhost", 5432,
-		"test", "test", "testdb",
-		"disable", 25, 25, time.Minute*5,
+func (s *RefreshSessionsRepoSuite) SetupSuite() {
+	s.SetupBase(3)
+	s.repo = adapterpostgres.NewRefreshSessionsRepository(s.dbClient,
+		trmpgx.DefaultCtxGetter,
 	)
-	dsn := "postgres://test:test@localhost:5432/testdb?sslmode=disable"
-
-	dbClient, err := pkgpostgres.NewClient(dbConfig)
-	s.Require().NoError(err)
-	s.dbClient = dbClient
-
-	sourceDriver, err := iofs.New(migrations.FS, ".")
-	s.Require().NoError(err, "failed to create iofs driver")
-
-	m, err := migrate.NewWithSourceInstance(
-		"iofs",
-		sourceDriver,
-		dsn,
-	)
-	s.Require().NoError(err, "failed to create migration instance")
-
-	s.migrate = m
-
-	err = m.Migrate(targetVersion)
-
-	// If migration is correct - setup has done
-	if err == nil || errors.Is(err, migrate.ErrNoChange) {
-		return
-	}
-
-	// Except dirty db as a normal scenario
-	var dirtyErr migrate.ErrDirty
-	if !errors.As(err, &dirtyErr) {
-		s.FailNowf("failed to migrate up", "unexpected error: %v", err)
-	}
-
-	// ================ Restore dirty database ================
-	_ = m.Force(dirtyErr.Version)
-
-	err = m.Down()
-	if err != nil && !errors.Is(err, migrate.ErrNoChange) {
-		s.Require().NoError(err, "failed to migrate down during recovery")
-	}
-
-	err = m.Migrate(targetVersion)
-	if err != nil && !errors.Is(err, migrate.ErrNoChange) {
-		s.Require().NoError(err, "failed to migrate up after recovery")
-	}
 }
 
-func (s *RefreshSessionsRepoSuite) SetupSuite() {
-	s.setupDatabase()
-	s.repo = adapterpostgres.NewRefreshSessionsRepository(s.dbClient)
-	s.ctx = context.Background()
+func (s *RefreshSessionsRepoSuite) SetupTest() {
+	err := s.pgContainer.TruncateTables(s.ctx, "refresh_sessions")
+	s.Require().NoError(err)
 
-	var testAccount, _ = model.NewAccount("new@email.com", "hashed-secret-pass")
+	s.seedData()
+}
+
+func (s *RefreshSessionsRepoSuite) seedData() {
+	testAccount, _ := model.NewAccount("new@email.com", "hashed-secret-pass")
+
+	accountsRepo := adapterpostgres.NewAccountsRepository(s.dbClient,
+		trmpgx.DefaultCtxGetter,
+	)
+	err := accountsRepo.Create(s.ctx, testAccount)
+	s.Require().NoError(err)
+
 	s.testSession, _ = model.NewRefreshSession(
 		uuid.New(),
 		testAccount.ID(),
@@ -102,25 +56,6 @@ func (s *RefreshSessionsRepoSuite) SetupSuite() {
 		nil,
 		time.Minute,
 	)
-
-	// Create an account in the main table
-	accountsRepo := adapterpostgres.NewAccountsRepository(s.dbClient)
-	_ = accountsRepo.Create(s.ctx, testAccount)
-}
-
-func (s *RefreshSessionsRepoSuite) TearDownSuite() {
-	if s.migrate != nil {
-		if err := s.migrate.Down(); err != nil && !errors.Is(err, migrate.ErrNoChange) {
-			s.Require().NoError(err, "failed to migrate down")
-		}
-	}
-	err := s.dbClient.Close()
-	s.Require().NoError(err, "failed to close db connection")
-}
-
-func (s *RefreshSessionsRepoSuite) SetupTest() {
-	_, err := s.dbClient.DB.Exec("TRUNCATE TABLE refresh_sessions CASCADE")
-	s.Require().NoError(err)
 }
 
 func (s *RefreshSessionsRepoSuite) TestCreateGetByID() {
