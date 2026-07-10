@@ -21,10 +21,9 @@ var (
 ================ Adapter failures ================
 */
 var (
-	ErrHashPassword         = errors.New("failed to hash password")
-	ErrGenerateAccessToken  = errors.New("failed to generate access token")
-	ErrGenerateRefreshToken = errors.New("failed to generate refresh token")
-	ErrPublishEvent         = errors.New("failed to publish event")
+	ErrHashPassword       = errors.New("failed to hash password")
+	ErrGenerateTokensPair = errors.New("failed to generate tokens pair")
+	ErrPublishEvent       = errors.New("failed to publish event")
 )
 
 /*

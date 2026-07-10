@@ -7,10 +7,10 @@ import (
 
 	"github.com/maket12/ads-service/authservice/internal/app/dto"
 	ucerrs "github.com/maket12/ads-service/authservice/internal/app/errs"
-	"github.com/maket12/ads-service/authservice/internal/app/utils"
 	"github.com/maket12/ads-service/authservice/internal/domain/model"
 	"github.com/maket12/ads-service/authservice/internal/domain/port"
 	pkgerrs "github.com/maket12/ads-service/authservice/pkg/errs"
+	"github.com/maket12/ads-service/authservice/pkg/utils"
 
 	"github.com/google/uuid"
 )
@@ -21,8 +21,7 @@ type LoginUC struct {
 	refreshSession port.RefreshSessionRepository
 	passwordHasher port.PasswordHasher
 	tokenGenerator port.TokenGenerator
-
-	refreshSessionTTL time.Duration
+	refreshTTL     time.Duration
 }
 
 func NewLoginUC(
@@ -31,22 +30,21 @@ func NewLoginUC(
 	refreshSession port.RefreshSessionRepository,
 	passwordHasher port.PasswordHasher,
 	tokenGenerator port.TokenGenerator,
-	refreshSessionTTL time.Duration,
+	refreshTTL time.Duration,
 ) *LoginUC {
 	return &LoginUC{
-		account:           account,
-		accountRole:       accountRole,
-		refreshSession:    refreshSession,
-		passwordHasher:    passwordHasher,
-		tokenGenerator:    tokenGenerator,
-		refreshSessionTTL: refreshSessionTTL,
+		account:        account,
+		accountRole:    accountRole,
+		refreshSession: refreshSession,
+		passwordHasher: passwordHasher,
+		tokenGenerator: tokenGenerator,
+		refreshTTL:     refreshTTL,
 	}
 }
 
 func (uc *LoginUC) Execute(ctx context.Context, in dto.LoginInput) (dto.LoginOutput, error) {
-	// Find account
+	// Find an account
 	account, err := uc.account.GetByEmail(ctx, in.Email)
-
 	if err != nil {
 		if errors.Is(err, pkgerrs.ErrObjectNotFound) {
 			return dto.LoginOutput{}, ucerrs.ErrInvalidCredentials
@@ -66,8 +64,13 @@ func (uc *LoginUC) Execute(ctx context.Context, in dto.LoginInput) (dto.LoginOut
 	}
 
 	// Update account
-	account.MarkLogin()
-	if err := uc.account.MarkLogin(ctx, account); err != nil {
+	if err = account.MarkLogin(); err != nil {
+		return dto.LoginOutput{}, ucerrs.Wrap(
+			ucerrs.ErrInvalidInput, err,
+		)
+	}
+
+	if err = uc.account.MarkLogin(ctx, account); err != nil {
 		return dto.LoginOutput{}, ucerrs.Wrap(
 			ucerrs.ErrUpdateAccountDB, err,
 		)
@@ -80,31 +83,26 @@ func (uc *LoginUC) Execute(ctx context.Context, in dto.LoginInput) (dto.LoginOut
 	}
 
 	// Generate tokens
-	accessToken, err := uc.tokenGenerator.GenerateAccessToken(
-		ctx, account.ID(), accRole.Role().String(),
-	)
-	if err != nil {
-		return dto.LoginOutput{}, ucerrs.Wrap(
-			ucerrs.ErrGenerateAccessToken, err,
-		)
-	}
-
 	var sessionID = uuid.New()
-	refreshToken, err := uc.tokenGenerator.GenerateRefreshToken(
-		ctx, account.ID(), sessionID,
+
+	tokensPair, err := uc.tokenGenerator.GeneratePair(
+		ctx,
+		account.ID(),
+		accRole.Role().String(),
+		sessionID,
 	)
 	if err != nil {
 		return dto.LoginOutput{}, ucerrs.Wrap(
-			ucerrs.ErrGenerateRefreshToken, err,
+			ucerrs.ErrGenerateTokensPair, err,
 		)
 	}
 
-	hashedRefreshToken := utils.HashToken(refreshToken)
+	hashedRefreshToken := utils.HashToken(tokensPair.Refresh)
 
-	// Create refresh session
+	// Create a refresh session
 	refreshSession, err := model.NewRefreshSession(
 		sessionID, account.ID(), hashedRefreshToken, nil,
-		in.IP, in.UserAgent, uc.refreshSessionTTL,
+		in.IP, in.UserAgent, uc.refreshTTL,
 	)
 	if err != nil {
 		return dto.LoginOutput{}, ucerrs.Wrap(
@@ -112,7 +110,7 @@ func (uc *LoginUC) Execute(ctx context.Context, in dto.LoginInput) (dto.LoginOut
 		)
 	}
 
-	if err := uc.refreshSession.Create(ctx, refreshSession); err != nil {
+	if err = uc.refreshSession.Create(ctx, refreshSession); err != nil {
 		return dto.LoginOutput{}, ucerrs.Wrap(
 			ucerrs.ErrCreateRefreshSessionDB, err,
 		)
@@ -120,7 +118,7 @@ func (uc *LoginUC) Execute(ctx context.Context, in dto.LoginInput) (dto.LoginOut
 
 	// Output
 	return dto.LoginOutput{
-		AccessToken:  accessToken,
-		RefreshToken: refreshToken,
+		AccessToken:  tokensPair.Access,
+		RefreshToken: tokensPair.Refresh,
 	}, nil
 }

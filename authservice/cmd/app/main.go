@@ -159,7 +159,7 @@ func runServer(ctx context.Context, cfg *config.Config, logger *slog.Logger) err
 	accountRoleRepo := adapterdb.NewAccountRolesRepository(pgClient)
 	refreshSessionRepo := adapterdb.NewRefreshSessionsRepository(pgClient)
 	passwordHasher := infrapassw.NewHasher(cfg.PasswordCost)
-	tokenGenerator := infrajwt.NewTokenGenerator(
+	tokenGenerator := infrajwt.NewGenerator(
 		cfg.AccessSecret, cfg.RefreshSecret,
 		cfg.AccessTTL, cfg.RefreshTTL,
 	)

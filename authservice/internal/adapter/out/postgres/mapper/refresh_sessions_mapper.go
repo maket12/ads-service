@@ -7,7 +7,7 @@ import (
 	"github.com/jackc/pgx/v5/pgtype"
 	"github.com/maket12/ads-service/authservice/internal/adapter/out/postgres/sqlc"
 	"github.com/maket12/ads-service/authservice/internal/domain/model"
-	"github.com/maket12/ads-service/pkg/utils"
+	"github.com/maket12/ads-service/authservice/pkg/utils"
 
 	"github.com/google/uuid"
 )
