@@ -39,7 +39,7 @@ func NewAccountPublisher(
 	}
 
 	// Exchange
-	if err := ch.ExchangeDeclare(
+	if err = ch.ExchangeDeclare(
 		cfg.Exchange,
 		"topic",
 		true,

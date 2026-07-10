@@ -9,9 +9,12 @@ import (
 	"github.com/maket12/ads-service/authservice/internal/domain/model"
 	"github.com/maket12/ads-service/authservice/internal/domain/port"
 	pkgerrs "github.com/maket12/ads-service/authservice/pkg/errs"
+
+	"github.com/avito-tech/go-transaction-manager/trm/v2"
 )
 
 type RegisterUC struct {
+	trManager        trm.Manager
 	account          port.AccountRepository
 	accountRole      port.AccountRoleRepository
 	passwordHasher   port.PasswordHasher
@@ -19,12 +22,14 @@ type RegisterUC struct {
 }
 
 func NewRegisterUC(
+	trManager trm.Manager,
 	account port.AccountRepository,
 	accountRole port.AccountRoleRepository,
 	passwordHasher port.PasswordHasher,
 	accountPublisher port.AccountPublisher,
 ) *RegisterUC {
 	return &RegisterUC{
+		trManager:        trManager,
 		account:          account,
 		accountRole:      accountRole,
 		passwordHasher:   passwordHasher,
@@ -56,24 +61,31 @@ func (uc *RegisterUC) Execute(ctx context.Context, in dto.RegisterInput) (dto.Re
 	}
 
 	// Save all into database
-	if err = uc.account.Create(ctx, account); err != nil {
-		if errors.Is(err, pkgerrs.ErrObjectAlreadyExists) {
-			return dto.RegisterOutput{}, ucerrs.ErrAccountAlreadyExists
+	err = uc.trManager.Do(ctx, func(txCtx context.Context) error {
+		createErr := uc.account.Create(ctx, account)
+		if createErr != nil {
+			if errors.Is(err, pkgerrs.ErrObjectAlreadyExists) {
+				return ucerrs.ErrAccountAlreadyExists
+			}
+			return ucerrs.Wrap(ucerrs.ErrCreateAccountDB, err)
 		}
-		return dto.RegisterOutput{}, ucerrs.Wrap(
-			ucerrs.ErrCreateAccountDB, err,
-		)
-	}
-	if err = uc.accountRole.Create(ctx, accountRole); err != nil {
-		return dto.RegisterOutput{}, ucerrs.Wrap(
-			ucerrs.ErrCreateAccountRoleDB, err,
-		)
+
+		createErr = uc.accountRole.Create(ctx, accountRole)
+		if createErr != nil {
+			return ucerrs.Wrap(ucerrs.ErrCreateAccountRoleDB, err)
+		}
+
+		return nil
+	})
+	if err != nil {
+		return dto.RegisterOutput{}, err
 	}
 
-	// Send even to rabbitmq (create profile)
+	// Send an event to rabbitmq (create profile)
 	if err = uc.accountPublisher.PublishAccountCreate(ctx, account.ID()); err != nil {
-		return dto.RegisterOutput{},
-			ucerrs.Wrap(ucerrs.ErrPublishEvent, err)
+		return dto.RegisterOutput{}, ucerrs.Wrap(
+			ucerrs.ErrPublishEvent, err,
+		)
 	}
 
 	// Response
