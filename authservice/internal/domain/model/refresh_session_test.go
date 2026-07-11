@@ -206,57 +206,59 @@ func TestRefreshSession_IsActive(t *testing.T) {
 	}
 }
 
-func TestRefreshSession_Revoke(t *testing.T) {
-	type testCase struct {
-		name      string
-		revokedAt *time.Time
-		reason    *string
-		expect    error
-	}
+func TestRefreshSession_RevokeByLogout(t *testing.T) {
+	session, _ := model.NewRefreshSession(
+		uuid.New(), uuid.New(),
+		testTokenHash, nil,
+		nil, nil, time.Minute,
+	)
 
-	var tests = []testCase{
-		{
-			name:      "success",
-			revokedAt: nil,
-			reason:    utils.VPtr("tests"),
-			expect:    nil,
-		},
-		{
-			name:      "error - token is revoked",
-			revokedAt: utils.VPtr(time.Now()),
-			reason:    nil,
-			expect:    model.ErrCannotRevokeToken,
-		},
-		{
-			name:      "error - empty reason",
-			revokedAt: nil,
-			reason:    utils.VPtr(""),
-			expect:    pkgerrs.ErrValueIsInvalid,
-		},
-	}
+	// First case - revoke successfully
+	err := session.RevokeByLogout()
+	require.NoError(t, err)
+	assert.True(t, session.IsRevoked())
+	assert.Equal(t, model.ReasonLogout, *session.RevokeReason())
 
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			session := model.RestoreRefreshSession(
-				uuid.New(), uuid.New(), testTokenHash,
-				time.Now(), time.Now().Add(time.Hour),
-				tt.revokedAt, nil,
-				nil, nil, nil)
-			err := session.Revoke(tt.reason)
-			if tt.expect == nil {
-				require.NoError(t, err)
+	// Second case - revoke failed
+	err = session.RevokeByLogout()
+	require.Error(t, err)
+	assert.ErrorIs(t, err, model.ErrCannotRevokeToken)
+}
 
-				var compareReason string
-				if tt.reason != nil {
-					compareReason = *tt.reason
-				}
+func TestRefreshSession_RevokeByRotation(t *testing.T) {
+	session, _ := model.NewRefreshSession(
+		uuid.New(), uuid.New(),
+		testTokenHash, nil,
+		nil, nil, time.Minute,
+	)
 
-				assert.Equal(t, compareReason, *(session.RevokeReason()))
-			} else {
-				require.Error(t, err)
-				assert.ErrorIs(t, err, tt.expect)
-				assert.Empty(t, session.RevokeReason())
-			}
-		})
-	}
+	// First case - revoke successfully
+	err := session.RevokeByRotation()
+	require.NoError(t, err)
+	assert.True(t, session.IsRevoked())
+	assert.Equal(t, model.ReasonTokenRotation, *session.RevokeReason())
+
+	// Second case - revoke failed
+	err = session.RevokeByRotation()
+	require.Error(t, err)
+	assert.ErrorIs(t, err, model.ErrCannotRevokeToken)
+}
+
+func TestRefreshSession_RevokeBySuspiciousEnv(t *testing.T) {
+	session, _ := model.NewRefreshSession(
+		uuid.New(), uuid.New(),
+		testTokenHash, nil,
+		nil, nil, time.Minute,
+	)
+
+	// First case - revoke successfully
+	err := session.RevokeBySuspiciousEnv()
+	require.NoError(t, err)
+	assert.True(t, session.IsRevoked())
+	assert.Equal(t, model.ReasonSuspiciousEnv, *session.RevokeReason())
+
+	// Second case - revoke failed
+	err = session.RevokeBySuspiciousEnv()
+	require.Error(t, err)
+	assert.ErrorIs(t, err, model.ErrCannotRevokeToken)
 }

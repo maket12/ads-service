@@ -16,10 +16,9 @@ import (
 )
 
 type RefreshSessionUC struct {
-	accountRole    port.AccountRoleRepository
-	refreshSession port.RefreshSessionRepository
-	tokenGenerator port.TokenGenerator
-
+	accountRole       port.AccountRoleRepository
+	refreshSession    port.RefreshSessionRepository
+	tokenGenerator    port.TokenGenerator
 	refreshSessionTTL time.Duration
 }
 
@@ -38,16 +37,16 @@ func NewRefreshSessionUC(
 }
 
 func (uc *RefreshSessionUC) Execute(ctx context.Context, in dto.RefreshSessionInput) (dto.RefreshSessionOutput, error) {
-	// Find old session
+	// Validate the specified token
 	accountID, oldSessionID, err := uc.tokenGenerator.ValidateRefreshToken(
-		ctx, in.OldRefreshToken,
+		ctx, in.RefreshToken,
 	)
 	if err != nil {
 		return dto.RefreshSessionOutput{}, ucerrs.ErrInvalidRefreshToken
 	}
 
+	// Find the old session
 	oldSession, err := uc.refreshSession.GetByID(ctx, oldSessionID)
-
 	if err != nil {
 		if errors.Is(err, pkgerrs.ErrObjectNotFound) {
 			return dto.RefreshSessionOutput{}, ucerrs.ErrInvalidRefreshToken
@@ -57,25 +56,25 @@ func (uc *RefreshSessionUC) Execute(ctx context.Context, in dto.RefreshSessionIn
 		)
 	}
 
-	// Validate and revoke
-	if !oldSession.IsActive() ||
-		!utils.ComparePtr(oldSession.IP(), in.IP) ||
-		!utils.ComparePtr(oldSession.UserAgent(), in.UserAgent) {
-		return dto.RefreshSessionOutput{}, ucerrs.ErrInvalidRefreshToken
+	// =========================================================
+	//                     BREACH DETECTION
+	// =========================================================
+	if err = uc.breachDetection(ctx, oldSession,
+		in.RefreshToken,
+		in.IP, in.UserAgent,
+	); err != nil {
+		return dto.RefreshSessionOutput{}, err
 	}
+	// =========================================================
 
-	if utils.HashToken(in.OldRefreshToken) != oldSession.RefreshTokenHash() {
-		return dto.RefreshSessionOutput{}, ucerrs.ErrInvalidRefreshToken
-	}
-
-	var reason = "token rotation"
-	if err := oldSession.Revoke(&reason); err != nil {
+	// Revoke the old session and save it into the database
+	if err = oldSession.RevokeByRotation(); err != nil {
 		return dto.RefreshSessionOutput{}, ucerrs.Wrap(
 			ucerrs.ErrCannotRevoke, err,
 		)
 	}
 
-	if err := uc.refreshSession.Update(ctx, oldSession); err != nil {
+	if err = uc.refreshSession.Update(ctx, oldSession); err != nil {
 		return dto.RefreshSessionOutput{}, ucerrs.Wrap(
 			ucerrs.ErrRevokeRefreshSessionDB, err,
 		)
@@ -90,18 +89,10 @@ func (uc *RefreshSessionUC) Execute(ctx context.Context, in dto.RefreshSessionIn
 	}
 
 	// Generate new tokens
-	accessToken, err := uc.tokenGenerator.GenerateAccessToken(
-		ctx, accountID, accRole.Role().String(),
-	)
-	if err != nil {
-		return dto.RefreshSessionOutput{}, ucerrs.Wrap(
-			ucerrs.ErrGenerateAccessToken, err,
-		)
-	}
-
 	var sessionID = uuid.New()
-	refreshToken, err := uc.tokenGenerator.GenerateRefreshToken(
-		ctx, accountID, sessionID,
+
+	tokensPair, err := uc.tokenGenerator.GeneratePair(
+		ctx, accountID, accRole.Role().String(), sessionID,
 	)
 	if err != nil {
 		return dto.RefreshSessionOutput{}, ucerrs.Wrap(
@@ -109,12 +100,10 @@ func (uc *RefreshSessionUC) Execute(ctx context.Context, in dto.RefreshSessionIn
 		)
 	}
 
-	hashedRefreshToken := utils.HashToken(refreshToken)
-
-	// Create new refresh session with rotation
+	// Create new refresh session
 	refreshSession, err := model.NewRefreshSession(
-		sessionID, accountID, hashedRefreshToken, &oldSessionID,
-		in.IP, in.UserAgent, uc.refreshSessionTTL,
+		sessionID, accountID, utils.HashToken(tokensPair.Refresh),
+		&oldSessionID, in.IP, in.UserAgent, uc.refreshSessionTTL,
 	)
 	if err != nil {
 		return dto.RefreshSessionOutput{}, ucerrs.Wrap(
@@ -122,7 +111,7 @@ func (uc *RefreshSessionUC) Execute(ctx context.Context, in dto.RefreshSessionIn
 		)
 	}
 
-	if err := uc.refreshSession.Create(ctx, refreshSession); err != nil {
+	if err = uc.refreshSession.Create(ctx, refreshSession); err != nil {
 		return dto.RefreshSessionOutput{}, ucerrs.Wrap(
 			ucerrs.ErrCreateRefreshSessionDB, err,
 		)
@@ -130,7 +119,43 @@ func (uc *RefreshSessionUC) Execute(ctx context.Context, in dto.RefreshSessionIn
 
 	// Output
 	return dto.RefreshSessionOutput{
-		AccessToken:  accessToken,
-		RefreshToken: refreshToken,
+		AccessToken:  tokensPair.Access,
+		RefreshToken: tokensPair.Refresh,
 	}, nil
+}
+
+func (uc *RefreshSessionUC) breachDetection(
+	ctx context.Context,
+	session *model.RefreshSession,
+	token string,
+	ip, userAgent *string,
+) error {
+	// Revoke descendants due to repeated request with the rotated token
+	if session.IsRevoked() && session.RevokeReason() != nil &&
+		*session.RevokeReason() == model.ReasonTokenRotation {
+		_ = uc.refreshSession.RevokeDescendants(
+			ctx,
+			session.ID(),
+			utils.VPtr(model.ReasonCompromisedReuse.String()),
+		)
+		return ucerrs.ErrInvalidRefreshToken
+	}
+
+	// Revoke due to suspicious env
+	if !utils.ComparePtr(session.IP(), ip) ||
+		!utils.ComparePtr(session.UserAgent(), userAgent) {
+		_ = session.RevokeBySuspiciousEnv()
+		_ = uc.refreshSession.Update(ctx, session)
+		return ucerrs.ErrInvalidRefreshToken
+	}
+
+	// Base validation
+	if !session.IsActive() {
+		return ucerrs.ErrInvalidRefreshToken
+	}
+	if utils.HashToken(token) != session.RefreshTokenHash() {
+		return ucerrs.ErrInvalidRefreshToken
+	}
+
+	return nil
 }

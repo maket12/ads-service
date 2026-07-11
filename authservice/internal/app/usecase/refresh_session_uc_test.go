@@ -2,6 +2,7 @@ package usecase_test
 
 import (
 	"context"
+	"errors"
 	"testing"
 	"time"
 
@@ -9,6 +10,7 @@ import (
 	ucerrs "github.com/maket12/ads-service/authservice/internal/app/errs"
 	"github.com/maket12/ads-service/authservice/internal/app/usecase"
 	"github.com/maket12/ads-service/authservice/internal/domain/model"
+	"github.com/maket12/ads-service/authservice/internal/domain/port"
 	"github.com/maket12/ads-service/authservice/internal/domain/port/mocks"
 	pkgerrs "github.com/maket12/ads-service/authservice/pkg/errs"
 	"github.com/maket12/ads-service/authservice/pkg/utils"
@@ -18,146 +20,345 @@ import (
 	"github.com/stretchr/testify/mock"
 )
 
+const refreshSessionTTL = 30 * 24 * time.Hour
+
+func newTestSession(t *testing.T, id, accountID uuid.UUID, tokenHash string, ip, ua *string) *model.RefreshSession {
+	t.Helper()
+	s, err := model.NewRefreshSession(id, accountID, tokenHash, nil, ip, ua, refreshSessionTTL)
+	assert.NoError(t, err)
+	return s
+}
+
 func TestRefreshSessionUC_Execute(t *testing.T) {
 	type adapter struct {
-		accountRole    *mocks.AccountRoleRepository
-		refreshSession *mocks.RefreshSessionRepository
-		tokenGenerator *mocks.TokenGenerator
+		accountRole    *mocks.MockAccountRoleRepository
+		refreshSession *mocks.MockRefreshSessionRepository
+		tokenGenerator *mocks.MockTokenGenerator
 	}
 
 	type testCase struct {
-		name    string
-		input   dto.RefreshSessionInput
-		prepare func(a adapter)
-		wantErr error
+		name          string
+		input         dto.RefreshSessionInput
+		mockBehaviour func(a adapter, accountID, sessionID uuid.UUID, rawToken string)
+		expectErr     error
 	}
 
-	accountID := uuid.New()
-	oldSessionID := uuid.New()
-	oldToken := "old-refresh-token"
-	hashedOldToken := utils.HashToken(oldToken)
-	ip := "127.0.0.1"
-	anotherIP := "8.8.8.8"
-	ua := "Mozilla/5.0"
-	anotherUA := "HackerBrowser/1.0"
-	ttl := time.Hour * 24
-
-	activeOldSession, _ := model.NewRefreshSession(
-		oldSessionID, accountID, hashedOldToken, nil, &ip, &ua, ttl,
-	)
-
-	role, _ := model.NewAccountRole(accountID)
+	rawToken := "raw-refresh-token"
+	ip := utils.VPtr("1.2.3.4")
+	ua := utils.VPtr("test-agent")
 
 	var tests = []testCase{
 		{
-			name: "Success - Token Rotation",
+			name: "Success",
 			input: dto.RefreshSessionInput{
-				OldRefreshToken: oldToken,
-				IP:              &ip,
-				UserAgent:       &ua,
+				RefreshToken: rawToken,
+				IP:           ip,
+				UserAgent:    ua,
 			},
-			prepare: func(a adapter) {
-				a.tokenGenerator.On("ValidateRefreshToken", mock.Anything, oldToken).
-					Return(accountID, oldSessionID, nil)
+			mockBehaviour: func(a adapter, accountID, sessionID uuid.UUID, rawToken string) {
+				session := newTestSession(t, sessionID, accountID, utils.HashToken(rawToken), ip, ua)
 
-				a.refreshSession.On("GetByID", mock.Anything, oldSessionID).
-					Return(activeOldSession, nil)
+				a.tokenGenerator.EXPECT().
+					ValidateRefreshToken(mock.Anything, rawToken).
+					Return(accountID, sessionID, nil)
 
-				a.refreshSession.On("Update", mock.Anything, mock.MatchedBy(func(s *model.RefreshSession) bool {
-					return !s.IsActive() && s.ID() == oldSessionID
-				})).Return(nil)
+				a.refreshSession.EXPECT().
+					GetByID(mock.Anything, sessionID).
+					Return(session, nil)
 
-				a.accountRole.On("Get", mock.Anything, accountID).Return(role, nil)
+				a.refreshSession.EXPECT().
+					Update(mock.Anything, session).
+					Return(nil)
 
-				a.tokenGenerator.On("GenerateAccessToken", mock.Anything, accountID, "user").
-					Return("new-access-token", nil)
-				a.tokenGenerator.On("GenerateRefreshToken", mock.Anything, accountID, mock.Anything).
-					Return("new-refresh-token", nil)
+				a.accountRole.EXPECT().
+					Get(mock.Anything, accountID).
+					Return(model.RestoreAccountRole(accountID, model.RoleUser), nil)
 
-				a.refreshSession.On("Create", mock.Anything, mock.MatchedBy(func(s *model.RefreshSession) bool {
-					return s.RotatedFrom() != nil && *s.RotatedFrom() == oldSessionID
-				})).Return(nil)
+				a.tokenGenerator.EXPECT().
+					GeneratePair(mock.Anything, accountID, model.RoleUser.String(), mock.AnythingOfType("uuid.UUID")).
+					Return(&port.TokensPair{Access: "new-access", Refresh: "new-refresh"}, nil)
+
+				a.refreshSession.EXPECT().
+					Create(mock.Anything, mock.AnythingOfType("*model.RefreshSession")).
+					Return(nil)
 			},
-			wantErr: nil,
+			expectErr: nil,
 		},
 		{
-			name: "Fail - IP Mismatch",
+			name: "Failure - invalid token signature",
 			input: dto.RefreshSessionInput{
-				OldRefreshToken: oldToken,
-				IP:              &anotherIP,
-				UserAgent:       &ua,
+				RefreshToken: rawToken,
+				IP:           ip,
+				UserAgent:    ua,
 			},
-			prepare: func(a adapter) {
-				a.tokenGenerator.On("ValidateRefreshToken", mock.Anything, oldToken).
-					Return(accountID, oldSessionID, nil)
-				a.refreshSession.On("GetByID", mock.Anything, oldSessionID).
-					Return(activeOldSession, nil)
+			mockBehaviour: func(a adapter, accountID, sessionID uuid.UUID, rawToken string) {
+				a.tokenGenerator.EXPECT().
+					ValidateRefreshToken(mock.Anything, rawToken).
+					Return(uuid.Nil, uuid.Nil, errors.New("bad signature"))
 			},
-			wantErr: ucerrs.ErrInvalidRefreshToken,
+			expectErr: ucerrs.ErrInvalidRefreshToken,
 		},
 		{
-			name: "Fail - UserAgent Mismatch",
+			name: "Failure - session not found",
 			input: dto.RefreshSessionInput{
-				OldRefreshToken: oldToken,
-				IP:              &ip,
-				UserAgent:       &anotherUA,
+				RefreshToken: rawToken,
+				IP:           ip,
+				UserAgent:    ua,
 			},
-			prepare: func(a adapter) {
-				a.tokenGenerator.On("ValidateRefreshToken", mock.Anything, oldToken).
-					Return(accountID, oldSessionID, nil)
-				a.refreshSession.On("GetByID", mock.Anything, oldSessionID).
-					Return(activeOldSession, nil)
-			},
-			wantErr: ucerrs.ErrInvalidRefreshToken,
-		},
-		{
-			name: "Fail - Old Token Hash Mismatch",
-			input: dto.RefreshSessionInput{
-				OldRefreshToken: "wrong-token-for-this-session",
-				IP:              &ip,
-				UserAgent:       &ua,
-			},
-			prepare: func(a adapter) {
-				a.tokenGenerator.On("ValidateRefreshToken", mock.Anything, "wrong-token-for-this-session").
-					Return(accountID, oldSessionID, nil)
-				a.refreshSession.On("GetByID", mock.Anything, oldSessionID).
-					Return(activeOldSession, nil)
-			},
-			wantErr: ucerrs.ErrInvalidRefreshToken,
-		},
-		{
-			name:  "Fail - Session Not Found",
-			input: dto.RefreshSessionInput{OldRefreshToken: oldToken, IP: &ip, UserAgent: &ua},
-			prepare: func(a adapter) {
-				a.tokenGenerator.On("ValidateRefreshToken", mock.Anything, oldToken).
-					Return(accountID, oldSessionID, nil)
-				a.refreshSession.On("GetByID", mock.Anything, oldSessionID).
+			mockBehaviour: func(a adapter, accountID, sessionID uuid.UUID, rawToken string) {
+				a.tokenGenerator.EXPECT().
+					ValidateRefreshToken(mock.Anything, rawToken).
+					Return(accountID, sessionID, nil)
+
+				a.refreshSession.EXPECT().
+					GetByID(mock.Anything, sessionID).
 					Return(nil, pkgerrs.ErrObjectNotFound)
 			},
-			wantErr: ucerrs.ErrInvalidRefreshToken,
+			expectErr: ucerrs.ErrInvalidRefreshToken,
+		},
+		{
+			name: "Failure - GetByID db error",
+			input: dto.RefreshSessionInput{
+				RefreshToken: rawToken,
+				IP:           ip,
+				UserAgent:    ua,
+			},
+			mockBehaviour: func(a adapter, accountID, sessionID uuid.UUID, rawToken string) {
+				a.tokenGenerator.EXPECT().
+					ValidateRefreshToken(mock.Anything, rawToken).
+					Return(accountID, sessionID, nil)
+
+				a.refreshSession.EXPECT().
+					GetByID(mock.Anything, sessionID).
+					Return(nil, errors.New("connection reset"))
+			},
+			expectErr: ucerrs.ErrGetRefreshSessionByIDDB,
+		},
+		{
+			name: "Failure - rotated-token reuse triggers descendant revocation",
+			input: dto.RefreshSessionInput{
+				RefreshToken: rawToken,
+				IP:           ip,
+				UserAgent:    ua,
+			},
+			mockBehaviour: func(a adapter, accountID, sessionID uuid.UUID, rawToken string) {
+				session := newTestSession(t, sessionID, accountID, utils.HashToken(rawToken), ip, ua)
+				assert.NoError(t, session.RevokeByRotation()) // simulate: already rotated once
+
+				a.tokenGenerator.EXPECT().
+					ValidateRefreshToken(mock.Anything, rawToken).
+					Return(accountID, sessionID, nil)
+
+				a.refreshSession.EXPECT().
+					GetByID(mock.Anything, sessionID).
+					Return(session, nil)
+
+				a.refreshSession.EXPECT().
+					RevokeDescendants(mock.Anything, sessionID, mock.AnythingOfType("*string")).
+					Return(nil)
+			},
+			expectErr: ucerrs.ErrInvalidRefreshToken,
+		},
+		{
+			name: "Failure - IP/UserAgent mismatch revokes as suspicious",
+			input: dto.RefreshSessionInput{
+				RefreshToken: rawToken,
+				IP:           utils.VPtr("9.9.9.9"),
+				UserAgent:    ua,
+			},
+			mockBehaviour: func(a adapter, accountID, sessionID uuid.UUID, rawToken string) {
+				session := newTestSession(t, sessionID, accountID, utils.HashToken(rawToken), ip, ua)
+
+				a.tokenGenerator.EXPECT().
+					ValidateRefreshToken(mock.Anything, rawToken).
+					Return(accountID, sessionID, nil)
+
+				a.refreshSession.EXPECT().
+					GetByID(mock.Anything, sessionID).
+					Return(session, nil)
+
+				a.refreshSession.EXPECT().
+					Update(mock.Anything, session).
+					Return(nil)
+			},
+			expectErr: ucerrs.ErrInvalidRefreshToken,
+		},
+		{
+			name: "Failure - token hash mismatch",
+			input: dto.RefreshSessionInput{
+				RefreshToken: rawToken,
+				IP:           ip,
+				UserAgent:    ua,
+			},
+			mockBehaviour: func(a adapter, accountID, sessionID uuid.UUID, rawToken string) {
+				// session stores a hash for a *different* token value
+				session := newTestSession(t, sessionID, accountID, utils.HashToken("some-other-token"), ip, ua)
+
+				a.tokenGenerator.EXPECT().
+					ValidateRefreshToken(mock.Anything, rawToken).
+					Return(accountID, sessionID, nil)
+
+				a.refreshSession.EXPECT().
+					GetByID(mock.Anything, sessionID).
+					Return(session, nil)
+			},
+			expectErr: ucerrs.ErrInvalidRefreshToken,
+		},
+		{
+			name: "Failure - revoke old session db error",
+			input: dto.RefreshSessionInput{
+				RefreshToken: rawToken,
+				IP:           ip,
+				UserAgent:    ua,
+			},
+			mockBehaviour: func(a adapter, accountID, sessionID uuid.UUID, rawToken string) {
+				session := newTestSession(t, sessionID, accountID, utils.HashToken(rawToken), ip, ua)
+
+				a.tokenGenerator.EXPECT().
+					ValidateRefreshToken(mock.Anything, rawToken).
+					Return(accountID, sessionID, nil)
+
+				a.refreshSession.EXPECT().
+					GetByID(mock.Anything, sessionID).
+					Return(session, nil)
+
+				a.refreshSession.EXPECT().
+					Update(mock.Anything, session).
+					Return(errors.New("db unavailable"))
+			},
+			expectErr: ucerrs.ErrRevokeRefreshSessionDB,
+		},
+		{
+			name: "Failure - account role lookup db error",
+			input: dto.RefreshSessionInput{
+				RefreshToken: rawToken,
+				IP:           ip,
+				UserAgent:    ua,
+			},
+			mockBehaviour: func(a adapter, accountID, sessionID uuid.UUID, rawToken string) {
+				session := newTestSession(t, sessionID, accountID, utils.HashToken(rawToken), ip, ua)
+
+				a.tokenGenerator.EXPECT().
+					ValidateRefreshToken(mock.Anything, rawToken).
+					Return(accountID, sessionID, nil)
+
+				a.refreshSession.EXPECT().
+					GetByID(mock.Anything, sessionID).
+					Return(session, nil)
+
+				a.refreshSession.EXPECT().
+					Update(mock.Anything, session).
+					Return(nil)
+
+				a.accountRole.EXPECT().
+					Get(mock.Anything, accountID).
+					Return(nil, errors.New("db unavailable"))
+			},
+			expectErr: ucerrs.ErrGetAccountRoleDB,
+			// NOTE: this case also demonstrates bug #2 from the review — by the
+			// time this fails, the old session has already been revoked and
+			// Update() succeeded, so the user is logged out with no new tokens.
+		},
+		{
+			name: "Failure - token pair generation error",
+			input: dto.RefreshSessionInput{
+				RefreshToken: rawToken,
+				IP:           ip,
+				UserAgent:    ua,
+			},
+			mockBehaviour: func(a adapter, accountID, sessionID uuid.UUID, rawToken string) {
+				session := newTestSession(t, sessionID, accountID, utils.HashToken(rawToken), ip, ua)
+
+				a.tokenGenerator.EXPECT().
+					ValidateRefreshToken(mock.Anything, rawToken).
+					Return(accountID, sessionID, nil)
+
+				a.refreshSession.EXPECT().
+					GetByID(mock.Anything, sessionID).
+					Return(session, nil)
+
+				a.refreshSession.EXPECT().
+					Update(mock.Anything, session).
+					Return(nil)
+
+				a.accountRole.EXPECT().
+					Get(mock.Anything, accountID).
+					Return(model.RestoreAccountRole(accountID, model.RoleUser), nil)
+
+				a.tokenGenerator.EXPECT().
+					GeneratePair(mock.Anything, accountID, model.RoleUser.String(), mock.AnythingOfType("uuid.UUID")).
+					Return(&port.TokensPair{}, errors.New("signing failure"))
+			},
+			expectErr: ucerrs.ErrGenerateTokensPair,
+		},
+		{
+			name: "Failure - create new session db error",
+			input: dto.RefreshSessionInput{
+				RefreshToken: rawToken,
+				IP:           ip,
+				UserAgent:    ua,
+			},
+			mockBehaviour: func(a adapter, accountID, sessionID uuid.UUID, rawToken string) {
+				session := newTestSession(t, sessionID, accountID, utils.HashToken(rawToken), ip, ua)
+
+				a.tokenGenerator.EXPECT().
+					ValidateRefreshToken(mock.Anything, rawToken).
+					Return(accountID, sessionID, nil)
+
+				a.refreshSession.EXPECT().
+					GetByID(mock.Anything, sessionID).
+					Return(session, nil)
+
+				a.refreshSession.EXPECT().
+					Update(mock.Anything, session).
+					Return(nil)
+
+				a.accountRole.EXPECT().
+					Get(mock.Anything, accountID).
+					Return(model.RestoreAccountRole(accountID, model.RoleUser), nil)
+
+				a.tokenGenerator.EXPECT().
+					GeneratePair(mock.Anything, accountID, model.RoleUser.String(), mock.AnythingOfType("uuid.UUID")).
+					Return(&port.TokensPair{Access: "new-access", Refresh: "new-refresh"}, nil)
+
+				a.refreshSession.EXPECT().
+					Create(mock.Anything, mock.AnythingOfType("*model.RefreshSession")).
+					Return(errors.New("db unavailable"))
+			},
+			expectErr: ucerrs.ErrCreateRefreshSessionDB,
 		},
 	}
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			a := adapter{
-				accountRole:    mocks.NewAccountRoleRepository(t),
-				refreshSession: mocks.NewRefreshSessionRepository(t),
-				tokenGenerator: mocks.NewTokenGenerator(t),
-			}
+			accountID := uuid.New()
+			sessionID := uuid.New()
 
-			tt.prepare(a)
+			// Mocks
+			accountRoleRepo := mocks.NewMockAccountRoleRepository(t)
+			refreshSessionRepo := mocks.NewMockRefreshSessionRepository(t)
+			tokenGenerator := mocks.NewMockTokenGenerator(t)
+			tt.mockBehaviour(adapter{
+				accountRole:    accountRoleRepo,
+				refreshSession: refreshSessionRepo,
+				tokenGenerator: tokenGenerator,
+			}, accountID, sessionID, rawToken)
 
-			uc := usecase.NewRefreshSessionUC(a.accountRole, a.refreshSession, a.tokenGenerator, ttl)
+			// UC
+			uc := usecase.NewRefreshSessionUC(
+				accountRoleRepo, refreshSessionRepo, tokenGenerator, refreshSessionTTL,
+			)
 
-			res, err := uc.Execute(context.Background(), tt.input)
+			// Call method
+			out, err := uc.Execute(context.Background(), tt.input)
 
-			if tt.wantErr != nil {
-				assert.ErrorIs(t, err, tt.wantErr)
+			if tt.expectErr != nil {
+				assert.Error(t, err)
+				assert.ErrorIs(t, err, tt.expectErr)
 			} else {
 				assert.NoError(t, err)
-				assert.NotEmpty(t, res.AccessToken)
-				assert.NotEmpty(t, res.RefreshToken)
+				assert.NotEmpty(t, out.AccessToken)
+				assert.NotEmpty(t, out.RefreshToken)
 			}
 		})
 	}

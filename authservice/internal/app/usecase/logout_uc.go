@@ -54,8 +54,7 @@ func (uc *LogoutUC) Execute(ctx context.Context, in dto.LogoutInput) (dto.Logout
 		return dto.LogoutOutput{}, ucerrs.ErrInvalidRefreshToken
 	}
 
-	var reason = "logout"
-	if err = session.Revoke(&reason); err != nil {
+	if err = session.RevokeByLogout(); err != nil {
 		return dto.LogoutOutput{}, ucerrs.ErrCannotRevoke
 	}
 

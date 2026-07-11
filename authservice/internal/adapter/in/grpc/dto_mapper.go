@@ -46,9 +46,9 @@ func MapLogoutDTOToPb(out dto.LogoutOutput) *auth_v1.LogoutResponse {
 func MapRefreshSessionPbToDTO(req *auth_v1.RefreshSessionRequest) dto.RefreshSessionInput {
 	var ip, userAgent = req.GetIp(), req.GetUserAgent()
 	return dto.RefreshSessionInput{
-		OldRefreshToken: req.GetOldRefreshToken(),
-		IP:              &ip,
-		UserAgent:       &userAgent,
+		RefreshToken: req.GetOldRefreshToken(),
+		IP:           &ip,
+		UserAgent:    &userAgent,
 	}
 }
 

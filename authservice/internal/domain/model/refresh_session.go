@@ -13,6 +13,17 @@ var (
 	ErrCannotRevokeToken = errors.New("token has been revoked earlier")
 )
 
+type RevokeReason string
+
+const (
+	ReasonLogout           RevokeReason = "logout"
+	ReasonTokenRotation    RevokeReason = "token rotation"
+	ReasonSuspiciousEnv    RevokeReason = "suspicious environment change"
+	ReasonCompromisedReuse RevokeReason = "compromised: reuse of rotated token"
+)
+
+func (r RevokeReason) String() string { return string(r) }
+
 // ================ Rich model for Refresh Session ================
 
 type RefreshSession struct {
@@ -22,7 +33,7 @@ type RefreshSession struct {
 	createdAt        time.Time
 	expiresAt        time.Time
 	revokedAt        *time.Time
-	revokeReason     *string
+	revokeReason     *RevokeReason
 	rotatedFrom      *uuid.UUID
 	ip               *string
 	userAgent        *string
@@ -69,7 +80,7 @@ func NewRefreshSession(
 func RestoreRefreshSession(
 	id, accountID uuid.UUID, refreshTokenHash string,
 	createdAt, expiresAt time.Time, revokedAt *time.Time,
-	revokeReason *string, rotatedFrom *uuid.UUID,
+	revokeReason *RevokeReason, rotatedFrom *uuid.UUID,
 	ip *string, userAgent *string,
 ) *RefreshSession {
 	return &RefreshSession{
@@ -88,16 +99,16 @@ func RestoreRefreshSession(
 
 // ================ Read-Only ================
 
-func (r *RefreshSession) ID() uuid.UUID            { return r.id }
-func (r *RefreshSession) AccountID() uuid.UUID     { return r.accountID }
-func (r *RefreshSession) RefreshTokenHash() string { return r.refreshTokenHash }
-func (r *RefreshSession) CreatedAt() time.Time     { return r.createdAt }
-func (r *RefreshSession) ExpiresAt() time.Time     { return r.expiresAt }
-func (r *RefreshSession) RevokedAt() *time.Time    { return r.revokedAt }
-func (r *RefreshSession) RevokeReason() *string    { return r.revokeReason }
-func (r *RefreshSession) RotatedFrom() *uuid.UUID  { return r.rotatedFrom }
-func (r *RefreshSession) IP() *string              { return r.ip }
-func (r *RefreshSession) UserAgent() *string       { return r.userAgent }
+func (r *RefreshSession) ID() uuid.UUID               { return r.id }
+func (r *RefreshSession) AccountID() uuid.UUID        { return r.accountID }
+func (r *RefreshSession) RefreshTokenHash() string    { return r.refreshTokenHash }
+func (r *RefreshSession) CreatedAt() time.Time        { return r.createdAt }
+func (r *RefreshSession) ExpiresAt() time.Time        { return r.expiresAt }
+func (r *RefreshSession) RevokedAt() *time.Time       { return r.revokedAt }
+func (r *RefreshSession) RevokeReason() *RevokeReason { return r.revokeReason }
+func (r *RefreshSession) RotatedFrom() *uuid.UUID     { return r.rotatedFrom }
+func (r *RefreshSession) IP() *string                 { return r.ip }
+func (r *RefreshSession) UserAgent() *string          { return r.userAgent }
 
 func (r *RefreshSession) IsActive() bool  { return !r.IsExpired() && !r.IsRevoked() }
 func (r *RefreshSession) IsExpired() bool { return time.Now().After(r.ExpiresAt()) }
@@ -105,18 +116,26 @@ func (r *RefreshSession) IsRevoked() bool { return r.RevokedAt() != nil }
 
 // ================ Mutation ================
 
-func (r *RefreshSession) Revoke(reason *string) error {
+func (r *RefreshSession) revoke(reason RevokeReason) error {
 	if r.IsRevoked() {
 		return ErrCannotRevokeToken
 	}
 
-	if reason != nil && *reason == "" {
-		return pkgerrs.NewValueInvalidError("revoke_reason")
-	}
-
 	now := time.Now()
 	r.revokedAt = &now
-	r.revokeReason = reason
+	r.revokeReason = &reason
 
 	return nil
+}
+
+func (r *RefreshSession) RevokeByLogout() error {
+	return r.revoke(ReasonLogout)
+}
+
+func (r *RefreshSession) RevokeByRotation() error {
+	return r.revoke(ReasonTokenRotation)
+}
+
+func (r *RefreshSession) RevokeBySuspiciousEnv() error {
+	return r.revoke(ReasonSuspiciousEnv)
 }
