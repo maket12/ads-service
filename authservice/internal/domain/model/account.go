@@ -26,7 +26,7 @@ const (
 
 func (s AccountStatus) String() string { return string(s) }
 
-// ================ Rich model for account ================
+// ================ Rich model for Account ================
 
 type Account struct {
 	id            uuid.UUID
