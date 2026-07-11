@@ -50,7 +50,7 @@ func (a *AccountRole) Role() Role           { return a.role }
 
 func (a *AccountRole) Assign(rawRole string) error {
 	lowerRawRole := strings.ToLower(rawRole)
-	if lowerRawRole != "user" && lowerRawRole != "admin" {
+	if lowerRawRole != RoleUser.String() && lowerRawRole != RoleAdmin.String() {
 		return pkgerrs.NewValueInvalidError("role")
 	}
 	a.role = Role(lowerRawRole)

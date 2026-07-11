@@ -23,8 +23,8 @@ func gRPCError(err error) *pkgerrs.OutErr {
 			errors.Is(w.Public, ucerrs.ErrCreateRefreshSessionDB),
 			errors.Is(w.Public, ucerrs.ErrGetRefreshSessionByIDDB),
 			errors.Is(w.Public, ucerrs.ErrRevokeRefreshSessionDB),
+			errors.Is(w.Public, ucerrs.ErrRevokeAllForAccountDB),
 			errors.Is(w.Public, ucerrs.ErrCreateAccountRoleDB),
-			errors.Is(w.Public, ucerrs.ErrGenerateAccessToken),
 			errors.Is(w.Public, ucerrs.ErrGenerateTokensPair),
 			errors.Is(w.Public, ucerrs.ErrPublishEvent):
 			return pkgerrs.NewOutError(codes.Internal, w.Public.Error(), w.Reason)

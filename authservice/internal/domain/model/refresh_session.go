@@ -20,6 +20,7 @@ const (
 	ReasonTokenRotation    RevokeReason = "token rotation"
 	ReasonSuspiciousEnv    RevokeReason = "suspicious environment change"
 	ReasonCompromisedReuse RevokeReason = "compromised: reuse of rotated token"
+	ReasonRoleChanged      RevokeReason = "role changed"
 )
 
 func (r RevokeReason) String() string { return string(r) }
