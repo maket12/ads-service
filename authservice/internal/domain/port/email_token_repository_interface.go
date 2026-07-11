@@ -7,5 +7,6 @@ import (
 )
 
 type EmailTokenRepository interface {
-	Save(ctx context.Context, token model.VerificationToken)
+	Save(ctx context.Context, token *model.VerificationToken)
+	Get(ctx context.Context, token string) (*model.VerificationToken, error)
 }
