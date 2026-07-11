@@ -111,6 +111,8 @@ func (r *RefreshSession) RotatedFrom() *uuid.UUID     { return r.rotatedFrom }
 func (r *RefreshSession) IP() *string                 { return r.ip }
 func (r *RefreshSession) UserAgent() *string          { return r.userAgent }
 
+// ================ Business logic ================
+
 func (r *RefreshSession) IsActive() bool  { return !r.IsExpired() && !r.IsRevoked() }
 func (r *RefreshSession) IsExpired() bool { return time.Now().After(r.ExpiresAt()) }
 func (r *RefreshSession) IsRevoked() bool { return r.RevokedAt() != nil }
