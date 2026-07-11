@@ -59,9 +59,9 @@ func (r *RefreshSessionRepository) GetByID(ctx context.Context, tokenID uuid.UUI
 	return mapper.MapSQLCToRefreshSession(rawSession), nil
 }
 
-func (r *RefreshSessionRepository) Revoke(ctx context.Context, session *model.RefreshSession) error {
-	params := mapper.MapRefreshSessionToSQLCRevoke(session)
-	return r.q.RevokeRefreshSession(ctx, r.db(ctx), params)
+func (r *RefreshSessionRepository) Update(ctx context.Context, session *model.RefreshSession) error {
+	params := mapper.MapRefreshSessionToSQLCUpdate(session)
+	return r.q.UpdateRefreshSession(ctx, r.db(ctx), params)
 }
 
 func (r *RefreshSessionRepository) RevokeAllForAccount(ctx context.Context, accountID uuid.UUID, reason *string) error {

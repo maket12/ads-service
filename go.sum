@@ -24,6 +24,8 @@ github.com/avito-tech/go-transaction-manager/drivers/pgxv5/v2 v2.0.4 h1:DEAJA4Ed
 github.com/avito-tech/go-transaction-manager/drivers/pgxv5/v2 v2.0.4/go.mod h1:O+bq9veJwpjhOYy6DSys82p6AP5KadYWZbm1sLipOl0=
 github.com/avito-tech/go-transaction-manager/trm/v2 v2.0.2 h1:1x77jlbvB1e9Jh5T0YQy0ZHoh4gXTKI6DmDEBG+BCv4=
 github.com/avito-tech/go-transaction-manager/trm/v2 v2.0.2/go.mod h1:RftHdsefhv39lGvjmsqM5xB15n/tiQxlw1sLYusF3yg=
+github.com/brianvoe/gofakeit/v7 v7.15.0 h1:kGLYAWN8tnmxq2PelKVK6zwpM7kMxdz9SGPH31mFkNs=
+github.com/brianvoe/gofakeit/v7 v7.15.0/go.mod h1:QXuPeBw164PJCzCUZVmgpgHJ3Llj49jSLVkKPMtxtxA=
 github.com/caarlos0/env/v11 v11.3.1 h1:cArPWC15hWmEt+gWk7YBi7lEXTXCvpaSdCiZE2X5mCA=
 github.com/caarlos0/env/v11 v11.3.1/go.mod h1:qupehSf/Y0TUTsxKywqRt/vJjN5nz6vauiYEUUr8P4U=
 github.com/cenkalti/backoff/v4 v4.3.0 h1:MyRJ/UdXutAwSAT+s3wNd7MfTIcy71VQueUuFK343L8=

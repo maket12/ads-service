@@ -131,7 +131,7 @@ func (s *RefreshSessionsRepoSuite) TestRevoke() {
 	)
 	_ = revokedSession.Revoke(&reason)
 
-	// Revoke the session
+	// Update the session
 	err := s.repo.Revoke(s.ctx, &revokedSession)
 	s.Require().NoError(err)
 

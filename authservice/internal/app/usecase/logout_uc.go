@@ -28,14 +28,14 @@ func NewLogoutUC(
 
 func (uc *LogoutUC) Execute(ctx context.Context, in dto.LogoutInput) (dto.LogoutOutput, error) {
 	// Find session
-	_, oldSessionID, err := uc.tokenGenerator.ValidateRefreshToken(
+	_, sessionID, err := uc.tokenGenerator.ValidateRefreshToken(
 		ctx, in.RefreshToken,
 	)
 	if err != nil {
 		return dto.LogoutOutput{}, ucerrs.ErrInvalidRefreshToken
 	}
 
-	session, err := uc.refreshSession.GetByID(ctx, oldSessionID)
+	session, err := uc.refreshSession.GetByID(ctx, sessionID)
 	if err != nil {
 		if errors.Is(err, pkgerrs.ErrObjectNotFound) {
 			return dto.LogoutOutput{}, ucerrs.ErrInvalidRefreshToken
@@ -55,11 +55,11 @@ func (uc *LogoutUC) Execute(ctx context.Context, in dto.LogoutInput) (dto.Logout
 	}
 
 	var reason = "logout"
-	if err := session.Revoke(&reason); err != nil {
+	if err = session.Revoke(&reason); err != nil {
 		return dto.LogoutOutput{}, ucerrs.ErrCannotRevoke
 	}
 
-	if err := uc.refreshSession.Revoke(ctx, session); err != nil {
+	if err = uc.refreshSession.Update(ctx, session); err != nil {
 		return dto.LogoutOutput{}, ucerrs.Wrap(
 			ucerrs.ErrRevokeRefreshSessionDB, err,
 		)

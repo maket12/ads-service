@@ -97,12 +97,10 @@ func (uc *LoginUC) Execute(ctx context.Context, in dto.LoginInput) (dto.LoginOut
 		)
 	}
 
-	hashedRefreshToken := utils.HashToken(tokensPair.Refresh)
-
 	// Create a refresh session
 	refreshSession, err := model.NewRefreshSession(
-		sessionID, account.ID(), hashedRefreshToken, nil,
-		in.IP, in.UserAgent, uc.refreshTTL,
+		sessionID, account.ID(), utils.HashToken(tokensPair.Refresh),
+		nil, in.IP, in.UserAgent, uc.refreshTTL,
 	)
 	if err != nil {
 		return dto.LoginOutput{}, ucerrs.Wrap(

@@ -5,6 +5,8 @@ go 1.26.2
 require (
 	github.com/99designs/gqlgen v0.17.86
 	github.com/avito-tech/go-transaction-manager/drivers/pgxv5/v2 v2.0.4
+	github.com/avito-tech/go-transaction-manager/trm/v2 v2.0.2
+	github.com/brianvoe/gofakeit/v7 v7.15.0
 	github.com/caarlos0/env/v11 v11.3.1
 	github.com/golang-jwt/jwt/v5 v5.3.0
 	github.com/golang-migrate/migrate/v4 v4.19.1
@@ -27,7 +29,6 @@ require (
 	github.com/Azure/go-ansiterm v0.0.0-20250102033503-faa5f7b0171c // indirect
 	github.com/Microsoft/go-winio v0.6.2 // indirect
 	github.com/agnivade/levenshtein v1.2.1 // indirect
-	github.com/avito-tech/go-transaction-manager/trm/v2 v2.0.2 // indirect
 	github.com/cenkalti/backoff/v4 v4.3.0 // indirect
 	github.com/cespare/xxhash/v2 v2.3.0 // indirect
 	github.com/containerd/errdefs v1.0.0 // indirect

@@ -5,6 +5,8 @@ import (
 	"testing"
 	"time"
 
+	"github.com/brianvoe/gofakeit/v7"
+
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5/pgtype"
 	"github.com/maket12/ads-service/authservice/internal/adapter/out/postgres/mapper"
@@ -259,32 +261,45 @@ func TestMapSQLCToRefreshSession_NilOptionalFields(t *testing.T) {
 func TestMapRefreshSessionToSQLCRevoke(t *testing.T) {
 	id := uuid.New()
 	accountID := uuid.New()
+	rotatedFrom := uuid.New()
 
 	createdAt := time.Now()
 	expiresAt := createdAt.Add(time.Second)
 	revokedAt := expiresAt.Add(time.Second)
+
+	refreshTokenHash := "refresh-token-hash"
 	revokeReason := "logout"
+	ipStr := gofakeit.IPv4Address()
+	ip, _ := netip.ParseAddr(ipStr)
+	userAgent := gofakeit.UserAgent()
 
 	session := model.RestoreRefreshSession(
 		id,
 		accountID,
-		"refresh-token-hash",
+		refreshTokenHash,
 		createdAt,
 		expiresAt,
 		&revokedAt,
 		&revokeReason,
-		nil,
-		nil,
-		nil,
+		&rotatedFrom,
+		&ipStr,
+		&userAgent,
 	)
 
-	expected := sqlc.RevokeRefreshSessionParams{
-		ID:           pgtype.UUID{Bytes: id, Valid: true},
-		RevokedAt:    pgtype.Timestamptz{Time: revokedAt, Valid: true},
-		RevokeReason: pgtype.Text{String: revokeReason, Valid: true},
+	expected := sqlc.UpdateRefreshSessionParams{
+		ID:               pgtype.UUID{Bytes: id, Valid: true},
+		AccountID:        pgtype.UUID{Bytes: accountID, Valid: true},
+		RefreshTokenHash: refreshTokenHash,
+		CreatedAt:        pgtype.Timestamptz{Time: createdAt, Valid: true},
+		ExpiresAt:        pgtype.Timestamptz{Time: expiresAt, Valid: true},
+		RevokedAt:        pgtype.Timestamptz{Time: revokedAt, Valid: true},
+		RevokeReason:     pgtype.Text{String: revokeReason, Valid: true},
+		RotatedFrom:      pgtype.UUID{Bytes: rotatedFrom, Valid: true},
+		Ip:               &ip,
+		UserAgent:        pgtype.Text{String: userAgent, Valid: true},
 	}
 
-	actual := mapper.MapRefreshSessionToSQLCRevoke(session)
+	actual := mapper.MapRefreshSessionToSQLCUpdate(session)
 
 	require.Equal(t, expected, actual)
 }
@@ -296,10 +311,12 @@ func TestMapRefreshSessionToSQLCRevoke_NilOptionalFields(t *testing.T) {
 	createdAt := time.Now()
 	expiresAt := createdAt.Add(time.Minute)
 
+	refreshTokenHash := "refresh-token-hash"
+
 	session := model.RestoreRefreshSession(
 		id,
 		accountID,
-		"refresh-token-hash",
+		refreshTokenHash,
 		createdAt,
 		expiresAt,
 		nil,
@@ -309,13 +326,20 @@ func TestMapRefreshSessionToSQLCRevoke_NilOptionalFields(t *testing.T) {
 		nil,
 	)
 
-	expected := sqlc.RevokeRefreshSessionParams{
-		ID:           pgtype.UUID{Bytes: id, Valid: true},
-		RevokedAt:    pgtype.Timestamptz{},
-		RevokeReason: pgtype.Text{},
+	expected := sqlc.UpdateRefreshSessionParams{
+		ID:               pgtype.UUID{Bytes: id, Valid: true},
+		AccountID:        pgtype.UUID{Bytes: accountID, Valid: true},
+		RefreshTokenHash: refreshTokenHash,
+		CreatedAt:        pgtype.Timestamptz{Time: createdAt, Valid: true},
+		ExpiresAt:        pgtype.Timestamptz{Time: expiresAt, Valid: true},
+		RevokedAt:        pgtype.Timestamptz{},
+		RevokeReason:     pgtype.Text{},
+		RotatedFrom:      pgtype.UUID{},
+		Ip:               nil,
+		UserAgent:        pgtype.Text{},
 	}
 
-	actual := mapper.MapRefreshSessionToSQLCRevoke(session)
+	actual := mapper.MapRefreshSessionToSQLCUpdate(session)
 
 	require.Equal(t, expected, actual)
 }

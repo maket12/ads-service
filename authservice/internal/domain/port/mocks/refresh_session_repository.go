@@ -145,11 +145,11 @@ func (_m *RefreshSessionRepository) ListActiveForAccount(ctx context.Context, ac
 }
 
 // Revoke provides a mock function with given fields: ctx, session
-func (_m *RefreshSessionRepository) Revoke(ctx context.Context, session *model.RefreshSession) error {
+func (_m *RefreshSessionRepository) Update(ctx context.Context, session *model.RefreshSession) error {
 	ret := _m.Called(ctx, session)
 
 	if len(ret) == 0 {
-		panic("no return value specified for Revoke")
+		panic("no return value specified for Update")
 	}
 
 	var r0 error

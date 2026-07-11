@@ -75,7 +75,7 @@ func (uc *RefreshSessionUC) Execute(ctx context.Context, in dto.RefreshSessionIn
 		)
 	}
 
-	if err := uc.refreshSession.Revoke(ctx, oldSession); err != nil {
+	if err := uc.refreshSession.Update(ctx, oldSession); err != nil {
 		return dto.RefreshSessionOutput{}, ucerrs.Wrap(
 			ucerrs.ErrRevokeRefreshSessionDB, err,
 		)

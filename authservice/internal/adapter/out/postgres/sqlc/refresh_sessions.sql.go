@@ -211,25 +211,6 @@ func (q *Queries) RevokeAllAccountRefreshSessions(ctx context.Context, db DBTX, 
 	return err
 }
 
-const revokeRefreshSession = `-- name: RevokeRefreshSession :exec
-UPDATE refresh_sessions
-SET
-    revoked_at = $2,
-    revoke_reason = $3
-WHERE id = $1
-`
-
-type RevokeRefreshSessionParams struct {
-	ID           pgtype.UUID
-	RevokedAt    pgtype.Timestamptz
-	RevokeReason pgtype.Text
-}
-
-func (q *Queries) RevokeRefreshSession(ctx context.Context, db DBTX, arg RevokeRefreshSessionParams) error {
-	_, err := db.Exec(ctx, revokeRefreshSession, arg.ID, arg.RevokedAt, arg.RevokeReason)
-	return err
-}
-
 const revokeRefreshSessionDescendants = `-- name: RevokeRefreshSessionDescendants :exec
 WITH RECURSIVE chain(target_id) AS (
     SELECT rs_init.id
@@ -259,5 +240,49 @@ type RevokeRefreshSessionDescendantsParams struct {
 
 func (q *Queries) RevokeRefreshSessionDescendants(ctx context.Context, db DBTX, arg RevokeRefreshSessionDescendantsParams) error {
 	_, err := db.Exec(ctx, revokeRefreshSessionDescendants, arg.ID, arg.RevokedAt, arg.RevokeReason)
+	return err
+}
+
+const updateRefreshSession = `-- name: UpdateRefreshSession :exec
+UPDATE refresh_sessions
+SET
+    account_id = $2,
+    refresh_token_hash = $3,
+    created_at = $4,
+    expires_at = $5,
+    revoked_at = $6,
+    revoke_reason = $7,
+    rotated_from = $8,
+    ip = $9,
+    user_agent = $10
+WHERE id = $1
+`
+
+type UpdateRefreshSessionParams struct {
+	ID               pgtype.UUID
+	AccountID        pgtype.UUID
+	RefreshTokenHash string
+	CreatedAt        pgtype.Timestamptz
+	ExpiresAt        pgtype.Timestamptz
+	RevokedAt        pgtype.Timestamptz
+	RevokeReason     pgtype.Text
+	RotatedFrom      pgtype.UUID
+	Ip               *netip.Addr
+	UserAgent        pgtype.Text
+}
+
+func (q *Queries) UpdateRefreshSession(ctx context.Context, db DBTX, arg UpdateRefreshSessionParams) error {
+	_, err := db.Exec(ctx, updateRefreshSession,
+		arg.ID,
+		arg.AccountID,
+		arg.RefreshTokenHash,
+		arg.CreatedAt,
+		arg.ExpiresAt,
+		arg.RevokedAt,
+		arg.RevokeReason,
+		arg.RotatedFrom,
+		arg.Ip,
+		arg.UserAgent,
+	)
 	return err
 }

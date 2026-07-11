@@ -52,7 +52,7 @@ func TestLogoutUC_Execute(t *testing.T) {
 				a.refreshSession.On("GetByID", mock.Anything, sessionID).
 					Return(activeSession, nil)
 
-				a.refreshSession.On("Revoke", mock.Anything, mock.MatchedBy(func(s *model.RefreshSession) bool {
+				a.refreshSession.On("Update", mock.Anything, mock.MatchedBy(func(s *model.RefreshSession) bool {
 					return !s.IsActive()
 				})).Return(nil)
 			},

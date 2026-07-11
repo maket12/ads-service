@@ -24,12 +24,12 @@ type Querier interface {
 	ListAccountActiveRefreshSessions(ctx context.Context, db DBTX, arg ListAccountActiveRefreshSessionsParams) ([]RefreshSession, error)
 	MarkAccountLogin(ctx context.Context, db DBTX, arg MarkAccountLoginParams) error
 	RevokeAllAccountRefreshSessions(ctx context.Context, db DBTX, arg RevokeAllAccountRefreshSessionsParams) error
-	RevokeRefreshSession(ctx context.Context, db DBTX, arg RevokeRefreshSessionParams) error
 	RevokeRefreshSessionDescendants(ctx context.Context, db DBTX, arg RevokeRefreshSessionDescendantsParams) error
 	UpdateAccountEmail(ctx context.Context, db DBTX, arg UpdateAccountEmailParams) error
 	UpdateAccountPassword(ctx context.Context, db DBTX, arg UpdateAccountPasswordParams) error
 	UpdateAccountRole(ctx context.Context, db DBTX, arg UpdateAccountRoleParams) error
 	UpdateAccountStatus(ctx context.Context, db DBTX, arg UpdateAccountStatusParams) error
+	UpdateRefreshSession(ctx context.Context, db DBTX, arg UpdateRefreshSessionParams) error
 	VerifyAccountEmail(ctx context.Context, db DBTX, arg VerifyAccountEmailParams) error
 }
 

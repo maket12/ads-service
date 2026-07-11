@@ -44,11 +44,18 @@ SELECT
 FROM refresh_sessions
 WHERE refresh_token_hash = $1;
 
--- name: RevokeRefreshSession :exec
+-- name: UpdateRefreshSession :exec
 UPDATE refresh_sessions
 SET
-    revoked_at = $2,
-    revoke_reason = $3
+    account_id = $2,
+    refresh_token_hash = $3,
+    created_at = $4,
+    expires_at = $5,
+    revoked_at = $6,
+    revoke_reason = $7,
+    rotated_from = $8,
+    ip = $9,
+    user_agent = $10
 WHERE id = $1;
 
 -- name: RevokeRefreshSessionDescendants :exec
