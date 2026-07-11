@@ -2,9 +2,12 @@ package port
 
 import (
 	"context"
+	"errors"
 
 	"github.com/google/uuid"
 )
+
+var ErrTokenExpired = errors.New("token has expired")
 
 type TokensPair struct {
 	Access  string

@@ -4,6 +4,7 @@ import (
 	"testing"
 	"time"
 
+	"github.com/brianvoe/gofakeit/v7"
 	"github.com/maket12/ads-service/authservice/internal/domain/model"
 	pkgerrs "github.com/maket12/ads-service/authservice/pkg/errs"
 
@@ -27,10 +28,13 @@ func TestNewAccount(t *testing.T) {
 
 	var tests = []testCase{
 		{
-			name:         "success",
-			email:        testEmail,
-			passwordHash: testPassword,
-			expect:       nil,
+			name:  "success",
+			email: gofakeit.Email(),
+			passwordHash: gofakeit.Password(
+				true, false, false,
+				false, false, 8,
+			),
+			expect: nil,
 		},
 		{
 			name:   "empty email",
@@ -39,7 +43,7 @@ func TestNewAccount(t *testing.T) {
 		},
 		{
 			name:         "empty password",
-			email:        testEmail,
+			email:        gofakeit.Email(),
 			passwordHash: "",
 			expect:       pkgerrs.ErrValueIsRequired,
 		},

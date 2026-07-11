@@ -13,6 +13,8 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
+const testTokenHash = "hashed-token"
+
 func TestNewRefreshSession(t *testing.T) {
 	type testCase struct {
 		name        string
@@ -31,7 +33,7 @@ func TestNewRefreshSession(t *testing.T) {
 			name:      "success",
 			id:        uuid.New(),
 			accountID: uuid.New(),
-			tokenHash: "hashed",
+			tokenHash: testTokenHash,
 			ttl:       time.Minute,
 			expect:    nil,
 		},
@@ -39,7 +41,7 @@ func TestNewRefreshSession(t *testing.T) {
 			name:      "nullable session id",
 			id:        uuid.Nil,
 			accountID: uuid.New(),
-			tokenHash: "hashed",
+			tokenHash: testTokenHash,
 			ttl:       time.Minute,
 			expect:    pkgerrs.ErrValueIsInvalid,
 		},
@@ -47,7 +49,7 @@ func TestNewRefreshSession(t *testing.T) {
 			name:      "nullable account id",
 			id:        uuid.New(),
 			accountID: uuid.Nil,
-			tokenHash: "hashed",
+			tokenHash: testTokenHash,
 			ttl:       time.Minute,
 			expect:    pkgerrs.ErrValueIsInvalid,
 		},
@@ -63,7 +65,7 @@ func TestNewRefreshSession(t *testing.T) {
 			name:        "nullable rotated from",
 			id:          uuid.New(),
 			accountID:   uuid.New(),
-			tokenHash:   "hashed",
+			tokenHash:   testTokenHash,
 			rotatedFrom: utils.VPtr(uuid.Nil),
 			ttl:         time.Minute,
 			expect:      pkgerrs.ErrValueIsInvalid,
@@ -72,7 +74,7 @@ func TestNewRefreshSession(t *testing.T) {
 			name:      "invalid ttl (not positive)",
 			id:        uuid.New(),
 			accountID: uuid.New(),
-			tokenHash: "hashed",
+			tokenHash: testTokenHash,
 			ip:        utils.VPtr("123.021.234.0"),
 			userAgent: utils.VPtr("Mozilla/5.0"),
 			ttl:       time.Minute * -1,
@@ -124,7 +126,7 @@ func TestRefreshSession_IsExpired(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			session := model.RestoreRefreshSession(
-				uuid.New(), uuid.New(), "hashed",
+				uuid.New(), uuid.New(), testTokenHash,
 				time.Now(), tt.expiresAt, nil, nil,
 				nil, nil, nil)
 			assert.Equal(t, tt.expect, session.IsExpired())
@@ -155,7 +157,7 @@ func TestRefreshSession_IsRevoked(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			session := model.RestoreRefreshSession(
-				uuid.New(), uuid.New(), "hashed",
+				uuid.New(), uuid.New(), testTokenHash,
 				time.Now(), time.Now().Add(time.Hour),
 				tt.revokedAt, nil,
 				nil, nil, nil)
@@ -196,7 +198,7 @@ func TestRefreshSession_IsActive(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			session := model.RestoreRefreshSession(
-				uuid.New(), uuid.New(), "hashed",
+				uuid.New(), uuid.New(), testTokenHash,
 				time.Now(), tt.expiresAt, tt.revokedAt, nil,
 				nil, nil, nil)
 			assert.Equal(t, tt.expect, session.IsActive())
@@ -236,7 +238,7 @@ func TestRefreshSession_Revoke(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			session := model.RestoreRefreshSession(
-				uuid.New(), uuid.New(), "hashed",
+				uuid.New(), uuid.New(), testTokenHash,
 				time.Now(), time.Now().Add(time.Hour),
 				tt.revokedAt, nil,
 				nil, nil, nil)

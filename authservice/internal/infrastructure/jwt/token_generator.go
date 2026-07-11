@@ -2,6 +2,7 @@ package jwt
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"time"
 
@@ -150,7 +151,14 @@ func (gen *Generator) parseToken(_ context.Context,
 		jwt.WithValidMethods([]string{jwt.SigningMethodHS256.Name}),
 		jwt.WithLeeway(leewayVal),
 	)
+
 	if err != nil {
+		if errors.Is(err, jwt.ErrTokenExpired) {
+			if claims.Type != tokenType.String() {
+				return nil, fmt.Errorf("token type mismatch: %w", err)
+			}
+			return &claims, jwt.ErrTokenExpired
+		}
 		return nil, err
 	}
 
@@ -192,20 +200,29 @@ func (gen *Generator) ValidateAccessToken(
 
 func (gen *Generator) ValidateRefreshToken(ctx context.Context, token string) (uuid.UUID, uuid.UUID, error) {
 	claims, err := gen.parseToken(ctx, token, port.RefreshToken)
-	if err != nil {
+	if err != nil && !errors.Is(err, jwt.ErrTokenExpired) {
 		return uuid.Nil, uuid.Nil, fmt.Errorf(
 			"failed to parse refresh token: %w", err,
 		)
 	}
 
-	sub, err := uuid.Parse(claims.Subject)
-	if err != nil {
-		return uuid.Nil, uuid.Nil, fmt.Errorf("failed to get account_id: %w", err)
+	sub, parseErr := uuid.Parse(claims.Subject)
+	if parseErr != nil {
+		return uuid.Nil, uuid.Nil, fmt.Errorf(
+			"failed to get account_id: %w", parseErr,
+		)
 	}
 
-	sessionID, err := uuid.Parse(claims.ID)
-	if err != nil {
-		return uuid.Nil, uuid.Nil, fmt.Errorf("failed to get session id: %w", err)
+	sessionID, parseErr := uuid.Parse(claims.ID)
+	if parseErr != nil {
+		return uuid.Nil, uuid.Nil, fmt.Errorf(
+			"failed to get session id: %w", parseErr,
+		)
+	}
+
+	// If the token has expired - return the data for revoking
+	if errors.Is(err, jwt.ErrTokenExpired) {
+		return sub, sessionID, port.ErrTokenExpired
 	}
 
 	return sub, sessionID, nil
