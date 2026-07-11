@@ -6,7 +6,7 @@ import (
 	"time"
 
 	"github.com/google/uuid"
-	pkgerrs "github.com/maket12/ads-service/pkg/errs"
+	pkgerrs "github.com/maket12/ads-service/authservice/pkg/errs"
 )
 
 const minTTL = time.Minute
@@ -26,7 +26,7 @@ func NewVerificationToken(
 	if accountID == uuid.Nil {
 		return nil, pkgerrs.NewValueInvalidError("account_id")
 	}
-	if ttl < time.Minute {
+	if ttl < minTTL {
 		return nil, pkgerrs.NewValueInvalidError("token_ttl")
 	}
 

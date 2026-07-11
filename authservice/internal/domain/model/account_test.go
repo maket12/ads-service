@@ -48,13 +48,21 @@ func TestNewAccount(t *testing.T) {
 			expect:       pkgerrs.ErrValueIsRequired,
 		},
 		{
-			name:   "short email",
-			email:  "12@g",
+			name:  "short email",
+			email: "12@g",
+			passwordHash: gofakeit.Password(
+				true, false, false,
+				false, false, 8,
+			),
 			expect: pkgerrs.ErrValueIsInvalid,
 		},
 		{
-			name:   "invalid email",
-			email:  "123456789",
+			name:  "invalid email",
+			email: "123456789",
+			passwordHash: gofakeit.Password(
+				true, false, false,
+				false, false, 8,
+			),
 			expect: pkgerrs.ErrValueIsInvalid,
 		},
 	}
@@ -72,7 +80,7 @@ func TestNewAccount(t *testing.T) {
 				assert.Nil(t, acc.LastLoginAt())
 			} else {
 				require.Error(t, err)
-				assert.ErrorIs(t, err, pkgerrs.ErrValueIsRequired)
+				assert.ErrorIs(t, err, tt.expect)
 				assert.Nil(t, acc)
 			}
 		})
