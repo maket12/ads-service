@@ -49,6 +49,8 @@ var (
 	ErrGetRefreshSessionByIDDB = errors.New("failed to get refresh session by ID using db")
 	ErrRevokeRefreshSessionDB  = errors.New("failed to revoke refresh session using db")
 	ErrRevokeAllForAccountDB   = errors.New("failed to revoke all refresh session for account using db")
+
+	ErrAccountNotFound = errors.New("account not found")
 )
 
 var (

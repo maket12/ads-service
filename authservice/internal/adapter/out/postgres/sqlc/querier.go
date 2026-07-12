@@ -22,15 +22,11 @@ type Querier interface {
 	GetRefreshSessionByHash(ctx context.Context, db DBTX, refreshTokenHash string) (RefreshSession, error)
 	GetRefreshSessionByID(ctx context.Context, db DBTX, id pgtype.UUID) (RefreshSession, error)
 	ListAccountActiveRefreshSessions(ctx context.Context, db DBTX, arg ListAccountActiveRefreshSessionsParams) ([]RefreshSession, error)
-	MarkAccountLogin(ctx context.Context, db DBTX, arg MarkAccountLoginParams) error
 	RevokeAllAccountRefreshSessions(ctx context.Context, db DBTX, arg RevokeAllAccountRefreshSessionsParams) error
 	RevokeRefreshSessionDescendants(ctx context.Context, db DBTX, arg RevokeRefreshSessionDescendantsParams) error
-	UpdateAccountEmail(ctx context.Context, db DBTX, arg UpdateAccountEmailParams) error
-	UpdateAccountPassword(ctx context.Context, db DBTX, arg UpdateAccountPasswordParams) error
+	UpdateAccount(ctx context.Context, db DBTX, arg UpdateAccountParams) error
 	UpdateAccountRole(ctx context.Context, db DBTX, arg UpdateAccountRoleParams) error
-	UpdateAccountStatus(ctx context.Context, db DBTX, arg UpdateAccountStatusParams) error
 	UpdateRefreshSession(ctx context.Context, db DBTX, arg UpdateRefreshSessionParams) error
-	VerifyAccountEmail(ctx context.Context, db DBTX, arg VerifyAccountEmailParams) error
 }
 
 var _ Querier = (*Queries)(nil)

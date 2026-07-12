@@ -38,37 +38,14 @@ SELECT
 FROM accounts
 WHERE id = $1;
 
--- name: UpdateAccountEmail :exec
+-- name: UpdateAccount :exec
 UPDATE accounts
 SET
     email = $2,
-    updated_at = $3
-WHERE id = $1;
-
--- name: UpdateAccountStatus :exec
-UPDATE accounts
-SET
-    status = $2,
-    updated_at = $3
-WHERE id = $1;
-
--- name: UpdateAccountPassword :exec
-UPDATE accounts
-SET
-    password_hash = $2,
-    updated_at = $3
-WHERE id = $1;
-
--- name: MarkAccountLogin :exec
-UPDATE accounts
-SET
-    last_login_at = $2,
-    updated_at = $3
-WHERE id = $1;
-
--- name: VerifyAccountEmail :exec
-UPDATE accounts
-SET
-    email_verified = true,
-    updated_at = $2
+    password_hash = $3,
+    status = $4,
+    email_verified = $5,
+    created_at = $6,
+    updated_at = $7,
+    last_login_at = $8
 WHERE id = $1;

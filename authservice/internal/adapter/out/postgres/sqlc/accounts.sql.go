@@ -111,96 +111,40 @@ func (q *Queries) GetAccountByID(ctx context.Context, db DBTX, id pgtype.UUID) (
 	return i, err
 }
 
-const markAccountLogin = `-- name: MarkAccountLogin :exec
-UPDATE accounts
-SET
-    last_login_at = $2,
-    updated_at = $3
-WHERE id = $1
-`
-
-type MarkAccountLoginParams struct {
-	ID          pgtype.UUID
-	LastLoginAt pgtype.Timestamptz
-	UpdatedAt   pgtype.Timestamptz
-}
-
-func (q *Queries) MarkAccountLogin(ctx context.Context, db DBTX, arg MarkAccountLoginParams) error {
-	_, err := db.Exec(ctx, markAccountLogin, arg.ID, arg.LastLoginAt, arg.UpdatedAt)
-	return err
-}
-
-const updateAccountEmail = `-- name: UpdateAccountEmail :exec
+const updateAccount = `-- name: UpdateAccount :exec
 UPDATE accounts
 SET
     email = $2,
-    updated_at = $3
+    password_hash = $3,
+    status = $4,
+    email_verified = $5,
+    created_at = $6,
+    updated_at = $7,
+    last_login_at = $8
 WHERE id = $1
 `
 
-type UpdateAccountEmailParams struct {
-	ID        pgtype.UUID
-	Email     string
-	UpdatedAt pgtype.Timestamptz
+type UpdateAccountParams struct {
+	ID            pgtype.UUID
+	Email         string
+	PasswordHash  string
+	Status        string
+	EmailVerified bool
+	CreatedAt     pgtype.Timestamptz
+	UpdatedAt     pgtype.Timestamptz
+	LastLoginAt   pgtype.Timestamptz
 }
 
-func (q *Queries) UpdateAccountEmail(ctx context.Context, db DBTX, arg UpdateAccountEmailParams) error {
-	_, err := db.Exec(ctx, updateAccountEmail, arg.ID, arg.Email, arg.UpdatedAt)
-	return err
-}
-
-const updateAccountPassword = `-- name: UpdateAccountPassword :exec
-UPDATE accounts
-SET
-    password_hash = $2,
-    updated_at = $3
-WHERE id = $1
-`
-
-type UpdateAccountPasswordParams struct {
-	ID           pgtype.UUID
-	PasswordHash string
-	UpdatedAt    pgtype.Timestamptz
-}
-
-func (q *Queries) UpdateAccountPassword(ctx context.Context, db DBTX, arg UpdateAccountPasswordParams) error {
-	_, err := db.Exec(ctx, updateAccountPassword, arg.ID, arg.PasswordHash, arg.UpdatedAt)
-	return err
-}
-
-const updateAccountStatus = `-- name: UpdateAccountStatus :exec
-UPDATE accounts
-SET
-    status = $2,
-    updated_at = $3
-WHERE id = $1
-`
-
-type UpdateAccountStatusParams struct {
-	ID        pgtype.UUID
-	Status    string
-	UpdatedAt pgtype.Timestamptz
-}
-
-func (q *Queries) UpdateAccountStatus(ctx context.Context, db DBTX, arg UpdateAccountStatusParams) error {
-	_, err := db.Exec(ctx, updateAccountStatus, arg.ID, arg.Status, arg.UpdatedAt)
-	return err
-}
-
-const verifyAccountEmail = `-- name: VerifyAccountEmail :exec
-UPDATE accounts
-SET
-    email_verified = true,
-    updated_at = $2
-WHERE id = $1
-`
-
-type VerifyAccountEmailParams struct {
-	ID        pgtype.UUID
-	UpdatedAt pgtype.Timestamptz
-}
-
-func (q *Queries) VerifyAccountEmail(ctx context.Context, db DBTX, arg VerifyAccountEmailParams) error {
-	_, err := db.Exec(ctx, verifyAccountEmail, arg.ID, arg.UpdatedAt)
+func (q *Queries) UpdateAccount(ctx context.Context, db DBTX, arg UpdateAccountParams) error {
+	_, err := db.Exec(ctx, updateAccount,
+		arg.ID,
+		arg.Email,
+		arg.PasswordHash,
+		arg.Status,
+		arg.EmailVerified,
+		arg.CreatedAt,
+		arg.UpdatedAt,
+		arg.LastLoginAt,
+	)
 	return err
 }

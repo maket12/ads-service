@@ -1,9 +1,9 @@
 package dto
 
 type VerifyEmailInput struct {
-	// TODO: Implement DTO
+	Token string
 }
 
 type VerifyEmailOutput struct {
-	// TODO: Implement DTO
+	Verified bool
 }

@@ -99,25 +99,36 @@ func TestMapAccountToSQLCCreate_NilLastLogin(t *testing.T) {
 	require.Equal(t, expected, actual)
 }
 
-func TestMapAccountToSQLCMarkLogin(t *testing.T) {
+func TestMapAccountToSQLCUpdate(t *testing.T) {
 	id := uuid.New()
-	updatedAt := time.Now()
+	email := "shishi12377@weixin.cn"
+	pass := "hashed-pass"
+	createdAt := time.Now()
+	updatedAt := time.Now().Add(time.Minute)
 	lastLoginAt := updatedAt.Add(time.Minute)
 
 	acc := model.RestoreAccount(
 		id,
-		"shishi12377@weixin.cn",
-		"hashed-pass",
+		email,
+		pass,
 		model.AccountActive,
 		false,
-		updatedAt.Add(-1*time.Minute),
+		createdAt,
 		updatedAt,
 		&lastLoginAt,
 	)
 
-	expected := sqlc.MarkAccountLoginParams{
+	expected := sqlc.UpdateAccountParams{
 		ID: pgtype.UUID{
 			Bytes: id,
+			Valid: true,
+		},
+		Email:         email,
+		PasswordHash:  pass,
+		Status:        model.AccountActive.String(),
+		EmailVerified: false,
+		CreatedAt: pgtype.Timestamptz{
+			Time:  createdAt,
 			Valid: true,
 		},
 		UpdatedAt: pgtype.Timestamptz{
@@ -130,29 +141,40 @@ func TestMapAccountToSQLCMarkLogin(t *testing.T) {
 		},
 	}
 
-	actual := mapper.MapAccountToSQLCMarkLogin(acc)
+	actual := mapper.MapAccountToSQLCUpdate(acc)
 
 	require.Equal(t, expected, actual)
 }
 
-func TestMapAccountToSQLCMarkLogin_NilLastLogin(t *testing.T) {
+func TestMapAccountToSQLCUpdate_NilLastLogin(t *testing.T) {
 	id := uuid.New()
-	updatedAt := time.Now()
+	email := "shishi12377@weixin.cn"
+	pass := "hashed-pass"
+	createdAt := time.Now()
+	updatedAt := time.Now().Add(time.Minute)
 
 	acc := model.RestoreAccount(
 		id,
-		"shishi12377@weixin.cn",
-		"hashed-pass",
+		email,
+		pass,
 		model.AccountActive,
 		false,
-		updatedAt.Add(-1*time.Minute),
+		createdAt,
 		updatedAt,
 		nil,
 	)
 
-	expected := sqlc.MarkAccountLoginParams{
+	expected := sqlc.UpdateAccountParams{
 		ID: pgtype.UUID{
 			Bytes: id,
+			Valid: true,
+		},
+		Email:         email,
+		PasswordHash:  pass,
+		Status:        model.AccountActive.String(),
+		EmailVerified: false,
+		CreatedAt: pgtype.Timestamptz{
+			Time:  createdAt,
 			Valid: true,
 		},
 		UpdatedAt: pgtype.Timestamptz{
@@ -162,38 +184,7 @@ func TestMapAccountToSQLCMarkLogin_NilLastLogin(t *testing.T) {
 		LastLoginAt: pgtype.Timestamptz{},
 	}
 
-	actual := mapper.MapAccountToSQLCMarkLogin(acc)
-
-	require.Equal(t, expected, actual)
-}
-
-func TestMapAccountToSQLCVerifyEmail(t *testing.T) {
-	id := uuid.New()
-	updatedAt := time.Now()
-
-	acc := model.RestoreAccount(
-		id,
-		"shishi12377@weixin.cn",
-		"hashed-pass",
-		model.AccountActive,
-		false,
-		updatedAt.Add(-1*time.Minute),
-		updatedAt,
-		nil,
-	)
-
-	expected := sqlc.VerifyAccountEmailParams{
-		ID: pgtype.UUID{
-			Bytes: id,
-			Valid: true,
-		},
-		UpdatedAt: pgtype.Timestamptz{
-			Time:  updatedAt,
-			Valid: true,
-		},
-	}
-
-	actual := mapper.MapAccountToSQLCVerifyEmail(acc)
+	actual := mapper.MapAccountToSQLCUpdate(acc)
 
 	require.Equal(t, expected, actual)
 }

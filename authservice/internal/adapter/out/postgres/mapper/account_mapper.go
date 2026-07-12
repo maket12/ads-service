@@ -38,7 +38,7 @@ func MapAccountToSQLCCreate(acc *model.Account) sqlc.CreateAccountParams {
 	}
 }
 
-func MapAccountToSQLCMarkLogin(acc *model.Account) sqlc.MarkAccountLoginParams {
+func MapAccountToSQLCUpdate(acc *model.Account) sqlc.UpdateAccountParams {
 	var lastLoginTime pgtype.Timestamptz
 	if acc.LastLoginAt() != nil {
 		lastLoginTime = pgtype.Timestamptz{
@@ -47,9 +47,17 @@ func MapAccountToSQLCMarkLogin(acc *model.Account) sqlc.MarkAccountLoginParams {
 		}
 	}
 
-	return sqlc.MarkAccountLoginParams{
+	return sqlc.UpdateAccountParams{
 		ID: pgtype.UUID{
 			Bytes: acc.ID(),
+			Valid: true,
+		},
+		Email:         acc.Email(),
+		PasswordHash:  acc.PasswordHash(),
+		Status:        acc.Status().String(),
+		EmailVerified: acc.EmailVerified(),
+		CreatedAt: pgtype.Timestamptz{
+			Time:  acc.CreatedAt(),
 			Valid: true,
 		},
 		UpdatedAt: pgtype.Timestamptz{
@@ -57,19 +65,6 @@ func MapAccountToSQLCMarkLogin(acc *model.Account) sqlc.MarkAccountLoginParams {
 			Valid: true,
 		},
 		LastLoginAt: lastLoginTime,
-	}
-}
-
-func MapAccountToSQLCVerifyEmail(acc *model.Account) sqlc.VerifyAccountEmailParams {
-	return sqlc.VerifyAccountEmailParams{
-		ID: pgtype.UUID{
-			Bytes: acc.ID(),
-			Valid: true,
-		},
-		UpdatedAt: pgtype.Timestamptz{
-			Time:  acc.UpdatedAt(),
-			Valid: true,
-		},
 	}
 }
 

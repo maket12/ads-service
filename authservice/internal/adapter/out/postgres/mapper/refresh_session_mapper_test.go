@@ -25,9 +25,10 @@ func TestMapRefreshSessionToSQLCCreate(t *testing.T) {
 	expiresAt := createdAt.Add(time.Minute)
 	revokedAt := expiresAt.Add(time.Minute)
 
-	revokeReason := "logout"
-	ipStr := "192.168.1.10"
-	userAgent := "Mozilla/5.0"
+	revokeReason := model.ReasonTokenRotation
+	ip, _ := netip.ParseAddr(gofakeit.IPv4Address())
+	ipStr := ip.String()
+	userAgent := gofakeit.UserAgent()
 
 	session := model.RestoreRefreshSession(
 		id,
@@ -41,9 +42,6 @@ func TestMapRefreshSessionToSQLCCreate(t *testing.T) {
 		&ipStr,
 		&userAgent,
 	)
-
-	parsedIP, err := netip.ParseAddr(ipStr)
-	require.NoError(t, err)
 
 	expected := sqlc.CreateRefreshSessionParams{
 		ID: pgtype.UUID{
@@ -68,16 +66,16 @@ func TestMapRefreshSessionToSQLCCreate(t *testing.T) {
 			Valid: true,
 		},
 		RevokeReason: pgtype.Text{
-			String: "logout",
+			String: revokeReason.String(),
 			Valid:  true,
 		},
 		RotatedFrom: pgtype.UUID{
 			Bytes: rotatedFrom,
 			Valid: true,
 		},
-		Ip: &parsedIP,
+		Ip: &ip,
 		UserAgent: pgtype.Text{
-			String: "Mozilla/5.0",
+			String: userAgent,
 			Valid:  true,
 		},
 	}
@@ -142,12 +140,14 @@ func TestMapSQLCToRefreshSession(t *testing.T) {
 	accountID := uuid.New()
 	rotatedFrom := uuid.New()
 
+	revokeReason := model.ReasonLogout
+	ip, _ := netip.ParseAddr(gofakeit.IPv4Address())
+	ipStr := ip.String()
+	userAgent := gofakeit.UserAgent()
+
 	createdAt := time.Now()
 	expiresAt := createdAt.Add(time.Minute)
 	revokedAt := expiresAt.Add(time.Minute)
-
-	parsedIP, err := netip.ParseAddr("192.168.1.10")
-	require.NoError(t, err)
 
 	raw := sqlc.RefreshSession{
 		ID: pgtype.UUID{
@@ -172,23 +172,19 @@ func TestMapSQLCToRefreshSession(t *testing.T) {
 			Valid: true,
 		},
 		RevokeReason: pgtype.Text{
-			String: "logout",
+			String: revokeReason.String(),
 			Valid:  true,
 		},
 		RotatedFrom: pgtype.UUID{
 			Bytes: rotatedFrom,
 			Valid: true,
 		},
-		Ip: &parsedIP,
+		Ip: &ip,
 		UserAgent: pgtype.Text{
-			String: "Mozilla/5.0",
+			String: userAgent,
 			Valid:  true,
 		},
 	}
-
-	revokeReason := "logout"
-	ipStr := parsedIP.String()
-	userAgent := "Mozilla/5.0"
 
 	expected := model.RestoreRefreshSession(
 		id,
@@ -268,7 +264,7 @@ func TestMapRefreshSessionToSQLCRevoke(t *testing.T) {
 	revokedAt := expiresAt.Add(time.Second)
 
 	refreshTokenHash := "refresh-token-hash"
-	revokeReason := "logout"
+	revokeReason := model.ReasonLogout
 	ipStr := gofakeit.IPv4Address()
 	ip, _ := netip.ParseAddr(ipStr)
 	userAgent := gofakeit.UserAgent()
@@ -293,7 +289,7 @@ func TestMapRefreshSessionToSQLCRevoke(t *testing.T) {
 		CreatedAt:        pgtype.Timestamptz{Time: createdAt, Valid: true},
 		ExpiresAt:        pgtype.Timestamptz{Time: expiresAt, Valid: true},
 		RevokedAt:        pgtype.Timestamptz{Time: revokedAt, Valid: true},
-		RevokeReason:     pgtype.Text{String: revokeReason, Valid: true},
+		RevokeReason:     pgtype.Text{String: revokeReason.String(), Valid: true},
 		RotatedFrom:      pgtype.UUID{Bytes: rotatedFrom, Valid: true},
 		Ip:               &ip,
 		UserAgent:        pgtype.Text{String: userAgent, Valid: true},

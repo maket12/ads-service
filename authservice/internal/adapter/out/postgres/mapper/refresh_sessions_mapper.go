@@ -30,7 +30,7 @@ func MapRefreshSessionToSQLCCreate(session *model.RefreshSession) sqlc.CreateRef
 
 	if session.RevokeReason() != nil {
 		revokeReason = pgtype.Text{
-			String: *session.RevokeReason(),
+			String: session.RevokeReason().String(),
 			Valid:  true,
 		}
 	}
@@ -82,7 +82,7 @@ func MapRefreshSessionToSQLCUpdate(session *model.RefreshSession) sqlc.UpdateRef
 
 	if session.RevokeReason() != nil {
 		revokeReason = pgtype.Text{
-			String: *session.RevokeReason(),
+			String: session.RevokeReason().String(),
 			Valid:  true,
 		}
 	}
@@ -166,7 +166,7 @@ func MapToSQLCRevokeDescendants(sessionID uuid.UUID, reason *string) sqlc.Revoke
 func MapSQLCToRefreshSession(rawSession sqlc.RefreshSession) *model.RefreshSession {
 	var (
 		revokedAt    *time.Time
-		revokeReason *string
+		revokeReason *model.RevokeReason
 		rotatedFrom  *uuid.UUID
 		ip           *string
 		userAgent    *string
@@ -177,7 +177,7 @@ func MapSQLCToRefreshSession(rawSession sqlc.RefreshSession) *model.RefreshSessi
 	}
 
 	if rawSession.RevokeReason.Valid {
-		revokeReason = &rawSession.RevokeReason.String
+		revokeReason = utils.VPtr(model.RevokeReason(rawSession.RevokeReason.String))
 	}
 
 	if rawSession.RotatedFrom.Valid {

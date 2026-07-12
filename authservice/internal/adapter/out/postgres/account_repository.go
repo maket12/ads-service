@@ -72,12 +72,7 @@ func (r *AccountRepository) GetByID(ctx context.Context, id uuid.UUID) (*model.A
 	return mapper.MapSQLCToAccount(rawAcc), nil
 }
 
-func (r *AccountRepository) MarkLogin(ctx context.Context, account *model.Account) error {
-	params := mapper.MapAccountToSQLCMarkLogin(account)
-	return r.q.MarkAccountLogin(ctx, r.db(ctx), params)
-}
-
-func (r *AccountRepository) VerifyEmail(ctx context.Context, account *model.Account) error {
-	params := mapper.MapAccountToSQLCVerifyEmail(account)
-	return r.q.VerifyAccountEmail(ctx, r.db(ctx), params)
+func (r *AccountRepository) Update(ctx context.Context, account *model.Account) error {
+	params := mapper.MapAccountToSQLCUpdate(account)
+	return r.q.UpdateAccount(ctx, r.db(ctx), params)
 }
