@@ -22,7 +22,7 @@ type TestContainer struct {
 // or omit it to get the default configuration.
 func StartTestContainer(ctx context.Context, cfg *Config) (*TestContainer, error) {
 	redisContainer, err := container.Run(ctx,
-		"redis:7-alpine",
+		"redis:8.8.0-alpine",
 		testcontainers.WithWaitStrategy(
 			wait.ForLog("Ready to accept connections tcp").
 				WithStartupTimeout(30*time.Second)),
