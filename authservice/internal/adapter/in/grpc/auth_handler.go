@@ -13,22 +13,26 @@ import (
 type AuthHandler struct {
 	auth_v1.UnimplementedAuthServiceServer
 	log                   *slog.Logger
-	registerUC            usecase.RegisterUseCase
-	loginUC               usecase.LoginUseCase
-	logoutUC              usecase.LogoutUseCase
-	refreshSessionUC      usecase.RefreshSessionUseCase
-	validateAccessTokenUC usecase.ValidateAccessTokenUseCase
-	assignRoleUC          usecase.AssignRoleUseCase
+	registerUC            usecase.RegisterUC
+	loginUC               usecase.LoginUC
+	logoutUC              usecase.LogoutUC
+	refreshSessionUC      usecase.RefreshSessionUC
+	validateAccessTokenUC usecase.ValidateAccessTokenUC
+	assignRoleUC          usecase.AssignRoleUC
+	sendVerificationUC    usecase.SendVerificationUC
+	verifyEmailUC         usecase.VerifyEmailUC
 }
 
 func NewAuthHandler(
 	log *slog.Logger,
-	registerUC usecase.RegisterUseCase,
-	loginUC usecase.LoginUseCase,
-	logoutUC usecase.LogoutUseCase,
-	refreshSessionUC usecase.RefreshSessionUseCase,
-	validateAccessTokenUC usecase.ValidateAccessTokenUseCase,
-	assignRoleUC usecase.AssignRoleUseCase,
+	registerUC usecase.RegisterUC,
+	loginUC usecase.LoginUC,
+	logoutUC usecase.LogoutUC,
+	refreshSessionUC usecase.RefreshSessionUC,
+	validateAccessTokenUC usecase.ValidateAccessTokenUC,
+	assignRoleUC usecase.AssignRoleUC,
+	sendVerificationUC usecase.SendVerificationUC,
+	verifyEmailUC usecase.VerifyEmailUC,
 ) *AuthHandler {
 	return &AuthHandler{
 		log:                   log,
@@ -38,6 +42,8 @@ func NewAuthHandler(
 		refreshSessionUC:      refreshSessionUC,
 		validateAccessTokenUC: validateAccessTokenUC,
 		assignRoleUC:          assignRoleUC,
+		sendVerificationUC:    sendVerificationUC,
+		verifyEmailUC:         verifyEmailUC,
 	}
 }
 

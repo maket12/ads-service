@@ -5,9 +5,8 @@ import (
 	"encoding/json"
 	"fmt"
 
-	"github.com/maket12/ads-service/authservice/pkg/rabbitmq"
-
 	"github.com/google/uuid"
+	pkgrabbitmq "github.com/maket12/ads-service/authservice/pkg/rabbitmq"
 	amqp "github.com/rabbitmq/amqp091-go"
 )
 
@@ -25,13 +24,13 @@ func NewPublisherConfig(exchange, routingKey string) *PublisherConfig {
 
 type AccountPublisher struct {
 	cfg     *PublisherConfig
-	client  *rabbitmq.RabbitClient
+	client  *pkgrabbitmq.RabbitClient
 	channel *amqp.Channel
 }
 
 func NewAccountPublisher(
 	cfg *PublisherConfig,
-	client *rabbitmq.RabbitClient,
+	client *pkgrabbitmq.RabbitClient,
 ) (*AccountPublisher, error) {
 	ch, err := client.Conn.Channel()
 	if err != nil {
@@ -59,7 +58,7 @@ func NewAccountPublisher(
 }
 
 func (p *AccountPublisher) PublishAccountCreate(ctx context.Context, accountID uuid.UUID) error {
-	event := rabbitmq.AccountCreatedEvent{AccountID: accountID}
+	event := pkgrabbitmq.AccountCreatedEvent{AccountID: accountID}
 
 	body, err := json.Marshal(event)
 	if err != nil {
