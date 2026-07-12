@@ -11,6 +11,8 @@ service AuthService {
   rpc RefreshSession (RefreshSessionRequest) returns (RefreshSessionResponse);
   rpc ValidateAccessToken (ValidateAccessTokenRequest) returns (ValidateAccessTokenResponse);
   rpc AssignRole (AssignRoleRequest) returns (AssignRoleResponse);
+  rpc SendVerification (SendVerificationRequest) returns (SendVerificationResponse);
+  rpc VerifyEmail (VerifyEmailRequest) returns (VerifyEmailResponse);
 }
 
 message RegisterRequest {
@@ -68,5 +70,22 @@ message AssignRoleRequest {
 }
 
 message AssignRoleResponse {
-  bool assign = 1;
+  bool assigned = 1;
+}
+
+message SendVerificationRequest {
+  string account_id = 1;
+  string email = 2;
+}
+
+message SendVerificationResponse {
+  bool sent = 1;
+}
+
+message VerifyEmailRequest {
+  string token = 1;
+}
+
+message VerifyEmailResponse {
+  bool verified = 1;
 }

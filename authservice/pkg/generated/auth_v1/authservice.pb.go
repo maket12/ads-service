@@ -587,7 +587,7 @@ func (x *AssignRoleRequest) GetRole() string {
 
 type AssignRoleResponse struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
-	Assign        bool                   `protobuf:"varint,1,opt,name=assign,proto3" json:"assign,omitempty"`
+	Assigned      bool                   `protobuf:"varint,1,opt,name=assigned,proto3" json:"assigned,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -622,9 +622,193 @@ func (*AssignRoleResponse) Descriptor() ([]byte, []int) {
 	return file_authservice_proto_rawDescGZIP(), []int{11}
 }
 
-func (x *AssignRoleResponse) GetAssign() bool {
+func (x *AssignRoleResponse) GetAssigned() bool {
 	if x != nil {
-		return x.Assign
+		return x.Assigned
+	}
+	return false
+}
+
+type SendVerificationRequest struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	AccountId     string                 `protobuf:"bytes,1,opt,name=account_id,json=accountId,proto3" json:"account_id,omitempty"`
+	Email         string                 `protobuf:"bytes,2,opt,name=email,proto3" json:"email,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *SendVerificationRequest) Reset() {
+	*x = SendVerificationRequest{}
+	mi := &file_authservice_proto_msgTypes[12]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *SendVerificationRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*SendVerificationRequest) ProtoMessage() {}
+
+func (x *SendVerificationRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_authservice_proto_msgTypes[12]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use SendVerificationRequest.ProtoReflect.Descriptor instead.
+func (*SendVerificationRequest) Descriptor() ([]byte, []int) {
+	return file_authservice_proto_rawDescGZIP(), []int{12}
+}
+
+func (x *SendVerificationRequest) GetAccountId() string {
+	if x != nil {
+		return x.AccountId
+	}
+	return ""
+}
+
+func (x *SendVerificationRequest) GetEmail() string {
+	if x != nil {
+		return x.Email
+	}
+	return ""
+}
+
+type SendVerificationResponse struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Sent          bool                   `protobuf:"varint,1,opt,name=sent,proto3" json:"sent,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *SendVerificationResponse) Reset() {
+	*x = SendVerificationResponse{}
+	mi := &file_authservice_proto_msgTypes[13]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *SendVerificationResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*SendVerificationResponse) ProtoMessage() {}
+
+func (x *SendVerificationResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_authservice_proto_msgTypes[13]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use SendVerificationResponse.ProtoReflect.Descriptor instead.
+func (*SendVerificationResponse) Descriptor() ([]byte, []int) {
+	return file_authservice_proto_rawDescGZIP(), []int{13}
+}
+
+func (x *SendVerificationResponse) GetSent() bool {
+	if x != nil {
+		return x.Sent
+	}
+	return false
+}
+
+type VerifyEmailRequest struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Token         string                 `protobuf:"bytes,1,opt,name=token,proto3" json:"token,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *VerifyEmailRequest) Reset() {
+	*x = VerifyEmailRequest{}
+	mi := &file_authservice_proto_msgTypes[14]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *VerifyEmailRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*VerifyEmailRequest) ProtoMessage() {}
+
+func (x *VerifyEmailRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_authservice_proto_msgTypes[14]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use VerifyEmailRequest.ProtoReflect.Descriptor instead.
+func (*VerifyEmailRequest) Descriptor() ([]byte, []int) {
+	return file_authservice_proto_rawDescGZIP(), []int{14}
+}
+
+func (x *VerifyEmailRequest) GetToken() string {
+	if x != nil {
+		return x.Token
+	}
+	return ""
+}
+
+type VerifyEmailResponse struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Verified      bool                   `protobuf:"varint,1,opt,name=verified,proto3" json:"verified,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *VerifyEmailResponse) Reset() {
+	*x = VerifyEmailResponse{}
+	mi := &file_authservice_proto_msgTypes[15]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *VerifyEmailResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*VerifyEmailResponse) ProtoMessage() {}
+
+func (x *VerifyEmailResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_authservice_proto_msgTypes[15]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use VerifyEmailResponse.ProtoReflect.Descriptor instead.
+func (*VerifyEmailResponse) Descriptor() ([]byte, []int) {
+	return file_authservice_proto_rawDescGZIP(), []int{15}
+}
+
+func (x *VerifyEmailResponse) GetVerified() bool {
+	if x != nil {
+		return x.Verified
 	}
 	return false
 }
@@ -674,9 +858,19 @@ const file_authservice_proto_rawDesc = "" +
 	"\x11AssignRoleRequest\x12\x1d\n" +
 	"\n" +
 	"account_id\x18\x01 \x01(\tR\taccountId\x12\x12\n" +
-	"\x04role\x18\x02 \x01(\tR\x04role\",\n" +
-	"\x12AssignRoleResponse\x12\x16\n" +
-	"\x06assign\x18\x01 \x01(\bR\x06assign2\x99\x03\n" +
+	"\x04role\x18\x02 \x01(\tR\x04role\"0\n" +
+	"\x12AssignRoleResponse\x12\x1a\n" +
+	"\bassigned\x18\x01 \x01(\bR\bassigned\"N\n" +
+	"\x17SendVerificationRequest\x12\x1d\n" +
+	"\n" +
+	"account_id\x18\x01 \x01(\tR\taccountId\x12\x14\n" +
+	"\x05email\x18\x02 \x01(\tR\x05email\".\n" +
+	"\x18SendVerificationResponse\x12\x12\n" +
+	"\x04sent\x18\x01 \x01(\bR\x04sent\"*\n" +
+	"\x12VerifyEmailRequest\x12\x14\n" +
+	"\x05token\x18\x01 \x01(\tR\x05token\"1\n" +
+	"\x13VerifyEmailResponse\x12\x1a\n" +
+	"\bverified\x18\x01 \x01(\bR\bverified2\xb0\x04\n" +
 	"\vAuthService\x129\n" +
 	"\bRegister\x12\x15.auth.RegisterRequest\x1a\x16.auth.RegisterResponse\x120\n" +
 	"\x05Login\x12\x12.auth.LoginRequest\x1a\x13.auth.LoginResponse\x123\n" +
@@ -684,7 +878,9 @@ const file_authservice_proto_rawDesc = "" +
 	"\x0eRefreshSession\x12\x1b.auth.RefreshSessionRequest\x1a\x1c.auth.RefreshSessionResponse\x12Z\n" +
 	"\x13ValidateAccessToken\x12 .auth.ValidateAccessTokenRequest\x1a!.auth.ValidateAccessTokenResponse\x12?\n" +
 	"\n" +
-	"AssignRole\x12\x17.auth.AssignRoleRequest\x1a\x18.auth.AssignRoleResponseBJZHgithub.com/maket12/ads-service/authservice/pkg/generated/auth_v1;auth_v1b\x06proto3"
+	"AssignRole\x12\x17.auth.AssignRoleRequest\x1a\x18.auth.AssignRoleResponse\x12Q\n" +
+	"\x10SendVerification\x12\x1d.auth.SendVerificationRequest\x1a\x1e.auth.SendVerificationResponse\x12B\n" +
+	"\vVerifyEmail\x12\x18.auth.VerifyEmailRequest\x1a\x19.auth.VerifyEmailResponseBJZHgithub.com/maket12/ads-service/authservice/pkg/generated/auth_v1;auth_v1b\x06proto3"
 
 var (
 	file_authservice_proto_rawDescOnce sync.Once
@@ -698,7 +894,7 @@ func file_authservice_proto_rawDescGZIP() []byte {
 	return file_authservice_proto_rawDescData
 }
 
-var file_authservice_proto_msgTypes = make([]protoimpl.MessageInfo, 12)
+var file_authservice_proto_msgTypes = make([]protoimpl.MessageInfo, 16)
 var file_authservice_proto_goTypes = []any{
 	(*RegisterRequest)(nil),             // 0: auth.RegisterRequest
 	(*RegisterResponse)(nil),            // 1: auth.RegisterResponse
@@ -712,6 +908,10 @@ var file_authservice_proto_goTypes = []any{
 	(*ValidateAccessTokenResponse)(nil), // 9: auth.ValidateAccessTokenResponse
 	(*AssignRoleRequest)(nil),           // 10: auth.AssignRoleRequest
 	(*AssignRoleResponse)(nil),          // 11: auth.AssignRoleResponse
+	(*SendVerificationRequest)(nil),     // 12: auth.SendVerificationRequest
+	(*SendVerificationResponse)(nil),    // 13: auth.SendVerificationResponse
+	(*VerifyEmailRequest)(nil),          // 14: auth.VerifyEmailRequest
+	(*VerifyEmailResponse)(nil),         // 15: auth.VerifyEmailResponse
 }
 var file_authservice_proto_depIdxs = []int32{
 	0,  // 0: auth.AuthService.Register:input_type -> auth.RegisterRequest
@@ -720,14 +920,18 @@ var file_authservice_proto_depIdxs = []int32{
 	6,  // 3: auth.AuthService.RefreshSession:input_type -> auth.RefreshSessionRequest
 	8,  // 4: auth.AuthService.ValidateAccessToken:input_type -> auth.ValidateAccessTokenRequest
 	10, // 5: auth.AuthService.AssignRole:input_type -> auth.AssignRoleRequest
-	1,  // 6: auth.AuthService.Register:output_type -> auth.RegisterResponse
-	3,  // 7: auth.AuthService.Login:output_type -> auth.LoginResponse
-	5,  // 8: auth.AuthService.Logout:output_type -> auth.LogoutResponse
-	7,  // 9: auth.AuthService.RefreshSession:output_type -> auth.RefreshSessionResponse
-	9,  // 10: auth.AuthService.ValidateAccessToken:output_type -> auth.ValidateAccessTokenResponse
-	11, // 11: auth.AuthService.AssignRole:output_type -> auth.AssignRoleResponse
-	6,  // [6:12] is the sub-list for method output_type
-	0,  // [0:6] is the sub-list for method input_type
+	12, // 6: auth.AuthService.SendVerification:input_type -> auth.SendVerificationRequest
+	14, // 7: auth.AuthService.VerifyEmail:input_type -> auth.VerifyEmailRequest
+	1,  // 8: auth.AuthService.Register:output_type -> auth.RegisterResponse
+	3,  // 9: auth.AuthService.Login:output_type -> auth.LoginResponse
+	5,  // 10: auth.AuthService.Logout:output_type -> auth.LogoutResponse
+	7,  // 11: auth.AuthService.RefreshSession:output_type -> auth.RefreshSessionResponse
+	9,  // 12: auth.AuthService.ValidateAccessToken:output_type -> auth.ValidateAccessTokenResponse
+	11, // 13: auth.AuthService.AssignRole:output_type -> auth.AssignRoleResponse
+	13, // 14: auth.AuthService.SendVerification:output_type -> auth.SendVerificationResponse
+	15, // 15: auth.AuthService.VerifyEmail:output_type -> auth.VerifyEmailResponse
+	8,  // [8:16] is the sub-list for method output_type
+	0,  // [0:8] is the sub-list for method input_type
 	0,  // [0:0] is the sub-list for extension type_name
 	0,  // [0:0] is the sub-list for extension extendee
 	0,  // [0:0] is the sub-list for field type_name
@@ -746,7 +950,7 @@ func file_authservice_proto_init() {
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: unsafe.Slice(unsafe.StringData(file_authservice_proto_rawDesc), len(file_authservice_proto_rawDesc)),
 			NumEnums:      0,
-			NumMessages:   12,
+			NumMessages:   16,
 			NumExtensions: 0,
 			NumServices:   1,
 		},

@@ -8,5 +8,5 @@ type AssignRoleInput struct {
 }
 
 type AssignRoleOutput struct {
-	Assign bool
+	Assigned bool
 }

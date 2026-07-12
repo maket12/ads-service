@@ -32,22 +32,22 @@ func (uc *AssignRoleUC) Execute(ctx context.Context, in dto.AssignRoleInput) (dt
 	accRole, err := uc.accountRole.Get(ctx, in.AccountID)
 	if err != nil {
 		if errors.Is(err, pkgerrs.ErrObjectNotFound) {
-			return dto.AssignRoleOutput{Assign: false},
+			return dto.AssignRoleOutput{Assigned: false},
 				ucerrs.ErrInvalidAccountID
 		}
-		return dto.AssignRoleOutput{Assign: false},
+		return dto.AssignRoleOutput{Assigned: false},
 			ucerrs.Wrap(ucerrs.ErrGetAccountRoleDB, err)
 	}
 
-	// Assign
+	// Assigned
 	if err = accRole.Assign(in.Role); err != nil {
-		return dto.AssignRoleOutput{Assign: false},
+		return dto.AssignRoleOutput{Assigned: false},
 			ucerrs.ErrCannotAssign
 	}
 
 	// Update db
 	if err = uc.accountRole.Update(ctx, accRole); err != nil {
-		return dto.AssignRoleOutput{Assign: false},
+		return dto.AssignRoleOutput{Assigned: false},
 			ucerrs.Wrap(ucerrs.ErrUpdateAccountRoleDB, err)
 	}
 
@@ -58,11 +58,11 @@ func (uc *AssignRoleUC) Execute(ctx context.Context, in dto.AssignRoleInput) (dt
 		utils.VPtr(model.ReasonRoleChanged.String()),
 	)
 	if err != nil {
-		return dto.AssignRoleOutput{Assign: false}, ucerrs.Wrap(
+		return dto.AssignRoleOutput{Assigned: false}, ucerrs.Wrap(
 			ucerrs.ErrRevokeRefreshSessionDB, err,
 		)
 	}
 
 	// Output
-	return dto.AssignRoleOutput{Assign: true}, nil
+	return dto.AssignRoleOutput{Assigned: true}, nil
 }

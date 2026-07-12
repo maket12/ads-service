@@ -148,7 +148,7 @@ func TestAssignRoleUC_Execute(t *testing.T) {
 			} else {
 				assert.NoError(t, err)
 			}
-			assert.Equal(t, tt.expectAssign, out.Assign)
+			assert.Equal(t, tt.expectAssign, out.Assigned)
 		})
 	}
 }

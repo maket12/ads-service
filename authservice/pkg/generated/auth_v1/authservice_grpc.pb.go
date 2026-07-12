@@ -25,6 +25,8 @@ const (
 	AuthService_RefreshSession_FullMethodName      = "/auth.AuthService/RefreshSession"
 	AuthService_ValidateAccessToken_FullMethodName = "/auth.AuthService/ValidateAccessToken"
 	AuthService_AssignRole_FullMethodName          = "/auth.AuthService/AssignRole"
+	AuthService_SendVerification_FullMethodName    = "/auth.AuthService/SendVerification"
+	AuthService_VerifyEmail_FullMethodName         = "/auth.AuthService/VerifyEmail"
 )
 
 // AuthServiceClient is the client API for AuthService service.
@@ -37,6 +39,8 @@ type AuthServiceClient interface {
 	RefreshSession(ctx context.Context, in *RefreshSessionRequest, opts ...grpc.CallOption) (*RefreshSessionResponse, error)
 	ValidateAccessToken(ctx context.Context, in *ValidateAccessTokenRequest, opts ...grpc.CallOption) (*ValidateAccessTokenResponse, error)
 	AssignRole(ctx context.Context, in *AssignRoleRequest, opts ...grpc.CallOption) (*AssignRoleResponse, error)
+	SendVerification(ctx context.Context, in *SendVerificationRequest, opts ...grpc.CallOption) (*SendVerificationResponse, error)
+	VerifyEmail(ctx context.Context, in *VerifyEmailRequest, opts ...grpc.CallOption) (*VerifyEmailResponse, error)
 }
 
 type authServiceClient struct {
@@ -107,6 +111,26 @@ func (c *authServiceClient) AssignRole(ctx context.Context, in *AssignRoleReques
 	return out, nil
 }
 
+func (c *authServiceClient) SendVerification(ctx context.Context, in *SendVerificationRequest, opts ...grpc.CallOption) (*SendVerificationResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(SendVerificationResponse)
+	err := c.cc.Invoke(ctx, AuthService_SendVerification_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *authServiceClient) VerifyEmail(ctx context.Context, in *VerifyEmailRequest, opts ...grpc.CallOption) (*VerifyEmailResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(VerifyEmailResponse)
+	err := c.cc.Invoke(ctx, AuthService_VerifyEmail_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // AuthServiceServer is the server API for AuthService service.
 // All implementations must embed UnimplementedAuthServiceServer
 // for forward compatibility.
@@ -117,6 +141,8 @@ type AuthServiceServer interface {
 	RefreshSession(context.Context, *RefreshSessionRequest) (*RefreshSessionResponse, error)
 	ValidateAccessToken(context.Context, *ValidateAccessTokenRequest) (*ValidateAccessTokenResponse, error)
 	AssignRole(context.Context, *AssignRoleRequest) (*AssignRoleResponse, error)
+	SendVerification(context.Context, *SendVerificationRequest) (*SendVerificationResponse, error)
+	VerifyEmail(context.Context, *VerifyEmailRequest) (*VerifyEmailResponse, error)
 	mustEmbedUnimplementedAuthServiceServer()
 }
 
@@ -144,6 +170,12 @@ func (UnimplementedAuthServiceServer) ValidateAccessToken(context.Context, *Vali
 }
 func (UnimplementedAuthServiceServer) AssignRole(context.Context, *AssignRoleRequest) (*AssignRoleResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method AssignRole not implemented")
+}
+func (UnimplementedAuthServiceServer) SendVerification(context.Context, *SendVerificationRequest) (*SendVerificationResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method SendVerification not implemented")
+}
+func (UnimplementedAuthServiceServer) VerifyEmail(context.Context, *VerifyEmailRequest) (*VerifyEmailResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method VerifyEmail not implemented")
 }
 func (UnimplementedAuthServiceServer) mustEmbedUnimplementedAuthServiceServer() {}
 func (UnimplementedAuthServiceServer) testEmbeddedByValue()                     {}
@@ -274,6 +306,42 @@ func _AuthService_AssignRole_Handler(srv interface{}, ctx context.Context, dec f
 	return interceptor(ctx, in, info, handler)
 }
 
+func _AuthService_SendVerification_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(SendVerificationRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(AuthServiceServer).SendVerification(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: AuthService_SendVerification_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(AuthServiceServer).SendVerification(ctx, req.(*SendVerificationRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _AuthService_VerifyEmail_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(VerifyEmailRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(AuthServiceServer).VerifyEmail(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: AuthService_VerifyEmail_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(AuthServiceServer).VerifyEmail(ctx, req.(*VerifyEmailRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // AuthService_ServiceDesc is the grpc.ServiceDesc for AuthService service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -304,6 +372,14 @@ var AuthService_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "AssignRole",
 			Handler:    _AuthService_AssignRole_Handler,
+		},
+		{
+			MethodName: "SendVerification",
+			Handler:    _AuthService_SendVerification_Handler,
+		},
+		{
+			MethodName: "VerifyEmail",
+			Handler:    _AuthService_VerifyEmail_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

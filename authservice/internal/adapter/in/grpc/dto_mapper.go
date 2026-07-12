@@ -79,5 +79,5 @@ func MapAssignRolePbToDTO(req *auth_v1.AssignRoleRequest) dto.AssignRoleInput {
 }
 
 func MapAssignRoleDTOToPb(out dto.AssignRoleOutput) *auth_v1.AssignRoleResponse {
-	return &auth_v1.AssignRoleResponse{Assign: out.Assign}
+	return &auth_v1.AssignRoleResponse{Assign: out.Assigned}
 }
