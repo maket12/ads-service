@@ -9,6 +9,7 @@ import (
 	ucerrs "github.com/maket12/ads-service/authservice/internal/app/errs"
 	"github.com/maket12/ads-service/authservice/internal/app/usecase"
 	"github.com/maket12/ads-service/authservice/internal/domain/port/mocks"
+	pkgerrs "github.com/maket12/ads-service/authservice/pkg/errs"
 
 	"github.com/google/uuid"
 	"github.com/stretchr/testify/assert"
@@ -17,132 +18,174 @@ import (
 
 func TestRegisterUC_Execute(t *testing.T) {
 	type adapter struct {
-		account          *mocks.AccountRepository
-		accountRole      *mocks.AccountRoleRepository
-		passwordHasher   *mocks.PasswordHasher
-		accountPublisher *mocks.AccountPublisher
+		account          *mocks.MockAccountRepository
+		accountRole      *mocks.MockAccountRoleRepository
+		passwordHasher   *mocks.MockPasswordHasher
+		accountPublisher *mocks.MockAccountPublisher
 	}
 
 	type testCase struct {
-		name    string
-		input   dto.RegisterInput
-		prepare func(a adapter)
-		wantErr error
+		name          string
+		input         dto.RegisterInput
+		mockBehaviour func(a adapter)
+		expectErr     error
 	}
+
+	email := "newuser@example.com"
+	password := "plain-password"
+	hashedPassword := "hashed-password"
 
 	var tests = []testCase{
 		{
 			name: "Success",
 			input: dto.RegisterInput{
-				Email:    "test@example.com",
-				Password: "securePassword123",
+				Email:    email,
+				Password: password,
 			},
-			prepare: func(a adapter) {
-				a.passwordHasher.On("Hash", "securePassword123").
-					Return("hashed_password", nil)
+			mockBehaviour: func(a adapter) {
+				a.passwordHasher.EXPECT().
+					Hash(password).
+					Return(hashedPassword, nil)
 
-				a.account.On("Create", mock.Anything, mock.MatchedBy(func(acc interface{ Email() string }) bool {
-					return acc.Email() == "test@example.com"
-				})).Return(nil)
-
-				a.accountRole.On("Create", mock.Anything, mock.Anything).
+				a.account.EXPECT().
+					Create(mock.Anything, mock.AnythingOfType("*model.Account")).
 					Return(nil)
 
-				a.accountPublisher.On("PublishAccountCreate", mock.Anything, mock.Anything).
-					Return(nil)
-			},
-			wantErr: nil,
-		},
-		{
-			name: "Error - hashing password",
-			input: dto.RegisterInput{
-				Email:    "test@example.com",
-				Password: "123",
-			},
-			prepare: func(a adapter) {
-				a.passwordHasher.On("Hash", "123").
-					Return("", errors.New("salt error"))
-			},
-			wantErr: ucerrs.ErrHashPassword,
-		},
-		{
-			name: "Error - create account",
-			input: dto.RegisterInput{
-				Email:    "exists@example.com",
-				Password: "password",
-			},
-			prepare: func(a adapter) {
-				a.passwordHasher.On("Hash", "password").
-					Return("hashed", nil)
-				a.account.On("Create", mock.Anything, mock.Anything).
-					Return(errors.New("db error"))
-			},
-			wantErr: ucerrs.ErrCreateAccountDB,
-		},
-		{
-			name: "Error - create account role",
-			input: dto.RegisterInput{
-				Email:    "fail@example.com",
-				Password: "password",
-			},
-			prepare: func(a adapter) {
-				a.passwordHasher.On("Hash", "password").
-					Return("hashed", nil)
-				a.account.On("Create", mock.Anything, mock.Anything).
-					Return(nil)
-				a.accountRole.On("Create", mock.Anything, mock.Anything).
-					Return(errors.New("db role error"))
-			},
-			wantErr: ucerrs.ErrCreateAccountRoleDB,
-		},
-		{
-			name: "Error - create a rabbitmq event",
-			input: dto.RegisterInput{
-				Email:    "test@example.com",
-				Password: "securePassword123",
-			},
-			prepare: func(a adapter) {
-				a.passwordHasher.On("Hash", "securePassword123").
-					Return("hashed_password", nil)
-
-				a.account.On("Create", mock.Anything, mock.MatchedBy(func(acc interface{ Email() string }) bool {
-					return acc.Email() == "test@example.com"
-				})).Return(nil)
-
-				a.accountRole.On("Create", mock.Anything, mock.Anything).
+				a.accountRole.EXPECT().
+					Create(mock.Anything, mock.AnythingOfType("*model.AccountRole")).
 					Return(nil)
 
-				a.accountPublisher.On("PublishAccountCreate", mock.Anything, mock.Anything).
-					Return(errors.New("account publisher error"))
+				a.accountPublisher.EXPECT().
+					PublishAccountCreate(mock.Anything, mock.AnythingOfType("uuid.UUID")).
+					Return(nil)
 			},
-			wantErr: ucerrs.ErrPublishEvent,
+			expectErr: nil,
+		},
+		{
+			name: "Failure - password hashing error",
+			input: dto.RegisterInput{
+				Email:    email,
+				Password: password,
+			},
+			mockBehaviour: func(a adapter) {
+				a.passwordHasher.EXPECT().
+					Hash(password).
+					Return("", errors.New("hashing failed"))
+			},
+			expectErr: ucerrs.ErrHashPassword,
+		},
+		{
+			name: "Failure - account already exists",
+			input: dto.RegisterInput{
+				Email:    email,
+				Password: password,
+			},
+			mockBehaviour: func(a adapter) {
+				a.passwordHasher.EXPECT().
+					Hash(password).
+					Return(hashedPassword, nil)
+
+				// Благодаря вашему фиксу, теперь эта ошибка корректно обрабатывается
+				a.account.EXPECT().
+					Create(mock.Anything, mock.AnythingOfType("*model.Account")).
+					Return(pkgerrs.ErrObjectAlreadyExists)
+			},
+			expectErr: ucerrs.ErrAccountAlreadyExists,
+		},
+		{
+			name: "Failure - db error on account creation",
+			input: dto.RegisterInput{
+				Email:    email,
+				Password: password,
+			},
+			mockBehaviour: func(a adapter) {
+				a.passwordHasher.EXPECT().
+					Hash(password).
+					Return(hashedPassword, nil)
+
+				a.account.EXPECT().
+					Create(mock.Anything, mock.AnythingOfType("*model.Account")).
+					Return(errors.New("generic db error"))
+			},
+			expectErr: ucerrs.ErrCreateAccountDB,
+		},
+		{
+			name: "Failure - db error on account role creation",
+			input: dto.RegisterInput{
+				Email:    email,
+				Password: password,
+			},
+			mockBehaviour: func(a adapter) {
+				a.passwordHasher.EXPECT().
+					Hash(password).
+					Return(hashedPassword, nil)
+
+				a.account.EXPECT().
+					Create(mock.Anything, mock.AnythingOfType("*model.Account")).
+					Return(nil)
+
+				a.accountRole.EXPECT().
+					Create(mock.Anything, mock.AnythingOfType("*model.AccountRole")).
+					Return(errors.New("role db error"))
+			},
+			expectErr: ucerrs.ErrCreateAccountRoleDB,
+		},
+		{
+			name: "Failure - event publishing error",
+			input: dto.RegisterInput{
+				Email:    email,
+				Password: password,
+			},
+			mockBehaviour: func(a adapter) {
+				a.passwordHasher.EXPECT().
+					Hash(password).
+					Return(hashedPassword, nil)
+
+				a.account.EXPECT().
+					Create(mock.Anything, mock.AnythingOfType("*model.Account")).
+					Return(nil)
+
+				a.accountRole.EXPECT().
+					Create(mock.Anything, mock.AnythingOfType("*model.AccountRole")).
+					Return(nil)
+
+				a.accountPublisher.EXPECT().
+					PublishAccountCreate(mock.Anything, mock.AnythingOfType("uuid.UUID")).
+					Return(errors.New("rabbitmq unavailable"))
+			},
+			expectErr: ucerrs.ErrPublishEvent,
 		},
 	}
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			a := adapter{
-				account:          mocks.NewAccountRepository(t),
-				accountRole:      mocks.NewAccountRoleRepository(t),
-				passwordHasher:   mocks.NewPasswordHasher(t),
-				accountPublisher: mocks.NewAccountPublisher(t),
-			}
+			accountRepo := mocks.NewMockAccountRepository(t)
+			accountRoleRepo := mocks.NewMockAccountRoleRepository(t)
+			passwordHasher := mocks.NewMockPasswordHasher(t)
+			accountPublisher := mocks.NewMockAccountPublisher(t)
 
-			if tt.prepare != nil {
-				tt.prepare(a)
-			}
+			tt.mockBehaviour(adapter{
+				account:          accountRepo,
+				accountRole:      accountRoleRepo,
+				passwordHasher:   passwordHasher,
+				accountPublisher: accountPublisher,
+			})
 
-			uc := usecase.NewRegisterUC(a.account, a.accountRole, a.passwordHasher, a.accountPublisher)
+			txManager := mocks.FakeTxManager{}
 
-			res, err := uc.Execute(context.Background(), tt.input)
+			uc := usecase.NewRegisterUC(
+				txManager, accountRepo, accountRoleRepo, passwordHasher, accountPublisher,
+			)
 
-			if tt.wantErr != nil {
+			out, err := uc.Execute(context.Background(), tt.input)
+
+			if tt.expectErr != nil {
 				assert.Error(t, err)
-				assert.ErrorIs(t, err, tt.wantErr)
-				assert.Equal(t, uuid.Nil, res.AccountID)
+				assert.ErrorIs(t, err, tt.expectErr)
+				assert.Equal(t, uuid.Nil, out.AccountID)
 			} else {
 				assert.NoError(t, err)
-				assert.NotEqual(t, uuid.Nil, res.AccountID)
+				assert.NotEqual(t, uuid.Nil, out.AccountID)
 			}
 		})
 	}

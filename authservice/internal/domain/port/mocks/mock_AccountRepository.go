@@ -189,12 +189,12 @@ func (_c *MockAccountRepository_GetByID_Call) RunAndReturn(run func(context.Cont
 	return _c
 }
 
-// MarkLogin provides a mock function with given fields: ctx, account
-func (_m *MockAccountRepository) MarkLogin(ctx context.Context, account *model.Account) error {
+// Update provides a mock function with given fields: ctx, account
+func (_m *MockAccountRepository) Update(ctx context.Context, account *model.Account) error {
 	ret := _m.Called(ctx, account)
 
 	if len(ret) == 0 {
-		panic("no return value specified for MarkLogin")
+		panic("no return value specified for Update")
 	}
 
 	var r0 error
@@ -207,78 +207,31 @@ func (_m *MockAccountRepository) MarkLogin(ctx context.Context, account *model.A
 	return r0
 }
 
-// MockAccountRepository_MarkLogin_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'MarkLogin'
-type MockAccountRepository_MarkLogin_Call struct {
+// MockAccountRepository_Update_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'Update'
+type MockAccountRepository_Update_Call struct {
 	*mock.Call
 }
 
-// MarkLogin is a helper method to define mock.On call
+// Update is a helper method to define mock.On call
 //   - ctx context.Context
 //   - account *model.Account
-func (_e *MockAccountRepository_Expecter) MarkLogin(ctx interface{}, account interface{}) *MockAccountRepository_MarkLogin_Call {
-	return &MockAccountRepository_MarkLogin_Call{Call: _e.mock.On("MarkLogin", ctx, account)}
+func (_e *MockAccountRepository_Expecter) Update(ctx interface{}, account interface{}) *MockAccountRepository_Update_Call {
+	return &MockAccountRepository_Update_Call{Call: _e.mock.On("Update", ctx, account)}
 }
 
-func (_c *MockAccountRepository_MarkLogin_Call) Run(run func(ctx context.Context, account *model.Account)) *MockAccountRepository_MarkLogin_Call {
+func (_c *MockAccountRepository_Update_Call) Run(run func(ctx context.Context, account *model.Account)) *MockAccountRepository_Update_Call {
 	_c.Call.Run(func(args mock.Arguments) {
 		run(args[0].(context.Context), args[1].(*model.Account))
 	})
 	return _c
 }
 
-func (_c *MockAccountRepository_MarkLogin_Call) Return(_a0 error) *MockAccountRepository_MarkLogin_Call {
+func (_c *MockAccountRepository_Update_Call) Return(_a0 error) *MockAccountRepository_Update_Call {
 	_c.Call.Return(_a0)
 	return _c
 }
 
-func (_c *MockAccountRepository_MarkLogin_Call) RunAndReturn(run func(context.Context, *model.Account) error) *MockAccountRepository_MarkLogin_Call {
-	_c.Call.Return(run)
-	return _c
-}
-
-// VerifyEmail provides a mock function with given fields: ctx, account
-func (_m *MockAccountRepository) VerifyEmail(ctx context.Context, account *model.Account) error {
-	ret := _m.Called(ctx, account)
-
-	if len(ret) == 0 {
-		panic("no return value specified for VerifyEmail")
-	}
-
-	var r0 error
-	if rf, ok := ret.Get(0).(func(context.Context, *model.Account) error); ok {
-		r0 = rf(ctx, account)
-	} else {
-		r0 = ret.Error(0)
-	}
-
-	return r0
-}
-
-// MockAccountRepository_VerifyEmail_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'VerifyEmail'
-type MockAccountRepository_VerifyEmail_Call struct {
-	*mock.Call
-}
-
-// VerifyEmail is a helper method to define mock.On call
-//   - ctx context.Context
-//   - account *model.Account
-func (_e *MockAccountRepository_Expecter) VerifyEmail(ctx interface{}, account interface{}) *MockAccountRepository_VerifyEmail_Call {
-	return &MockAccountRepository_VerifyEmail_Call{Call: _e.mock.On("VerifyEmail", ctx, account)}
-}
-
-func (_c *MockAccountRepository_VerifyEmail_Call) Run(run func(ctx context.Context, account *model.Account)) *MockAccountRepository_VerifyEmail_Call {
-	_c.Call.Run(func(args mock.Arguments) {
-		run(args[0].(context.Context), args[1].(*model.Account))
-	})
-	return _c
-}
-
-func (_c *MockAccountRepository_VerifyEmail_Call) Return(_a0 error) *MockAccountRepository_VerifyEmail_Call {
-	_c.Call.Return(_a0)
-	return _c
-}
-
-func (_c *MockAccountRepository_VerifyEmail_Call) RunAndReturn(run func(context.Context, *model.Account) error) *MockAccountRepository_VerifyEmail_Call {
+func (_c *MockAccountRepository_Update_Call) RunAndReturn(run func(context.Context, *model.Account) error) *MockAccountRepository_Update_Call {
 	_c.Call.Return(run)
 	return _c
 }

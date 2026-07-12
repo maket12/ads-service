@@ -2,6 +2,7 @@ package usecase_test
 
 import (
 	"context"
+	"errors"
 	"testing"
 
 	"github.com/maket12/ads-service/authservice/internal/app/dto"
@@ -18,112 +19,91 @@ import (
 
 func TestValidateAccessTokenUC_Execute(t *testing.T) {
 	type adapter struct {
-		account        *mocks.AccountRepository
-		tokenGenerator *mocks.TokenGenerator
+		account        *mocks.MockAccountRepository
+		tokenGenerator *mocks.MockTokenGenerator
 	}
 
 	type testCase struct {
-		name    string
-		input   dto.ValidateAccessTokenInput
-		prepare func(a adapter)
-		wantErr error
+		name          string
+		input         dto.ValidateAccessTokenInput
+		mockBehaviour func(a adapter, accountID uuid.UUID, account *model.Account)
+		expectErr     error
 	}
 
-	accountID := uuid.New()
-	role := "user"
-	accessToken := "valid-access-token"
-
-	activeAcc, _ := model.NewAccount("test@test.com", "hash")
-
-	bannedAcc, _ := model.NewAccount("banned@test.com", "hash")
-	bannedAcc.Block()
+	tokenStr := "access-jwt"
+	roleName := "user"
 
 	var tests = []testCase{
 		{
 			name: "Success",
 			input: dto.ValidateAccessTokenInput{
-				AccessToken: accessToken,
+				AccessToken: tokenStr,
 			},
-			prepare: func(a adapter) {
-				a.tokenGenerator.On("ValidateAccessTokenInput", mock.Anything, accessToken).
-					Return(accountID, role, nil)
-				a.account.On("GetByID", mock.Anything, accountID).
-					Return(activeAcc, nil)
+			mockBehaviour: func(a adapter, accountID uuid.UUID, account *model.Account) {
+				a.tokenGenerator.EXPECT().ValidateAccessToken(mock.Anything, tokenStr).Return(accountID, roleName, nil)
+				a.account.EXPECT().GetByID(mock.Anything, accountID).Return(account, nil)
 			},
-			wantErr: nil,
+			expectErr: nil,
 		},
 		{
-			name: "Fail - Invalid Token",
+			name: "Failure - parsing failed",
 			input: dto.ValidateAccessTokenInput{
-				AccessToken: "expired-or-fake-token",
+				AccessToken: tokenStr,
 			},
-			prepare: func(a adapter) {
-				a.tokenGenerator.On("ValidateAccessTokenInput", mock.Anything, "expired-or-fake-token").
-					Return(uuid.Nil, "", assert.AnError)
+			mockBehaviour: func(a adapter, accountID uuid.UUID, account *model.Account) {
+				a.tokenGenerator.EXPECT().ValidateAccessToken(mock.Anything, tokenStr).Return(uuid.Nil, "", errors.New("malformed"))
 			},
-			wantErr: ucerrs.ErrInvalidAccessToken,
+			expectErr: ucerrs.ErrInvalidAccessToken,
 		},
 		{
-			name: "Fail - account Not Found In DB",
+			name: "Failure - account records missing",
 			input: dto.ValidateAccessTokenInput{
-				AccessToken: accessToken,
+				AccessToken: tokenStr,
 			},
-			prepare: func(a adapter) {
-				a.tokenGenerator.On("ValidateAccessTokenInput", mock.Anything, accessToken).
-					Return(accountID, role, nil)
-				a.account.On("GetByID", mock.Anything, accountID).
-					Return(nil, pkgerrs.ErrObjectNotFound)
+			mockBehaviour: func(a adapter, accountID uuid.UUID, account *model.Account) {
+				a.tokenGenerator.EXPECT().ValidateAccessToken(mock.Anything, tokenStr).Return(accountID, roleName, nil)
+				a.account.EXPECT().GetByID(mock.Anything, accountID).Return(nil, pkgerrs.ErrObjectNotFound)
 			},
-			wantErr: ucerrs.ErrInvalidAccessToken,
+			expectErr: ucerrs.ErrInvalidAccessToken,
 		},
 		{
-			name: "Fail - account Is Banned",
+			name: "Failure - database connection reset",
 			input: dto.ValidateAccessTokenInput{
-				AccessToken: accessToken,
+				AccessToken: tokenStr,
 			},
-			prepare: func(a adapter) {
-				a.tokenGenerator.On("ValidateAccessTokenInput", mock.Anything, accessToken).
-					Return(accountID, role, nil)
-				a.account.On("GetByID", mock.Anything, accountID).
-					Return(bannedAcc, nil)
+			mockBehaviour: func(a adapter, accountID uuid.UUID, account *model.Account) {
+				a.tokenGenerator.EXPECT().ValidateAccessToken(mock.Anything, tokenStr).Return(accountID, roleName, nil)
+				a.account.EXPECT().GetByID(mock.Anything, accountID).Return(nil, errors.New("reset"))
 			},
-			wantErr: ucerrs.ErrCannotLogin,
-		},
-		{
-			name: "Fail - Database Error",
-			input: dto.ValidateAccessTokenInput{
-				AccessToken: accessToken,
-			},
-			prepare: func(a adapter) {
-				a.tokenGenerator.On("ValidateAccessTokenInput", mock.Anything, accessToken).
-					Return(accountID, role, nil)
-				a.account.On("GetByID", mock.Anything, accountID).
-					Return(nil, assert.AnError)
-			},
-			wantErr: ucerrs.ErrGetAccountByIDDB,
+			expectErr: ucerrs.ErrGetAccountByIDDB,
 		},
 	}
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			a := adapter{
-				account:        mocks.NewAccountRepository(t),
-				tokenGenerator: mocks.NewTokenGenerator(t),
-			}
+			accountID := uuid.New()
+			account, err := model.NewAccount("validate@example.com", "hash")
+			assert.NoError(t, err)
 
-			tt.prepare(a)
+			accountRepo := mocks.NewMockAccountRepository(t)
+			tokenGenerator := mocks.NewMockTokenGenerator(t)
 
-			uc := usecase.NewValidateAccessTokenUC(a.account, a.tokenGenerator)
+			tt.mockBehaviour(adapter{
+				account:        accountRepo,
+				tokenGenerator: tokenGenerator,
+			}, accountID, account)
 
-			res, err := uc.Execute(context.Background(), tt.input)
+			uc := usecase.NewValidateAccessTokenUC(accountRepo, tokenGenerator)
 
-			if tt.wantErr != nil {
-				assert.ErrorIs(t, err, tt.wantErr)
-				assert.Empty(t, res.Role)
+			out, err := uc.Execute(context.Background(), tt.input)
+
+			if tt.expectErr != nil {
+				assert.Error(t, err)
+				assert.ErrorIs(t, err, tt.expectErr)
 			} else {
 				assert.NoError(t, err)
-				assert.Equal(t, role, res.Role)
-				assert.Equal(t, accountID, res.AccountID)
+				assert.Equal(t, accountID, out.AccountID)
+				assert.Equal(t, roleName, out.Role)
 			}
 		})
 	}

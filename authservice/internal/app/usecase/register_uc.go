@@ -64,15 +64,15 @@ func (uc *RegisterUC) Execute(ctx context.Context, in dto.RegisterInput) (dto.Re
 	err = uc.trManager.Do(ctx, func(txCtx context.Context) error {
 		createErr := uc.account.Create(ctx, account)
 		if createErr != nil {
-			if errors.Is(err, pkgerrs.ErrObjectAlreadyExists) {
+			if errors.Is(createErr, pkgerrs.ErrObjectAlreadyExists) {
 				return ucerrs.ErrAccountAlreadyExists
 			}
-			return ucerrs.Wrap(ucerrs.ErrCreateAccountDB, err)
+			return ucerrs.Wrap(ucerrs.ErrCreateAccountDB, createErr)
 		}
 
 		createErr = uc.accountRole.Create(ctx, accountRole)
 		if createErr != nil {
-			return ucerrs.Wrap(ucerrs.ErrCreateAccountRoleDB, err)
+			return ucerrs.Wrap(ucerrs.ErrCreateAccountRoleDB, createErr)
 		}
 
 		return nil

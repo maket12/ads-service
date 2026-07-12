@@ -2,6 +2,7 @@ package usecase_test
 
 import (
 	"context"
+	"errors"
 	"testing"
 	"time"
 
@@ -9,8 +10,10 @@ import (
 	ucerrs "github.com/maket12/ads-service/authservice/internal/app/errs"
 	"github.com/maket12/ads-service/authservice/internal/app/usecase"
 	"github.com/maket12/ads-service/authservice/internal/domain/model"
+	"github.com/maket12/ads-service/authservice/internal/domain/port"
 	"github.com/maket12/ads-service/authservice/internal/domain/port/mocks"
 	pkgerrs "github.com/maket12/ads-service/authservice/pkg/errs"
+	"github.com/maket12/ads-service/authservice/pkg/utils"
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
@@ -18,118 +21,246 @@ import (
 
 func TestLoginUC_Execute(t *testing.T) {
 	type adapter struct {
-		account        *mocks.AccountRepository
-		accountRole    *mocks.AccountRoleRepository
-		refreshSession *mocks.RefreshSessionRepository
-		passwordHasher *mocks.PasswordHasher
-		tokenGenerator *mocks.TokenGenerator
+		account        *mocks.MockAccountRepository
+		accountRole    *mocks.MockAccountRoleRepository
+		refreshSession *mocks.MockRefreshSessionRepository
+		passwordHasher *mocks.MockPasswordHasher
+		tokenGenerator *mocks.MockTokenGenerator
 	}
 
 	type testCase struct {
-		name    string
-		input   dto.LoginInput
-		prepare func(a adapter)
-		wantErr error
+		name          string
+		input         dto.LoginInput
+		mockBehaviour func(a adapter, acc *model.Account)
+		expectErr     error
 	}
 
-	email := "user@test.com"
-	pass := "password123"
-	ttl := time.Hour * 24
-
-	account, _ := model.NewAccount(email, "hashed_db")
-
-	role, _ := model.NewAccountRole(account.ID())
+	email := "user@example.com"
+	password := "correct-password"
+	hashedPassword := "hashed-password"
+	ttl := 24 * time.Hour
 
 	var tests = []testCase{
 		{
-			name:  "Success",
-			input: dto.LoginInput{Email: email, Password: pass, IP: nil, UserAgent: nil},
-			prepare: func(a adapter) {
-				a.account.On("GetByEmail", mock.Anything, email).Return(account, nil)
-				a.passwordHasher.On("Compare", "hashed_db", pass).Return(true)
-				a.account.On("MarkLogin", mock.Anything, mock.Anything).Return(nil)
-				a.accountRole.On("Get", mock.Anything, account.ID()).Return(role, nil)
-				a.tokenGenerator.On("GenerateAccessToken", mock.Anything, account.ID(), "user").
-					Return("access_token_val", nil)
-				a.tokenGenerator.On("GenerateRefreshToken", mock.Anything, account.ID(), mock.Anything).
-					Return("refresh_token_val", nil)
-
-				a.refreshSession.On("Create", mock.Anything, mock.Anything).Return(nil)
+			name: "Success",
+			input: dto.LoginInput{
+				Email:     email,
+				Password:  password,
+				IP:        utils.VPtr("1.2.3.4"),
+				UserAgent: utils.VPtr("Mozilla"),
 			},
-			wantErr: nil,
+			mockBehaviour: func(a adapter, acc *model.Account) {
+				a.account.EXPECT().
+					GetByEmail(mock.Anything, email).
+					Return(acc, nil)
+
+				a.passwordHasher.EXPECT().
+					Compare(hashedPassword, password).
+					Return(true)
+
+				a.account.EXPECT().
+					Update(mock.Anything, acc).
+					Return(nil)
+
+				a.accountRole.EXPECT().
+					Get(mock.Anything, acc.ID()).
+					Return(model.RestoreAccountRole(acc.ID(), model.RoleUser), nil)
+
+				a.tokenGenerator.EXPECT().
+					GeneratePair(mock.Anything, acc.ID(), model.RoleUser.String(), mock.AnythingOfType("uuid.UUID")).
+					Return(&port.TokensPair{Access: "access", Refresh: "refresh"}, nil)
+
+				a.refreshSession.EXPECT().
+					Create(mock.Anything, mock.AnythingOfType("*model.RefreshSession")).
+					Return(nil)
+			},
+			expectErr: nil,
 		},
 		{
-			name:  "Fail - account Not Found",
-			input: dto.LoginInput{Email: "unknown@test.com", Password: pass},
-			prepare: func(a adapter) {
-				a.account.On("GetByEmail", mock.Anything, "unknown@test.com").
+			name: "Failure - account not found",
+			input: dto.LoginInput{
+				Email:    email,
+				Password: password,
+			},
+			mockBehaviour: func(a adapter, acc *model.Account) {
+				a.account.EXPECT().
+					GetByEmail(mock.Anything, email).
 					Return(nil, pkgerrs.ErrObjectNotFound)
 			},
-			wantErr: ucerrs.ErrInvalidCredentials,
+			expectErr: ucerrs.ErrInvalidCredentials,
 		},
 		{
-			name:  "Fail - Password Mismatch",
-			input: dto.LoginInput{Email: email, Password: "wrong_password"},
-			prepare: func(a adapter) {
-				a.account.On("GetByEmail", mock.Anything, email).Return(account, nil)
-				a.passwordHasher.On("Compare", "hashed_db", "wrong_password").Return(false)
+			name: "Failure - db error on GetByEmail",
+			input: dto.LoginInput{
+				Email:    email,
+				Password: password,
 			},
-			wantErr: ucerrs.ErrInvalidCredentials,
+			mockBehaviour: func(a adapter, acc *model.Account) {
+				a.account.EXPECT().
+					GetByEmail(mock.Anything, email).
+					Return(nil, errors.New("db error"))
+			},
+			expectErr: ucerrs.ErrGetAccountByEmailDB,
 		},
 		{
-			name:  "Fail - account Banned",
-			input: dto.LoginInput{Email: email, Password: pass},
-			prepare: func(a adapter) {
-				bannedAcc, _ := model.NewAccount(email, "hashed_db")
-				bannedAcc.Block()
+			name: "Failure - password mismatch",
+			input: dto.LoginInput{
+				Email:    email,
+				Password: "wrong-password",
+			},
+			mockBehaviour: func(a adapter, acc *model.Account) {
+				a.account.EXPECT().
+					GetByEmail(mock.Anything, email).
+					Return(acc, nil)
 
-				a.account.On("GetByEmail", mock.Anything, email).Return(bannedAcc, nil)
-				a.passwordHasher.On("Compare", "hashed_db", pass).Return(true)
+				a.passwordHasher.EXPECT().
+					Compare(hashedPassword, "wrong-password").
+					Return(false)
 			},
-			wantErr: ucerrs.ErrCannotLogin,
+			expectErr: ucerrs.ErrInvalidCredentials,
 		},
 		{
-			name:  "Fail - Token Generation Error",
-			input: dto.LoginInput{Email: email, Password: pass},
-			prepare: func(a adapter) {
-				a.account.On("GetByEmail", mock.Anything, email).Return(account, nil)
-				a.passwordHasher.On("Compare", "hashed_db", pass).Return(true)
-				a.account.On("MarkLogin", mock.Anything, mock.Anything).Return(nil)
-				a.accountRole.On("Get", mock.Anything, account.ID()).Return(role, nil)
-
-				a.tokenGenerator.On("GenerateAccessToken", mock.Anything, mock.Anything, mock.Anything).
-					Return("", assert.AnError)
+			name: "Failure - account update db error",
+			input: dto.LoginInput{
+				Email:    email,
+				Password: password,
 			},
-			wantErr: ucerrs.ErrGenerateAccessToken,
+			mockBehaviour: func(a adapter, acc *model.Account) {
+				a.account.EXPECT().
+					GetByEmail(mock.Anything, email).
+					Return(acc, nil)
+
+				a.passwordHasher.EXPECT().
+					Compare(hashedPassword, password).
+					Return(true)
+
+				a.account.EXPECT().
+					Update(mock.Anything, acc).
+					Return(errors.New("db error"))
+			},
+			expectErr: ucerrs.ErrUpdateAccountDB,
+		},
+		{
+			name: "Failure - get account role db error",
+			input: dto.LoginInput{
+				Email:    email,
+				Password: password,
+			},
+			mockBehaviour: func(a adapter, acc *model.Account) {
+				a.account.EXPECT().
+					GetByEmail(mock.Anything, email).
+					Return(acc, nil)
+
+				a.passwordHasher.EXPECT().
+					Compare(hashedPassword, password).
+					Return(true)
+
+				a.account.EXPECT().
+					Update(mock.Anything, acc).
+					Return(nil)
+
+				a.accountRole.EXPECT().
+					Get(mock.Anything, acc.ID()).
+					Return(nil, errors.New("db error"))
+			},
+			expectErr: ucerrs.ErrGetAccountRoleDB,
+		},
+		{
+			name: "Failure - token generation error",
+			input: dto.LoginInput{
+				Email:    email,
+				Password: password,
+			},
+			mockBehaviour: func(a adapter, acc *model.Account) {
+				a.account.EXPECT().
+					GetByEmail(mock.Anything, email).
+					Return(acc, nil)
+
+				a.passwordHasher.EXPECT().
+					Compare(hashedPassword, password).
+					Return(true)
+
+				a.account.EXPECT().
+					Update(mock.Anything, acc).
+					Return(nil)
+
+				a.accountRole.EXPECT().
+					Get(mock.Anything, acc.ID()).
+					Return(model.RestoreAccountRole(acc.ID(), model.RoleUser), nil)
+
+				a.tokenGenerator.EXPECT().
+					GeneratePair(mock.Anything, acc.ID(), model.RoleUser.String(), mock.AnythingOfType("uuid.UUID")).
+					Return(nil, errors.New("crypto failure"))
+			},
+			expectErr: ucerrs.ErrGenerateTokensPair,
+		},
+		{
+			name: "Failure - create refresh session db error",
+			input: dto.LoginInput{
+				Email:    email,
+				Password: password,
+			},
+			mockBehaviour: func(a adapter, acc *model.Account) {
+				a.account.EXPECT().
+					GetByEmail(mock.Anything, email).
+					Return(acc, nil)
+
+				a.passwordHasher.EXPECT().
+					Compare(hashedPassword, password).
+					Return(true)
+
+				a.account.EXPECT().
+					Update(mock.Anything, acc).
+					Return(nil)
+
+				a.accountRole.EXPECT().
+					Get(mock.Anything, acc.ID()).
+					Return(model.RestoreAccountRole(acc.ID(), model.RoleUser), nil)
+
+				a.tokenGenerator.EXPECT().
+					GeneratePair(mock.Anything, acc.ID(), model.RoleUser.String(), mock.AnythingOfType("uuid.UUID")).
+					Return(&port.TokensPair{Access: "access", Refresh: "refresh"}, nil)
+
+				a.refreshSession.EXPECT().
+					Create(mock.Anything, mock.AnythingOfType("*model.RefreshSession")).
+					Return(errors.New("db error"))
+			},
+			expectErr: ucerrs.ErrCreateRefreshSessionDB,
 		},
 	}
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			a := adapter{
-				account:        mocks.NewAccountRepository(t),
-				accountRole:    mocks.NewAccountRoleRepository(t),
-				refreshSession: mocks.NewRefreshSessionRepository(t),
-				passwordHasher: mocks.NewPasswordHasher(t),
-				tokenGenerator: mocks.NewTokenGenerator(t),
-			}
+			acc, err := model.NewAccount(email, hashedPassword)
+			assert.NoError(t, err)
 
-			tt.prepare(a)
+			accountRepo := mocks.NewMockAccountRepository(t)
+			accountRoleRepo := mocks.NewMockAccountRoleRepository(t)
+			refreshSessionRepo := mocks.NewMockRefreshSessionRepository(t)
+			passwordHasher := mocks.NewMockPasswordHasher(t)
+			tokenGenerator := mocks.NewMockTokenGenerator(t)
+
+			tt.mockBehaviour(adapter{
+				account:        accountRepo,
+				accountRole:    accountRoleRepo,
+				refreshSession: refreshSessionRepo,
+				passwordHasher: passwordHasher,
+				tokenGenerator: tokenGenerator,
+			}, acc)
 
 			uc := usecase.NewLoginUC(
-				a.account, a.accountRole, a.refreshSession,
-				a.passwordHasher, a.tokenGenerator, ttl,
+				accountRepo, accountRoleRepo, refreshSessionRepo, passwordHasher, tokenGenerator, ttl,
 			)
 
-			res, err := uc.Execute(context.Background(), tt.input)
+			out, err := uc.Execute(context.Background(), tt.input)
 
-			if tt.wantErr != nil {
-				assert.ErrorIs(t, err, tt.wantErr)
-				assert.Empty(t, res.AccessToken)
+			if tt.expectErr != nil {
+				assert.Error(t, err)
+				assert.ErrorIs(t, err, tt.expectErr)
 			} else {
 				assert.NoError(t, err)
-				assert.Equal(t, "access_token_val", res.AccessToken)
-				assert.Equal(t, "refresh_token_val", res.RefreshToken)
+				assert.NotEmpty(t, out.AccessToken)
+				assert.NotEmpty(t, out.RefreshToken)
 			}
 		})
 	}
