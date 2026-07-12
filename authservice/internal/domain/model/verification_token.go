@@ -16,6 +16,7 @@ const minTTL = time.Minute
 type VerificationToken struct {
 	token     string
 	accountID uuid.UUID
+	ttl       time.Duration
 	expiresAt time.Time
 }
 
@@ -37,6 +38,7 @@ func NewVerificationToken(
 	return &VerificationToken{
 		token:     hex.EncodeToString(b),
 		accountID: accountID,
+		ttl:       ttl,
 		expiresAt: time.Now().Add(ttl),
 	}, nil
 }
@@ -44,11 +46,13 @@ func NewVerificationToken(
 func RestoreVerificationToken(
 	token string,
 	accountID uuid.UUID,
+	ttl time.Duration,
 	expiresAt time.Time,
 ) *VerificationToken {
 	return &VerificationToken{
 		token:     token,
 		accountID: accountID,
+		ttl:       ttl,
 		expiresAt: expiresAt,
 	}
 }
@@ -57,6 +61,7 @@ func RestoreVerificationToken(
 
 func (t *VerificationToken) Token() string        { return t.token }
 func (t *VerificationToken) AccountID() uuid.UUID { return t.accountID }
+func (t *VerificationToken) TTL() time.Duration   { return t.ttl }
 func (t *VerificationToken) ExpiresAt() time.Time { return t.expiresAt }
 
 // ================ Business logic ================

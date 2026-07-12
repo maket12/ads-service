@@ -53,6 +53,7 @@ func TestNewVerificationToken(t *testing.T) {
 				require.NotNil(t, vToken)
 				assert.NotEmpty(t, vToken.Token())
 				assert.Equal(t, tt.accountID, vToken.AccountID())
+				assert.Equal(t, tt.ttl, vToken.TTL())
 				assert.WithinDuration(t,
 					now.Add(tt.ttl),
 					vToken.ExpiresAt(),
