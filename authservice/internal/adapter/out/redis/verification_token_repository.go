@@ -8,11 +8,16 @@ import (
 
 	"github.com/maket12/ads-service/authservice/internal/domain/model"
 	pkgerrs "github.com/maket12/ads-service/authservice/pkg/errs"
+	pkgredis "github.com/maket12/ads-service/authservice/pkg/redis"
 	"github.com/redis/go-redis/v9"
 )
 
 type VerificationTokenRepository struct {
-	client *redis.Client
+	client *pkgredis.Client
+}
+
+func NewVerificationTokenRepository(redisClient *pkgredis.Client) *VerificationTokenRepository {
+	return &VerificationTokenRepository{client: redisClient}
 }
 
 func (r *VerificationTokenRepository) redisKey(token string) string {
