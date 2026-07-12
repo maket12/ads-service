@@ -70,7 +70,7 @@ func (uc *LoginUC) Execute(ctx context.Context, in dto.LoginInput) (dto.LoginOut
 		)
 	}
 
-	if err = uc.account.MarkLogin(ctx, account); err != nil {
+	if err = uc.account.Update(ctx, account); err != nil {
 		return dto.LoginOutput{}, ucerrs.Wrap(
 			ucerrs.ErrUpdateAccountDB, err,
 		)

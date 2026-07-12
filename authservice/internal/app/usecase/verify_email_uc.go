@@ -33,16 +33,16 @@ func (uc *VerifyEmailUC) Execute(ctx context.Context, in dto.VerifyEmailInput) (
 	vToken, err := uc.verificationToken.Get(ctx, in.Token)
 	if err != nil {
 		if errors.Is(err, pkgerrs.ErrObjectNotFound) {
-			return dto.VerifyEmailOutput{}, ucerrs.ErrVerificationTokenNotFound
+			return dto.VerifyEmailOutput{Verified: false}, ucerrs.ErrVerificationTokenNotFound
 		}
-		return dto.VerifyEmailOutput{}, ucerrs.Wrap(
+		return dto.VerifyEmailOutput{Verified: false}, ucerrs.Wrap(
 			ucerrs.ErrGetVerificationTokenDB, err,
 		)
 	}
 
 	// Validation
 	if vToken.IsExpired() {
-		return dto.VerifyEmailOutput{}, ucerrs.Wrap(
+		return dto.VerifyEmailOutput{Verified: false}, ucerrs.Wrap(
 			ucerrs.ErrInvalidInput, errors.New("token is expired"),
 		)
 	}
@@ -51,15 +51,24 @@ func (uc *VerifyEmailUC) Execute(ctx context.Context, in dto.VerifyEmailInput) (
 	account, err := uc.account.GetByID(ctx, vToken.AccountID())
 	if err != nil {
 		if errors.Is(err, pkgerrs.ErrObjectNotFound) {
-			return dto.VerifyEmailOutput{}, ucerrs.ErrAccountNotFound
+			return dto.VerifyEmailOutput{Verified: false}, ucerrs.ErrAccountNotFound
 		}
-		return dto.VerifyEmailOutput{}, ucerrs.Wrap(
+		return dto.VerifyEmailOutput{Verified: false}, ucerrs.Wrap(
 			ucerrs.ErrGetAccountByIDDB, err,
 		)
 	}
 
 	account.VerifyEmail()
 
-	if err = uc.account.VerifyEmail(ctx, account); err != nil {
+	if err = uc.account.Update(ctx, account); err != nil {
+		return dto.VerifyEmailOutput{Verified: false}, ucerrs.Wrap(
+			ucerrs.ErrUpdateAccountDB, err,
+		)
 	}
+
+	// Delete token (if it still exists)
+	_ = uc.verificationToken.Delete(ctx, vToken.Token())
+
+	// Output
+	return dto.VerifyEmailOutput{Verified: true}, nil
 }
