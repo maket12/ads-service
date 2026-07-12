@@ -89,38 +89,22 @@ func (s *AccountsRepoSuite) TestGetByEmail_NotFound() {
 	s.Require().ErrorIs(err, pkgerrs.ErrObjectNotFound)
 }
 
-func (s *AccountsRepoSuite) TestMarkLogin() {
+func (s *AccountsRepoSuite) TestUpdate() {
 	// Create account at first
 	_ = s.repo.Create(s.ctx, s.testAccount)
 
-	// Mark as logged in
+	// Mutate it
 	_ = s.testAccount.MarkLogin()
-	err := s.repo.MarkLogin(s.ctx, s.testAccount)
+	s.testAccount.VerifyEmail()
+	_ = s.testAccount.Block()
+
+	// Update its state in database
+	err := s.repo.Update(s.ctx, s.testAccount)
 	s.Require().NoError(err)
 
-	// Check if the account is marked
+	// Check if the account was updated
 	acc, _ := s.repo.GetByEmail(s.ctx, s.testAccount.Email())
 	s.Require().NotNil(acc.LastLoginAt())
-
-	// Check update time
-	s.Require().NotEqual(s.testAccount.UpdatedAt(), acc.UpdatedAt(),
-		"expected new update time")
-}
-
-func (s *AccountsRepoSuite) TestVerifyEmail() {
-	// Create account at first
-	_ = s.repo.Create(s.ctx, s.testAccount)
-
-	// Verify its email
-	s.testAccount.VerifyEmail()
-	err := s.repo.VerifyEmail(s.ctx, s.testAccount)
-	s.Require().NoError(err)
-
-	// Check if the account is marked
-	acc, _ := s.repo.GetByID(s.ctx, s.testAccount.ID())
 	s.Require().True(acc.EmailVerified())
-
-	// Check update time
-	s.Require().NotEqual(s.testAccount.UpdatedAt(), acc.UpdatedAt(),
-		"expected new update time")
+	s.Require().True(acc.Status() == model.AccountBlocked)
 }
