@@ -18,16 +18,23 @@ var (
 )
 
 /*
-================ Adapter failures ================
+================ Infrastructure failures ================
 */
 var (
 	ErrHashPassword       = errors.New("failed to hash password")
 	ErrGenerateTokensPair = errors.New("failed to generate tokens pair")
-	ErrPublishEvent       = errors.New("failed to publish event")
 )
 
 /*
-================ Database failures ================
+================ Publisher and Email Sender failures ================
+*/
+var (
+	ErrSendVerificationEmail = errors.New("failed to send verification email")
+	ErrPublishEvent          = errors.New("failed to publish event")
+)
+
+/*
+================ Repositories failures ================
 */
 var (
 	ErrCreateAccountDB         = errors.New("failed to create account using db")
@@ -42,4 +49,12 @@ var (
 	ErrGetRefreshSessionByIDDB = errors.New("failed to get refresh session by ID using db")
 	ErrRevokeRefreshSessionDB  = errors.New("failed to revoke refresh session using db")
 	ErrRevokeAllForAccountDB   = errors.New("failed to revoke all refresh session for account using db")
+)
+
+var (
+	ErrSaveVerificationTokenDB   = errors.New("failed to save verification token using db")
+	ErrGetVerificationTokenDB    = errors.New("failed to get verification token using db")
+	ErrDeleteVerificationTokenDB = errors.New("failed to delete verification token using db")
+
+	ErrVerificationTokenNotFound = errors.New("verification token not found")
 )

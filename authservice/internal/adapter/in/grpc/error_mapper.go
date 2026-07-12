@@ -13,8 +13,7 @@ func gRPCError(err error) *pkgerrs.OutErr {
 	var w *ucerrs.WrappedError
 	if errors.As(err, &w) {
 		switch {
-		case errors.Is(w.Public, ucerrs.ErrHashPassword),
-			errors.Is(w.Public, ucerrs.ErrCreateAccountDB),
+		case errors.Is(w.Public, ucerrs.ErrCreateAccountDB),
 			errors.Is(w.Public, ucerrs.ErrGetAccountByEmailDB),
 			errors.Is(w.Public, ucerrs.ErrGetAccountByIDDB),
 			errors.Is(w.Public, ucerrs.ErrUpdateAccountDB),
@@ -25,8 +24,16 @@ func gRPCError(err error) *pkgerrs.OutErr {
 			errors.Is(w.Public, ucerrs.ErrRevokeRefreshSessionDB),
 			errors.Is(w.Public, ucerrs.ErrRevokeAllForAccountDB),
 			errors.Is(w.Public, ucerrs.ErrCreateAccountRoleDB),
+
+			errors.Is(w.Public, ucerrs.ErrHashPassword),
 			errors.Is(w.Public, ucerrs.ErrGenerateTokensPair),
-			errors.Is(w.Public, ucerrs.ErrPublishEvent):
+
+			errors.Is(w.Public, ucerrs.ErrPublishEvent),
+			errors.Is(w.Public, ucerrs.ErrSendVerificationEmail),
+
+			errors.Is(w.Public, ucerrs.ErrSaveVerificationTokenDB),
+			errors.Is(w.Public, ucerrs.ErrGetVerificationTokenDB),
+			errors.Is(w.Public, ucerrs.ErrDeleteVerificationTokenDB):
 			return pkgerrs.NewOutError(codes.Internal, w.Public.Error(), w.Reason)
 
 		case errors.Is(w.Public, ucerrs.ErrInvalidInput):
@@ -39,7 +46,8 @@ func gRPCError(err error) *pkgerrs.OutErr {
 
 	switch {
 	case errors.Is(err, ucerrs.ErrInvalidCredentials),
-		errors.Is(err, ucerrs.ErrInvalidAccountID):
+		errors.Is(err, ucerrs.ErrInvalidAccountID),
+		errors.Is(err, ucerrs.ErrVerificationTokenNotFound):
 		return pkgerrs.NewOutError(codes.NotFound, err.Error(), nil)
 
 	case errors.Is(err, ucerrs.ErrAccountAlreadyExists):
