@@ -13,7 +13,6 @@ import (
 	infrajwt "github.com/maket12/ads-service/authservice/internal/infrastructure/jwt"
 	infrapassw "github.com/maket12/ads-service/authservice/internal/infrastructure/password"
 	"github.com/maket12/ads-service/authservice/pkg/generated/auth_v1"
-	pkgredis "github.com/maket12/ads-service/authservice/pkg/redis"
 
 	"context"
 	"fmt"
@@ -26,6 +25,7 @@ import (
 
 	pkgpostgres "github.com/maket12/ads-service/authservice/pkg/postgres"
 	pkgrabbitmq "github.com/maket12/ads-service/authservice/pkg/rabbitmq"
+	pkgredis "github.com/maket12/ads-service/authservice/pkg/redis"
 
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/reflection"
@@ -244,8 +244,8 @@ func runServer(ctx context.Context, cfg *config.Config, logger *slog.Logger) err
 	validateAccessUC := usecase.NewValidateAccessTokenUC(accRepo, tokenGenerator)
 	assignRoleUC := usecase.NewAssignRoleUC(accRoleRepo, rSessRepo)
 	sendVerificationUC := usecase.NewSendVerificationUC(
-		vTokenRepo, smtpClient,
-		cfg.VerificationTTL,
+		accRepo, vTokenRepo,
+		smtpClient, cfg.VerificationTTL,
 	)
 	verifyEmailUC := usecase.NewVerifyEmailUC(accRepo, vTokenRepo, smtpClient)
 

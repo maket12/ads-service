@@ -24,7 +24,7 @@ func TestRefreshSessionRepoSuite(t *testing.T) {
 }
 
 func (s *RefreshSessionsRepoSuite) SetupSuite() {
-	s.SetupBase(3)
+	s.SetupBase(2)
 	s.repo = NewRefreshSessionsRepository(s.dbClient,
 		trmpgx.DefaultCtxGetter,
 	)

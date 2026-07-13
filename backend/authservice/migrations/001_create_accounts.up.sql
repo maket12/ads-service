@@ -11,3 +11,6 @@ CREATE TABLE IF NOT EXISTS accounts (
     updated_at timestamptz NOT NULL DEFAULT now(),
     last_login_at timestamptz
 );
+
+CREATE INDEX IF NOT EXISTS idx_accounts_status ON accounts(status);
+CREATE INDEX IF NOT EXISTS idx_accounts_email_verf ON accounts(email_verified);

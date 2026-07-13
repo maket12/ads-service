@@ -3,6 +3,7 @@ package password_test
 import (
 	"testing"
 
+	"github.com/maket12/ads-service/authservice/internal/infrastructure/password"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
@@ -28,7 +29,7 @@ func TestPasswordHasher_Hash(t *testing.T) {
 	}
 
 	const hashCost = 4
-	var hasher = NewHasher(hashCost)
+	var hasher = password.NewHasher(hashCost)
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -46,7 +47,7 @@ func TestPasswordHasher_Hash(t *testing.T) {
 
 func TestPasswordHasher_Compare(t *testing.T) {
 	const hashCost = 4
-	var hasher = NewHasher(hashCost)
+	var hasher = password.NewHasher(hashCost)
 
 	t.Run("success", func(t *testing.T) {
 		var (

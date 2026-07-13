@@ -23,7 +23,7 @@ func TestAccountRolesRepoSuite(t *testing.T) {
 }
 
 func (s *AccountRolesRepoSuite) SetupSuite() {
-	s.SetupBase(4)
+	s.SetupBase(3)
 	s.repo = NewAccountRolesRepository(s.dbClient,
 		trmpgx.DefaultCtxGetter,
 	)
