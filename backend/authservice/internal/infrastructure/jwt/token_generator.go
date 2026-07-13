@@ -59,7 +59,7 @@ func (gen *Generator) generateToken(_ context.Context,
 				IssuedAt:  jwt.NewNumericDate(time.Now()),
 			},
 			Role: *role,
-			Type: "access",
+			Type: tokenType.String(),
 		}
 		signingKey = gen.accessSecret
 	} else if tokenType == port.RefreshToken {
@@ -137,7 +137,7 @@ func (gen *Generator) parseToken(_ context.Context,
 
 	parsedToken, err := jwt.ParseWithClaims(
 		token,
-		claims,
+		&claims,
 		func(token *jwt.Token) (interface{}, error) {
 			// Check the signing method
 			if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {

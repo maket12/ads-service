@@ -31,14 +31,18 @@ func (uc *ValidateAccessTokenUC) Execute(ctx context.Context, in dto.ValidateAcc
 		ctx, in.AccessToken,
 	)
 	if err != nil {
-		return dto.ValidateAccessTokenOutput{}, ucerrs.ErrInvalidAccessToken
+		return dto.ValidateAccessTokenOutput{}, ucerrs.Wrap(
+			ucerrs.ErrInvalidAccessToken, err,
+		)
 	}
 
 	// Get account and check if it is not active
 	account, err := uc.account.GetByID(ctx, accountID)
 	if err != nil {
 		if errors.Is(err, pkgerrs.ErrObjectNotFound) {
-			return dto.ValidateAccessTokenOutput{}, ucerrs.ErrInvalidAccessToken
+			return dto.ValidateAccessTokenOutput{}, ucerrs.Wrap(
+				ucerrs.ErrInvalidAccessToken, err,
+			)
 		}
 		return dto.ValidateAccessTokenOutput{}, ucerrs.Wrap(
 			ucerrs.ErrGetAccountByIDDB, err,

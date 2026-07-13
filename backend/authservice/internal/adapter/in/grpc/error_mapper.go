@@ -43,6 +43,10 @@ func gRPCError(err error) *pkgerrs.OutErr {
 				w.Reason,
 			)
 
+		case errors.Is(err, ucerrs.ErrInvalidAccessToken),
+			errors.Is(err, ucerrs.ErrInvalidRefreshToken):
+			return pkgerrs.NewOutError(codes.Unauthenticated, err.Error(), w.Reason)
+
 		default:
 			return pkgerrs.NewOutError(codes.Internal, "internal error", w.Reason)
 		}

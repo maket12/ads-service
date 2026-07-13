@@ -32,13 +32,17 @@ func (uc *LogoutUC) Execute(ctx context.Context, in dto.LogoutInput) (dto.Logout
 		ctx, in.RefreshToken,
 	)
 	if err != nil && !errors.Is(err, port.ErrTokenExpired) {
-		return dto.LogoutOutput{}, ucerrs.ErrInvalidRefreshToken
+		return dto.LogoutOutput{}, ucerrs.Wrap(
+			ucerrs.ErrInvalidRefreshToken, err,
+		)
 	}
 
 	session, err := uc.refreshSession.GetByID(ctx, sessionID)
 	if err != nil {
 		if errors.Is(err, pkgerrs.ErrObjectNotFound) {
-			return dto.LogoutOutput{}, ucerrs.ErrInvalidRefreshToken
+			return dto.LogoutOutput{}, ucerrs.Wrap(
+				ucerrs.ErrInvalidRefreshToken, err,
+			)
 		}
 		return dto.LogoutOutput{}, ucerrs.Wrap(
 			ucerrs.ErrGetRefreshSessionByIDDB, err,
@@ -47,11 +51,15 @@ func (uc *LogoutUC) Execute(ctx context.Context, in dto.LogoutInput) (dto.Logout
 
 	// Validate and revoke
 	if !session.IsActive() {
-		return dto.LogoutOutput{}, ucerrs.ErrInvalidRefreshToken
+		return dto.LogoutOutput{}, ucerrs.Wrap(
+			ucerrs.ErrInvalidRefreshToken, errors.New("session in expired"),
+		)
 	}
 
 	if utils.HashToken(in.RefreshToken) != session.RefreshTokenHash() {
-		return dto.LogoutOutput{}, ucerrs.ErrInvalidRefreshToken
+		return dto.LogoutOutput{}, ucerrs.Wrap(
+			ucerrs.ErrInvalidRefreshToken, errors.New("invalid token hash"),
+		)
 	}
 
 	if err = session.RevokeByLogout(); err != nil {

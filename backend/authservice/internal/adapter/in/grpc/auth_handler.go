@@ -59,6 +59,10 @@ func (h *AuthHandler) Register(
 		return nil, status.Error(code, msg)
 	}
 
+	h.log.InfoContext(ctx, "created account",
+		slog.String("email", req.GetEmail()),
+	)
+
 	return MapRegisterDTOToPb(ucResp), nil
 }
 
@@ -72,6 +76,12 @@ func (h *AuthHandler) Login(
 		code, msg := h.handleError(ctx, err, "failed to login")
 		return nil, status.Error(code, msg)
 	}
+
+	h.log.InfoContext(ctx, "successful login",
+		slog.String("email", req.GetEmail()),
+		slog.String("ip", req.GetIp()),
+		slog.String("user_agent", req.GetUserAgent()),
+	)
 
 	return MapLoginDTOToPb(ucResp), nil
 }
@@ -135,6 +145,11 @@ func (h *AuthHandler) AssignRole(
 		return nil, status.Error(code, msg)
 	}
 
+	h.log.InfoContext(ctx, "successful role assigned",
+		slog.String("account_id", req.GetAccountId()),
+		slog.String("role", req.GetRole()),
+	)
+
 	return MapAssignRoleDTOToPb(ucResp), nil
 }
 
@@ -150,6 +165,11 @@ func (h *AuthHandler) SendVerification(
 		)
 		return nil, status.Error(code, msg)
 	}
+
+	h.log.InfoContext(ctx, "sent verification token",
+		slog.String("account_id", req.GetAccountId()),
+		slog.String("to_email", req.GetEmail()),
+	)
 
 	return MapSendVerificationDTOToPb(ucResp), nil
 }
