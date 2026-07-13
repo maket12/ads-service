@@ -2,7 +2,8 @@ package grpc
 
 import (
 	"github.com/maket12/ads-service/authservice/internal/app/dto"
-	"github.com/maket12/ads-service/pkg/generated/auth_v1"
+	"github.com/maket12/ads-service/authservice/pkg/generated/auth_v1"
+	"github.com/maket12/ads-service/authservice/pkg/utils"
 
 	"github.com/google/uuid"
 )
@@ -19,12 +20,11 @@ func MapRegisterDTOToPb(out dto.RegisterOutput) *auth_v1.RegisterResponse {
 }
 
 func MapLoginPbToDTO(req *auth_v1.LoginRequest) dto.LoginInput {
-	var ip, userAgent = req.GetIp(), req.GetUserAgent()
 	return dto.LoginInput{
 		Email:     req.GetEmail(),
 		Password:  req.GetPassword(),
-		IP:        &ip,
-		UserAgent: &userAgent,
+		IP:        utils.VPtr(req.GetIp()),
+		UserAgent: utils.VPtr(req.GetUserAgent()),
 	}
 }
 
@@ -44,11 +44,10 @@ func MapLogoutDTOToPb(out dto.LogoutOutput) *auth_v1.LogoutResponse {
 }
 
 func MapRefreshSessionPbToDTO(req *auth_v1.RefreshSessionRequest) dto.RefreshSessionInput {
-	var ip, userAgent = req.GetIp(), req.GetUserAgent()
 	return dto.RefreshSessionInput{
 		RefreshToken: req.GetOldRefreshToken(),
-		IP:           &ip,
-		UserAgent:    &userAgent,
+		IP:           utils.VPtr(req.GetIp()),
+		UserAgent:    utils.VPtr(req.GetUserAgent()),
 	}
 }
 
@@ -79,5 +78,25 @@ func MapAssignRolePbToDTO(req *auth_v1.AssignRoleRequest) dto.AssignRoleInput {
 }
 
 func MapAssignRoleDTOToPb(out dto.AssignRoleOutput) *auth_v1.AssignRoleResponse {
-	return &auth_v1.AssignRoleResponse{Assign: out.Assigned}
+	return &auth_v1.AssignRoleResponse{Assigned: out.Assigned}
+}
+
+func MapSendVerificationPbToDTO(req *auth_v1.SendVerificationRequest) dto.SendVerificationInput {
+	accID, _ := uuid.Parse(req.GetAccountId())
+	return dto.SendVerificationInput{
+		AccountID: accID,
+		Email:     req.GetEmail(),
+	}
+}
+
+func MapSendVerificationDTOToPb(out dto.SendVerificationOutput) *auth_v1.SendVerificationResponse {
+	return &auth_v1.SendVerificationResponse{Sent: out.Sent}
+}
+
+func MapVerifyEmailPbToDTO(req *auth_v1.VerifyEmailRequest) dto.VerifyEmailInput {
+	return dto.VerifyEmailInput{Token: req.GetToken()}
+}
+
+func MapVerifyEmailDTOToPb(out dto.VerifyEmailOutput) *auth_v1.VerifyEmailResponse {
+	return &auth_v1.VerifyEmailResponse{Verified: out.Verified}
 }

@@ -5,7 +5,8 @@ import (
 	"log/slog"
 
 	"github.com/maket12/ads-service/authservice/internal/app/usecase"
-	"github.com/maket12/ads-service/pkg/generated/auth_v1"
+	"github.com/maket12/ads-service/authservice/pkg/generated/auth_v1"
+	"google.golang.org/grpc/codes"
 
 	"google.golang.org/grpc/status"
 )
@@ -47,98 +48,137 @@ func NewAuthHandler(
 	}
 }
 
-func (h *AuthHandler) Register(ctx context.Context, req *auth_v1.RegisterRequest) (*auth_v1.RegisterResponse, error) {
+func (h *AuthHandler) Register(
+	ctx context.Context,
+	req *auth_v1.RegisterRequest,
+) (*auth_v1.RegisterResponse, error) {
 	ucResp, err := h.registerUC.Execute(ctx, MapRegisterPbToDTO(req))
 
 	if err != nil {
-		outErr := gRPCError(err)
-		h.log.ErrorContext(ctx, "failed to register",
-			slog.Int("code", int(outErr.Code)),
-			slog.String("public_msg", outErr.Message),
-			slog.Any("reason", outErr.Reason),
-		)
-		return nil, status.Error(outErr.Code, outErr.Message)
+		code, msg := h.handleError(ctx, err, "failed to register")
+		return nil, status.Error(code, msg)
 	}
 
 	return MapRegisterDTOToPb(ucResp), nil
 }
 
-func (h *AuthHandler) Login(ctx context.Context, req *auth_v1.LoginRequest) (*auth_v1.LoginResponse, error) {
+func (h *AuthHandler) Login(
+	ctx context.Context,
+	req *auth_v1.LoginRequest,
+) (*auth_v1.LoginResponse, error) {
 	ucResp, err := h.loginUC.Execute(ctx, MapLoginPbToDTO(req))
 
 	if err != nil {
-		outErr := gRPCError(err)
-		h.log.ErrorContext(ctx, "failed to login",
-			slog.Int("code", int(outErr.Code)),
-			slog.String("public_msg", outErr.Message),
-			slog.Any("reason", outErr.Reason),
-		)
-		return nil, status.Error(outErr.Code, outErr.Message)
+		code, msg := h.handleError(ctx, err, "failed to login")
+		return nil, status.Error(code, msg)
 	}
 
 	return MapLoginDTOToPb(ucResp), nil
 }
 
-func (h *AuthHandler) Logout(ctx context.Context, req *auth_v1.LogoutRequest) (*auth_v1.LogoutResponse, error) {
+func (h *AuthHandler) Logout(
+	ctx context.Context,
+	req *auth_v1.LogoutRequest,
+) (*auth_v1.LogoutResponse, error) {
 	ucResp, err := h.logoutUC.Execute(ctx, MapLogoutPbToDTO(req))
 
 	if err != nil {
-		outErr := gRPCError(err)
-		h.log.ErrorContext(ctx, "failed to logout",
-			slog.Int("code", int(outErr.Code)),
-			slog.String("public_msg", outErr.Message),
-			slog.Any("reason", outErr.Reason),
-		)
-		return nil, status.Error(outErr.Code, outErr.Message)
+		code, msg := h.handleError(ctx, err, "failed to logout")
+		return nil, status.Error(code, msg)
 	}
 
 	return MapLogoutDTOToPb(ucResp), nil
 }
 
-func (h *AuthHandler) RefreshSession(ctx context.Context, req *auth_v1.RefreshSessionRequest) (*auth_v1.RefreshSessionResponse, error) {
+func (h *AuthHandler) RefreshSession(
+	ctx context.Context,
+	req *auth_v1.RefreshSessionRequest,
+) (*auth_v1.RefreshSessionResponse, error) {
 	ucResp, err := h.refreshSessionUC.Execute(ctx, MapRefreshSessionPbToDTO(req))
 
 	if err != nil {
-		outErr := gRPCError(err)
-		h.log.ErrorContext(ctx, "failed to refresh session",
-			slog.Int("code", int(outErr.Code)),
-			slog.String("public_msg", outErr.Message),
-			slog.Any("reason", outErr.Reason),
+		code, msg := h.handleError(ctx, err,
+			"failed to refresh session",
 		)
-		return nil, status.Error(outErr.Code, outErr.Message)
+		return nil, status.Error(code, msg)
 	}
 
 	return MapRefreshSessionDTOToPb(ucResp), nil
 }
 
-func (h *AuthHandler) ValidateAccessToken(ctx context.Context, req *auth_v1.ValidateAccessTokenRequest) (*auth_v1.ValidateAccessTokenResponse, error) {
+func (h *AuthHandler) ValidateAccessToken(
+	ctx context.Context,
+	req *auth_v1.ValidateAccessTokenRequest,
+) (*auth_v1.ValidateAccessTokenResponse, error) {
 	ucResp, err := h.validateAccessTokenUC.Execute(ctx, MapValidateAccessTokenPbToDTO(req))
 
 	if err != nil {
-		outErr := gRPCError(err)
-		h.log.ErrorContext(ctx, "failed to validate access token",
-			slog.Int("code", int(outErr.Code)),
-			slog.String("public_msg", outErr.Message),
-			slog.Any("reason", outErr.Reason),
+		code, msg := h.handleError(ctx, err,
+			"failed to validate access token",
 		)
-		return nil, status.Error(outErr.Code, outErr.Message)
+		return nil, status.Error(code, msg)
 	}
 
 	return MapValidateAccessTokenDTOToPb(ucResp), nil
 }
 
-func (h *AuthHandler) AssignRole(ctx context.Context, req *auth_v1.AssignRoleRequest) (*auth_v1.AssignRoleResponse, error) {
+func (h *AuthHandler) AssignRole(
+	ctx context.Context,
+	req *auth_v1.AssignRoleRequest,
+) (*auth_v1.AssignRoleResponse, error) {
 	ucResp, err := h.assignRoleUC.Execute(ctx, MapAssignRolePbToDTO(req))
 
 	if err != nil {
-		outErr := gRPCError(err)
-		h.log.ErrorContext(ctx, "failed to assign account role",
-			slog.Int("code", int(outErr.Code)),
-			slog.String("public_msg", outErr.Message),
-			slog.Any("reason", outErr.Reason),
+		code, msg := h.handleError(ctx, err,
+			"failed to assign account role",
 		)
-		return nil, status.Error(outErr.Code, outErr.Message)
+		return nil, status.Error(code, msg)
 	}
 
 	return MapAssignRoleDTOToPb(ucResp), nil
+}
+
+func (h *AuthHandler) SendVerification(
+	ctx context.Context,
+	req *auth_v1.SendVerificationRequest,
+) (*auth_v1.SendVerificationResponse, error) {
+	ucResp, err := h.sendVerificationUC.Execute(ctx, MapSendVerificationPbToDTO(req))
+
+	if err != nil {
+		code, msg := h.handleError(ctx, err,
+			"failed to send verification",
+		)
+		return nil, status.Error(code, msg)
+	}
+
+	return MapSendVerificationDTOToPb(ucResp), nil
+}
+
+func (h *AuthHandler) VerifyEmail(
+	ctx context.Context,
+	req *auth_v1.VerifyEmailRequest,
+) (*auth_v1.VerifyEmailResponse, error) {
+	ucResp, err := h.verifyEmailUC.Execute(ctx, MapVerifyEmailPbToDTO(req))
+
+	if err != nil {
+		code, msg := h.handleError(ctx, err,
+			"failed to verify email",
+		)
+		return nil, status.Error(code, msg)
+	}
+
+	return MapVerifyEmailDTOToPb(ucResp), nil
+}
+
+func (h *AuthHandler) handleError(
+	ctx context.Context, err error,
+	logMsg string,
+) (codes.Code, string) {
+	outErr := gRPCError(err)
+	h.log.ErrorContext(ctx, logMsg,
+		slog.Int("code", int(outErr.Code)),
+		slog.String("public_msg", outErr.Message),
+		slog.Any("reason", outErr.Reason),
+	)
+	return outErr.Code, outErr.Message
 }
