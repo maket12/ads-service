@@ -8,6 +8,7 @@ import (
 
 	"github.com/maket12/ads-service/authservice/internal/app/dto"
 	ucerrs "github.com/maket12/ads-service/authservice/internal/app/errs"
+	"github.com/maket12/ads-service/authservice/internal/app/usecase"
 	"github.com/maket12/ads-service/authservice/internal/domain/model"
 	"github.com/maket12/ads-service/authservice/internal/domain/port"
 	"github.com/maket12/ads-service/authservice/internal/domain/port/mocks"
@@ -247,8 +248,10 @@ func TestLoginUC_Execute(t *testing.T) {
 				tokenGenerator: tokenGenerator,
 			}, acc)
 
-			uc := NewLoginUC(
-				accountRepo, accountRoleRepo, refreshSessionRepo, passwordHasher, tokenGenerator, ttl,
+			uc := usecase.NewLoginUC(
+				accountRepo, accountRoleRepo,
+				refreshSessionRepo, passwordHasher,
+				tokenGenerator, ttl,
 			)
 
 			out, err := uc.Execute(context.Background(), tt.input)

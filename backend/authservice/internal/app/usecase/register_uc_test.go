@@ -7,6 +7,7 @@ import (
 
 	"github.com/maket12/ads-service/authservice/internal/app/dto"
 	ucerrs "github.com/maket12/ads-service/authservice/internal/app/errs"
+	"github.com/maket12/ads-service/authservice/internal/app/usecase"
 	"github.com/maket12/ads-service/authservice/internal/domain/port/mocks"
 	pkgerrs "github.com/maket12/ads-service/authservice/pkg/errs"
 
@@ -172,7 +173,7 @@ func TestRegisterUC_Execute(t *testing.T) {
 
 			txManager := mocks.FakeTxManager{}
 
-			uc := NewRegisterUC(
+			uc := usecase.NewRegisterUC(
 				txManager, accountRepo, accountRoleRepo, passwordHasher, accountPublisher,
 			)
 

@@ -83,10 +83,7 @@ func MapAssignRoleDTOToPb(out dto.AssignRoleOutput) *auth_v1.AssignRoleResponse 
 
 func MapSendVerificationPbToDTO(req *auth_v1.SendVerificationRequest) dto.SendVerificationInput {
 	accID, _ := uuid.Parse(req.GetAccountId())
-	return dto.SendVerificationInput{
-		AccountID: accID,
-		Email:     req.GetEmail(),
-	}
+	return dto.SendVerificationInput{AccountID: accID}
 }
 
 func MapSendVerificationDTOToPb(out dto.SendVerificationOutput) *auth_v1.SendVerificationResponse {

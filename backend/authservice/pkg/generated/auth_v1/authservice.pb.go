@@ -7,12 +7,11 @@
 package auth_v1
 
 import (
+	protoreflect "google.golang.org/protobuf/reflect/protoreflect"
+	protoimpl "google.golang.org/protobuf/runtime/protoimpl"
 	reflect "reflect"
 	sync "sync"
 	unsafe "unsafe"
-
-	protoreflect "google.golang.org/protobuf/reflect/protoreflect"
-	protoimpl "google.golang.org/protobuf/runtime/protoimpl"
 )
 
 const (
@@ -633,7 +632,6 @@ func (x *AssignRoleResponse) GetAssigned() bool {
 type SendVerificationRequest struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	AccountId     string                 `protobuf:"bytes,1,opt,name=account_id,json=accountId,proto3" json:"account_id,omitempty"`
-	Email         string                 `protobuf:"bytes,2,opt,name=email,proto3" json:"email,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -671,13 +669,6 @@ func (*SendVerificationRequest) Descriptor() ([]byte, []int) {
 func (x *SendVerificationRequest) GetAccountId() string {
 	if x != nil {
 		return x.AccountId
-	}
-	return ""
-}
-
-func (x *SendVerificationRequest) GetEmail() string {
-	if x != nil {
-		return x.Email
 	}
 	return ""
 }
@@ -861,11 +852,10 @@ const file_authservice_proto_rawDesc = "" +
 	"account_id\x18\x01 \x01(\tR\taccountId\x12\x12\n" +
 	"\x04role\x18\x02 \x01(\tR\x04role\"0\n" +
 	"\x12AssignRoleResponse\x12\x1a\n" +
-	"\bassigned\x18\x01 \x01(\bR\bassigned\"N\n" +
+	"\bassigned\x18\x01 \x01(\bR\bassigned\"8\n" +
 	"\x17SendVerificationRequest\x12\x1d\n" +
 	"\n" +
-	"account_id\x18\x01 \x01(\tR\taccountId\x12\x14\n" +
-	"\x05email\x18\x02 \x01(\tR\x05email\".\n" +
+	"account_id\x18\x01 \x01(\tR\taccountId\".\n" +
 	"\x18SendVerificationResponse\x12\x12\n" +
 	"\x04sent\x18\x01 \x01(\bR\x04sent\"*\n" +
 	"\x12VerifyEmailRequest\x12\x14\n" +

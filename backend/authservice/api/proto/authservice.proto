@@ -75,7 +75,6 @@ message AssignRoleResponse {
 
 message SendVerificationRequest {
   string account_id = 1;
-  string email = 2;
 }
 
 message SendVerificationResponse {

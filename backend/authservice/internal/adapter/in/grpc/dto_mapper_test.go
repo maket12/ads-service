@@ -227,36 +227,17 @@ func TestMapAssignRoleDTOToPb(t *testing.T) {
 
 func TestMapSendVerificationPbToDTO(t *testing.T) {
 	accID := uuid.New()
-	email := gofakeit.Email()
 
-	req := &auth_v1.SendVerificationRequest{
-		AccountId: accID.String(),
-		Email:     email,
-	}
-
-	expected := dto.SendVerificationInput{
-		AccountID: accID,
-		Email:     email,
-	}
-
+	req := &auth_v1.SendVerificationRequest{AccountId: accID.String()}
+	expected := dto.SendVerificationInput{AccountID: accID}
 	actual := MapSendVerificationPbToDTO(req)
 
 	require.Equal(t, expected, actual)
 }
 
 func TestMapSendVerificationPbToDTO_InvalidAccountID(t *testing.T) {
-	email := gofakeit.Email()
-
-	req := &auth_v1.SendVerificationRequest{
-		AccountId: "not-a-valid-uuid",
-		Email:     email,
-	}
-
-	expected := dto.SendVerificationInput{
-		AccountID: uuid.UUID{},
-		Email:     email,
-	}
-
+	req := &auth_v1.SendVerificationRequest{AccountId: "not-a-valid-uuid"}
+	expected := dto.SendVerificationInput{AccountID: uuid.UUID{}}
 	actual := MapSendVerificationPbToDTO(req)
 
 	require.Equal(t, expected, actual)

@@ -7,6 +7,7 @@ import (
 
 	"github.com/maket12/ads-service/authservice/internal/app/dto"
 	ucerrs "github.com/maket12/ads-service/authservice/internal/app/errs"
+	"github.com/maket12/ads-service/authservice/internal/app/usecase"
 	"github.com/maket12/ads-service/authservice/internal/domain/model"
 	"github.com/maket12/ads-service/authservice/internal/domain/port/mocks"
 	pkgerrs "github.com/maket12/ads-service/authservice/pkg/errs"
@@ -137,7 +138,7 @@ func TestAssignRoleUC_Execute(t *testing.T) {
 				refreshSession: refreshSessionRepo,
 			}, accountID)
 
-			uc := NewAssignRoleUC(accountRoleRepo, refreshSessionRepo)
+			uc := usecase.NewAssignRoleUC(accountRoleRepo, refreshSessionRepo)
 
 			out, err := uc.Execute(context.Background(), tt.input)
 

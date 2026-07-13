@@ -168,7 +168,6 @@ func (h *AuthHandler) SendVerification(
 
 	h.log.InfoContext(ctx, "sent verification token",
 		slog.String("account_id", req.GetAccountId()),
-		slog.String("to_email", req.GetEmail()),
 	)
 
 	return MapSendVerificationDTOToPb(ucResp), nil
