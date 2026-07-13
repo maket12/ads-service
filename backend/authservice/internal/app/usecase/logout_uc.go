@@ -1,0 +1,76 @@
+package usecase
+
+import (
+	"context"
+	"errors"
+
+	"github.com/maket12/ads-service/authservice/internal/app/dto"
+	ucerrs "github.com/maket12/ads-service/authservice/internal/app/errs"
+	"github.com/maket12/ads-service/authservice/internal/domain/port"
+	pkgerrs "github.com/maket12/ads-service/authservice/pkg/errs"
+	"github.com/maket12/ads-service/authservice/pkg/utils"
+)
+
+type LogoutUC struct {
+	refreshSession port.RefreshSessionRepository
+	tokenGenerator port.TokenGenerator
+}
+
+func NewLogoutUC(
+	refreshSession port.RefreshSessionRepository,
+	tokenGenerator port.TokenGenerator,
+) *LogoutUC {
+	return &LogoutUC{
+		refreshSession: refreshSession,
+		tokenGenerator: tokenGenerator,
+	}
+}
+
+func (uc *LogoutUC) Execute(ctx context.Context, in dto.LogoutInput) (dto.LogoutOutput, error) {
+	// Find session
+	_, sessionID, err := uc.tokenGenerator.ValidateRefreshToken(
+		ctx, in.RefreshToken,
+	)
+	if err != nil && !errors.Is(err, port.ErrTokenExpired) {
+		return dto.LogoutOutput{}, ucerrs.Wrap(
+			ucerrs.ErrInvalidRefreshToken, err,
+		)
+	}
+
+	session, err := uc.refreshSession.GetByID(ctx, sessionID)
+	if err != nil {
+		if errors.Is(err, pkgerrs.ErrObjectNotFound) {
+			return dto.LogoutOutput{}, ucerrs.Wrap(
+				ucerrs.ErrInvalidRefreshToken, err,
+			)
+		}
+		return dto.LogoutOutput{}, ucerrs.Wrap(
+			ucerrs.ErrGetRefreshSessionByIDDB, err,
+		)
+	}
+
+	// Validate and revoke
+	if !session.IsActive() {
+		return dto.LogoutOutput{}, ucerrs.Wrap(
+			ucerrs.ErrInvalidRefreshToken, errors.New("session in expired"),
+		)
+	}
+
+	if utils.HashToken(in.RefreshToken) != session.RefreshTokenHash() {
+		return dto.LogoutOutput{}, ucerrs.Wrap(
+			ucerrs.ErrInvalidRefreshToken, errors.New("invalid token hash"),
+		)
+	}
+
+	if err = session.RevokeByLogout(); err != nil {
+		return dto.LogoutOutput{}, ucerrs.ErrCannotRevoke
+	}
+
+	if err = uc.refreshSession.Update(ctx, session); err != nil {
+		return dto.LogoutOutput{}, ucerrs.Wrap(
+			ucerrs.ErrRevokeRefreshSessionDB, err,
+		)
+	}
+
+	return dto.LogoutOutput{Logout: true}, nil
+}
