@@ -13,20 +13,21 @@ import (
 type Querier interface {
 	CreateAccount(ctx context.Context, db DBTX, arg CreateAccountParams) error
 	CreateAccountRole(ctx context.Context, db DBTX, arg CreateAccountRoleParams) error
-	CreateRefreshSession(ctx context.Context, db DBTX, arg CreateRefreshSessionParams) error
+	CreateSession(ctx context.Context, db DBTX, arg CreateSessionParams) error
 	DeleteAccountRole(ctx context.Context, db DBTX, accountID pgtype.UUID) error
-	DeleteExpiredRefreshSessions(ctx context.Context, db DBTX, expiresAt pgtype.Timestamptz) error
+	DeleteExpiredSessions(ctx context.Context, db DBTX, expiresAt pgtype.Timestamptz) error
 	GetAccountByEmail(ctx context.Context, db DBTX, email string) (Account, error)
 	GetAccountByID(ctx context.Context, db DBTX, id pgtype.UUID) (Account, error)
 	GetAccountRole(ctx context.Context, db DBTX, accountID pgtype.UUID) (AccountRole, error)
-	GetRefreshSessionByHash(ctx context.Context, db DBTX, refreshTokenHash string) (RefreshSession, error)
-	GetRefreshSessionByID(ctx context.Context, db DBTX, id pgtype.UUID) (RefreshSession, error)
-	ListAccountActiveRefreshSessions(ctx context.Context, db DBTX, arg ListAccountActiveRefreshSessionsParams) ([]RefreshSession, error)
-	RevokeAllAccountRefreshSessions(ctx context.Context, db DBTX, arg RevokeAllAccountRefreshSessionsParams) error
-	RevokeRefreshSessionDescendants(ctx context.Context, db DBTX, arg RevokeRefreshSessionDescendantsParams) error
+	GetSessionByHash(ctx context.Context, db DBTX, refreshTokenHash string) (RefreshSession, error)
+	GetSessionByID(ctx context.Context, db DBTX, id pgtype.UUID) (RefreshSession, error)
+	ListAccountActiveSessions(ctx context.Context, db DBTX, arg ListAccountActiveSessionsParams) ([]RefreshSession, error)
+	RevokeAllAccountSessions(ctx context.Context, db DBTX, arg RevokeAllAccountSessionsParams) error
+	RevokeAllSessionsForAccountByIPUA(ctx context.Context, db DBTX, arg RevokeAllSessionsForAccountByIPUAParams) error
+	RevokeSessionDescendants(ctx context.Context, db DBTX, arg RevokeSessionDescendantsParams) error
 	UpdateAccount(ctx context.Context, db DBTX, arg UpdateAccountParams) error
 	UpdateAccountRole(ctx context.Context, db DBTX, arg UpdateAccountRoleParams) error
-	UpdateRefreshSession(ctx context.Context, db DBTX, arg UpdateRefreshSessionParams) error
+	UpdateSession(ctx context.Context, db DBTX, arg UpdateSessionParams) error
 }
 
 var _ Querier = (*Queries)(nil)

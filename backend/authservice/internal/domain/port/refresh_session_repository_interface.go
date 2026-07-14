@@ -16,6 +16,7 @@ type RefreshSessionRepository interface {
 	Update(ctx context.Context, session *model.RefreshSession) error
 	RevokeAllForAccount(ctx context.Context, accountID uuid.UUID, reason *string) error
 	RevokeDescendants(ctx context.Context, sessionID uuid.UUID, reason *string) error
+	RevokeAllForAccountByIPUA(ctx context.Context, accID uuid.UUID, ip, userAgent, reason *string) error
 	DeleteExpired(ctx context.Context, expiresAt time.Time) error
 	ListActiveForAccount(ctx context.Context, accountID uuid.UUID) ([]*model.RefreshSession, error)
 }

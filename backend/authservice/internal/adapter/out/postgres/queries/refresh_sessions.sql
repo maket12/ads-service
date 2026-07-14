@@ -1,4 +1,4 @@
--- name: CreateRefreshSession :exec
+-- name: CreateSession :exec
 INSERT INTO refresh_sessions (
   id,
   account_id,
@@ -14,7 +14,7 @@ INSERT INTO refresh_sessions (
   $1, $2, $3, $4, $5, $6, $7, $8, $9, $10
 );
 
--- name: GetRefreshSessionByID :one
+-- name: GetSessionByID :one
 SELECT
     id,
     account_id,
@@ -29,7 +29,7 @@ SELECT
 FROM refresh_sessions
 WHERE id = $1 LIMIT 1;
 
--- name: GetRefreshSessionByHash :one
+-- name: GetSessionByHash :one
 SELECT
     id,
     account_id,
@@ -44,7 +44,7 @@ SELECT
 FROM refresh_sessions
 WHERE refresh_token_hash = $1;
 
--- name: UpdateRefreshSession :exec
+-- name: UpdateSession :exec
 UPDATE refresh_sessions
 SET
     account_id = $2,
@@ -58,7 +58,7 @@ SET
     user_agent = $10
 WHERE id = $1;
 
--- name: RevokeRefreshSessionDescendants :exec
+-- name: RevokeSessionDescendants :exec
 WITH RECURSIVE chain(target_id) AS (
     SELECT rs_init.id
     FROM refresh_sessions rs_init
@@ -78,7 +78,7 @@ FROM chain
 WHERE refresh_sessions.id = chain.target_id
   AND refresh_sessions.revoked_at IS NULL;
 
--- name: ListAccountActiveRefreshSessions :many
+-- name: ListAccountActiveSessions :many
 SELECT
     id,
     account_id,
@@ -96,14 +96,24 @@ WHERE account_id = $1
     AND expires_at > $2
 ORDER BY created_at DESC;
 
--- name: DeleteExpiredRefreshSessions :exec
+-- name: DeleteExpiredSessions :exec
 DELETE FROM refresh_sessions
 WHERE expires_at <= $1;
 
--- name: RevokeAllAccountRefreshSessions :exec
+-- name: RevokeAllAccountSessions :exec
 UPDATE refresh_sessions
 SET
     revoked_at = $2,
     revoke_reason = $3
 WHERE account_id = $1
+    AND revoked_at IS NULL;
+
+-- name: RevokeAllSessionsForAccountByIPUA :exec
+UPDATE refresh_sessions
+SET
+    revoked_at = $4,
+    revoke_reason = $5
+WHERE account_id = $1
+    AND ip = $2
+    AND user_agent = $3
     AND revoked_at IS NULL;

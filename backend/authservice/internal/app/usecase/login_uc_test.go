@@ -71,6 +71,10 @@ func TestLoginUC_Execute(t *testing.T) {
 					Return(&port.TokensPair{Access: "access", Refresh: "refresh"}, nil)
 
 				a.refreshSession.EXPECT().
+					RevokeAllForAccountByIPUA(mock.Anything, acc.ID(), utils.VPtr("1.2.3.4"), utils.VPtr("Mozilla"), mock.AnythingOfType("*string")).
+					Return(nil)
+
+				a.refreshSession.EXPECT().
 					Create(mock.Anything, mock.AnythingOfType("*model.RefreshSession")).
 					Return(nil)
 			},
@@ -134,6 +138,14 @@ func TestLoginUC_Execute(t *testing.T) {
 					Compare(hashedPassword, password).
 					Return(true)
 
+				a.accountRole.EXPECT().
+					Get(mock.Anything, acc.ID()).
+					Return(model.RestoreAccountRole(acc.ID(), model.RoleUser), nil)
+
+				a.tokenGenerator.EXPECT().
+					GeneratePair(mock.Anything, acc.ID(), model.RoleUser.String(), mock.AnythingOfType("uuid.UUID")).
+					Return(&port.TokensPair{Access: "access", Refresh: "refresh"}, nil)
+
 				a.account.EXPECT().
 					Update(mock.Anything, acc).
 					Return(errors.New("db error"))
@@ -155,10 +167,6 @@ func TestLoginUC_Execute(t *testing.T) {
 					Compare(hashedPassword, password).
 					Return(true)
 
-				a.account.EXPECT().
-					Update(mock.Anything, acc).
-					Return(nil)
-
 				a.accountRole.EXPECT().
 					Get(mock.Anything, acc.ID()).
 					Return(nil, errors.New("db error"))
@@ -167,6 +175,31 @@ func TestLoginUC_Execute(t *testing.T) {
 		},
 		{
 			name: "Failure - token generation error",
+			input: dto.LoginInput{
+				Email:    email,
+				Password: password,
+			},
+			mockBehaviour: func(a adapter, acc *model.Account) {
+				a.account.EXPECT().
+					GetByEmail(mock.Anything, email).
+					Return(acc, nil)
+
+				a.passwordHasher.EXPECT().
+					Compare(hashedPassword, password).
+					Return(true)
+
+				a.accountRole.EXPECT().
+					Get(mock.Anything, acc.ID()).
+					Return(model.RestoreAccountRole(acc.ID(), model.RoleUser), nil)
+
+				a.tokenGenerator.EXPECT().
+					GeneratePair(mock.Anything, acc.ID(), model.RoleUser.String(), mock.AnythingOfType("uuid.UUID")).
+					Return(nil, errors.New("crypto failure"))
+			},
+			expectErr: ucerrs.ErrGenerateTokensPair,
+		},
+		{
+			name: "Failure - revoke all sessions db error",
 			input: dto.LoginInput{
 				Email:    email,
 				Password: password,
@@ -190,9 +223,13 @@ func TestLoginUC_Execute(t *testing.T) {
 
 				a.tokenGenerator.EXPECT().
 					GeneratePair(mock.Anything, acc.ID(), model.RoleUser.String(), mock.AnythingOfType("uuid.UUID")).
-					Return(nil, errors.New("crypto failure"))
+					Return(&port.TokensPair{Access: "access", Refresh: "refresh"}, nil)
+
+				a.refreshSession.EXPECT().
+					RevokeAllForAccountByIPUA(mock.Anything, acc.ID(), (*string)(nil), (*string)(nil), mock.AnythingOfType("*string")).
+					Return(errors.New("db error"))
 			},
-			expectErr: ucerrs.ErrGenerateTokensPair,
+			expectErr: ucerrs.ErrRevokeAllForAccountByIPUADB,
 		},
 		{
 			name: "Failure - create refresh session db error",
@@ -222,6 +259,10 @@ func TestLoginUC_Execute(t *testing.T) {
 					Return(&port.TokensPair{Access: "access", Refresh: "refresh"}, nil)
 
 				a.refreshSession.EXPECT().
+					RevokeAllForAccountByIPUA(mock.Anything, acc.ID(), (*string)(nil), (*string)(nil), mock.AnythingOfType("*string")).
+					Return(nil)
+
+				a.refreshSession.EXPECT().
 					Create(mock.Anything, mock.AnythingOfType("*model.RefreshSession")).
 					Return(errors.New("db error"))
 			},
@@ -249,6 +290,7 @@ func TestLoginUC_Execute(t *testing.T) {
 			}, acc)
 
 			uc := usecase.NewLoginUC(
+				mocks.FakeTxManager{},
 				accountRepo, accountRoleRepo,
 				refreshSessionRepo, passwordHasher,
 				tokenGenerator, ttl,

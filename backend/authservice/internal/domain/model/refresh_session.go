@@ -21,6 +21,7 @@ const (
 	ReasonSuspiciousEnv    RevokeReason = "suspicious environment change"
 	ReasonCompromisedReuse RevokeReason = "compromised: reuse of rotated token"
 	ReasonRoleChanged      RevokeReason = "role changed"
+	ReasonReAuth           RevokeReason = "reauthenticated"
 )
 
 func (r RevokeReason) String() string { return string(r) }
@@ -141,4 +142,8 @@ func (r *RefreshSession) RevokeByRotation() error {
 
 func (r *RefreshSession) RevokeBySuspiciousEnv() error {
 	return r.revoke(ReasonSuspiciousEnv)
+}
+
+func (r *RefreshSession) RevokeByReAuth() error {
+	return r.revoke(ReasonReAuth)
 }

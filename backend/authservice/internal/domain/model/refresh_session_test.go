@@ -4,6 +4,7 @@ import (
 	"testing"
 	"time"
 
+	"github.com/maket12/ads-service/authservice/internal/domain/model"
 	pkgerrs "github.com/maket12/ads-service/authservice/pkg/errs"
 	"github.com/maket12/ads-service/authservice/pkg/utils"
 
@@ -83,7 +84,7 @@ func TestNewRefreshSession(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			session, err := NewRefreshSession(
+			session, err := model.NewRefreshSession(
 				tt.id, tt.accountID, tt.tokenHash,
 				tt.rotatedFrom, tt.ip, tt.userAgent, tt.ttl)
 			if tt.expect == nil {
@@ -124,7 +125,7 @@ func TestRefreshSession_IsExpired(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			session := RestoreRefreshSession(
+			session := model.RestoreRefreshSession(
 				uuid.New(), uuid.New(), testTokenHash,
 				time.Now(), tt.expiresAt, nil, nil,
 				nil, nil, nil)
@@ -155,7 +156,7 @@ func TestRefreshSession_IsRevoked(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			session := RestoreRefreshSession(
+			session := model.RestoreRefreshSession(
 				uuid.New(), uuid.New(), testTokenHash,
 				time.Now(), time.Now().Add(time.Hour),
 				tt.revokedAt, nil,
@@ -196,7 +197,7 @@ func TestRefreshSession_IsActive(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			session := RestoreRefreshSession(
+			session := model.RestoreRefreshSession(
 				uuid.New(), uuid.New(), testTokenHash,
 				time.Now(), tt.expiresAt, tt.revokedAt, nil,
 				nil, nil, nil)
@@ -206,7 +207,7 @@ func TestRefreshSession_IsActive(t *testing.T) {
 }
 
 func TestRefreshSession_RevokeByLogout(t *testing.T) {
-	session, _ := NewRefreshSession(
+	session, _ := model.NewRefreshSession(
 		uuid.New(), uuid.New(),
 		testTokenHash, nil,
 		nil, nil, time.Minute,
@@ -216,16 +217,16 @@ func TestRefreshSession_RevokeByLogout(t *testing.T) {
 	err := session.RevokeByLogout()
 	require.NoError(t, err)
 	assert.True(t, session.IsRevoked())
-	assert.Equal(t, ReasonLogout, *session.RevokeReason())
+	assert.Equal(t, model.ReasonLogout, *session.RevokeReason())
 
 	// Second case - revoke failed
 	err = session.RevokeByLogout()
 	require.Error(t, err)
-	assert.ErrorIs(t, err, ErrCannotRevokeToken)
+	assert.ErrorIs(t, err, model.ErrCannotRevokeToken)
 }
 
 func TestRefreshSession_RevokeByRotation(t *testing.T) {
-	session, _ := NewRefreshSession(
+	session, _ := model.NewRefreshSession(
 		uuid.New(), uuid.New(),
 		testTokenHash, nil,
 		nil, nil, time.Minute,
@@ -235,16 +236,16 @@ func TestRefreshSession_RevokeByRotation(t *testing.T) {
 	err := session.RevokeByRotation()
 	require.NoError(t, err)
 	assert.True(t, session.IsRevoked())
-	assert.Equal(t, ReasonTokenRotation, *session.RevokeReason())
+	assert.Equal(t, model.ReasonTokenRotation, *session.RevokeReason())
 
 	// Second case - revoke failed
 	err = session.RevokeByRotation()
 	require.Error(t, err)
-	assert.ErrorIs(t, err, ErrCannotRevokeToken)
+	assert.ErrorIs(t, err, model.ErrCannotRevokeToken)
 }
 
 func TestRefreshSession_RevokeBySuspiciousEnv(t *testing.T) {
-	session, _ := NewRefreshSession(
+	session, _ := model.NewRefreshSession(
 		uuid.New(), uuid.New(),
 		testTokenHash, nil,
 		nil, nil, time.Minute,
@@ -254,10 +255,29 @@ func TestRefreshSession_RevokeBySuspiciousEnv(t *testing.T) {
 	err := session.RevokeBySuspiciousEnv()
 	require.NoError(t, err)
 	assert.True(t, session.IsRevoked())
-	assert.Equal(t, ReasonSuspiciousEnv, *session.RevokeReason())
+	assert.Equal(t, model.ReasonSuspiciousEnv, *session.RevokeReason())
 
 	// Second case - revoke failed
 	err = session.RevokeBySuspiciousEnv()
 	require.Error(t, err)
-	assert.ErrorIs(t, err, ErrCannotRevokeToken)
+	assert.ErrorIs(t, err, model.ErrCannotRevokeToken)
+}
+
+func TestRefreshSession_RevokeByReAuth(t *testing.T) {
+	session, _ := model.NewRefreshSession(
+		uuid.New(), uuid.New(),
+		testTokenHash, nil,
+		nil, nil, time.Minute,
+	)
+
+	// First case - revoke successfully
+	err := session.RevokeByReAuth()
+	require.NoError(t, err)
+	assert.True(t, session.IsRevoked())
+	assert.Equal(t, model.ReasonReAuth, *session.RevokeReason())
+
+	// Second case - revoke failed
+	err = session.RevokeByReAuth()
+	require.Error(t, err)
+	assert.ErrorIs(t, err, model.ErrCannotRevokeToken)
 }

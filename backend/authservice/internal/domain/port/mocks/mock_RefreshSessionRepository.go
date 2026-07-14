@@ -345,6 +345,56 @@ func (_c *MockRefreshSessionRepository_RevokeAllForAccount_Call) RunAndReturn(ru
 	return _c
 }
 
+// RevokeAllForAccountByIPUA provides a mock function with given fields: ctx, accID, ip, userAgent, reason
+func (_m *MockRefreshSessionRepository) RevokeAllForAccountByIPUA(ctx context.Context, accID uuid.UUID, ip *string, userAgent *string, reason *string) error {
+	ret := _m.Called(ctx, accID, ip, userAgent, reason)
+
+	if len(ret) == 0 {
+		panic("no return value specified for RevokeAllForAccountByIPUA")
+	}
+
+	var r0 error
+	if rf, ok := ret.Get(0).(func(context.Context, uuid.UUID, *string, *string, *string) error); ok {
+		r0 = rf(ctx, accID, ip, userAgent, reason)
+	} else {
+		r0 = ret.Error(0)
+	}
+
+	return r0
+}
+
+// MockRefreshSessionRepository_RevokeAllForAccountByIPUA_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'RevokeAllForAccountByIPUA'
+type MockRefreshSessionRepository_RevokeAllForAccountByIPUA_Call struct {
+	*mock.Call
+}
+
+// RevokeAllForAccountByIPUA is a helper method to define mock.On call
+//   - ctx context.Context
+//   - accID uuid.UUID
+//   - ip *string
+//   - userAgent *string
+//   - reason *string
+func (_e *MockRefreshSessionRepository_Expecter) RevokeAllForAccountByIPUA(ctx interface{}, accID interface{}, ip interface{}, userAgent interface{}, reason interface{}) *MockRefreshSessionRepository_RevokeAllForAccountByIPUA_Call {
+	return &MockRefreshSessionRepository_RevokeAllForAccountByIPUA_Call{Call: _e.mock.On("RevokeAllForAccountByIPUA", ctx, accID, ip, userAgent, reason)}
+}
+
+func (_c *MockRefreshSessionRepository_RevokeAllForAccountByIPUA_Call) Run(run func(ctx context.Context, accID uuid.UUID, ip *string, userAgent *string, reason *string)) *MockRefreshSessionRepository_RevokeAllForAccountByIPUA_Call {
+	_c.Call.Run(func(args mock.Arguments) {
+		run(args[0].(context.Context), args[1].(uuid.UUID), args[2].(*string), args[3].(*string), args[4].(*string))
+	})
+	return _c
+}
+
+func (_c *MockRefreshSessionRepository_RevokeAllForAccountByIPUA_Call) Return(_a0 error) *MockRefreshSessionRepository_RevokeAllForAccountByIPUA_Call {
+	_c.Call.Return(_a0)
+	return _c
+}
+
+func (_c *MockRefreshSessionRepository_RevokeAllForAccountByIPUA_Call) RunAndReturn(run func(context.Context, uuid.UUID, *string, *string, *string) error) *MockRefreshSessionRepository_RevokeAllForAccountByIPUA_Call {
+	_c.Call.Return(run)
+	return _c
+}
+
 // RevokeDescendants provides a mock function with given fields: ctx, sessionID, reason
 func (_m *MockRefreshSessionRepository) RevokeDescendants(ctx context.Context, sessionID uuid.UUID, reason *string) error {
 	ret := _m.Called(ctx, sessionID, reason)

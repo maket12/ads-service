@@ -5,6 +5,7 @@ import (
 	"time"
 
 	"github.com/google/uuid"
+	"github.com/maket12/ads-service/authservice/internal/domain/model"
 	pkgerrs "github.com/maket12/ads-service/authservice/pkg/errs"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
@@ -42,7 +43,7 @@ func TestNewVerificationToken(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			now := time.Now()
 
-			vToken, err := NewVerificationToken(
+			vToken, err := model.NewVerificationToken(
 				tt.accountID,
 				tt.ttl,
 			)
@@ -68,9 +69,10 @@ func TestNewVerificationToken(t *testing.T) {
 }
 
 func TestVerificationToken_IsExpired(t *testing.T) {
-	vToken := RestoreVerificationToken(
+	vToken := model.RestoreVerificationToken(
 		"a-random-token",
 		uuid.New(),
+		time.Second,
 		time.Now().Add(time.Second),
 	)
 	assert.False(t, vToken.IsExpired())

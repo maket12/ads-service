@@ -4,6 +4,7 @@ import (
 	"strings"
 	"testing"
 
+	"github.com/maket12/ads-service/authservice/internal/domain/model"
 	pkgerrs "github.com/maket12/ads-service/authservice/pkg/errs"
 
 	"github.com/google/uuid"
@@ -33,12 +34,12 @@ func TestNewAccountRole(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			accRole, err := NewAccountRole(tt.accountID)
+			accRole, err := model.NewAccountRole(tt.accountID)
 			if tt.expect == nil {
 				require.NoError(t, err)
 				require.NotNil(t, accRole)
 				assert.Equal(t, tt.accountID, accRole.AccountID())
-				assert.Equal(t, RoleUser, accRole.Role())
+				assert.Equal(t, model.RoleUser, accRole.Role())
 			} else {
 				require.Error(t, err)
 				assert.ErrorIs(t, err, pkgerrs.ErrValueIsInvalid)
@@ -80,17 +81,17 @@ func TestAccountRole_Assign(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			accRole, _ := NewAccountRole(uuid.New())
+			accRole, _ := model.NewAccountRole(uuid.New())
 
 			err := accRole.Assign(tt.role)
 
 			if tt.expect == nil {
 				require.NoError(t, err)
-				assert.Equal(t, Role(strings.ToLower(tt.role)), accRole.Role())
+				assert.Equal(t, strings.ToLower(tt.role), accRole.Role().String())
 			} else {
 				require.Error(t, err)
 				assert.ErrorIs(t, err, pkgerrs.ErrValueIsInvalid)
-				assert.NotEqual(t, Role(tt.role), accRole.Role())
+				assert.NotEqual(t, strings.ToLower(tt.role), accRole.Role().String())
 			}
 		})
 	}

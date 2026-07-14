@@ -5,6 +5,7 @@ import (
 	"errors"
 	"time"
 
+	"github.com/avito-tech/go-transaction-manager/trm/v2"
 	"github.com/maket12/ads-service/authservice/internal/app/dto"
 	ucerrs "github.com/maket12/ads-service/authservice/internal/app/errs"
 	"github.com/maket12/ads-service/authservice/internal/domain/model"
@@ -16,6 +17,7 @@ import (
 )
 
 type LoginUC struct {
+	trManager      trm.Manager
 	account        port.AccountRepository
 	accountRole    port.AccountRoleRepository
 	refreshSession port.RefreshSessionRepository
@@ -25,6 +27,7 @@ type LoginUC struct {
 }
 
 func NewLoginUC(
+	trManager trm.Manager,
 	account port.AccountRepository,
 	accountRole port.AccountRoleRepository,
 	refreshSession port.RefreshSessionRepository,
@@ -33,6 +36,7 @@ func NewLoginUC(
 	refreshTTL time.Duration,
 ) *LoginUC {
 	return &LoginUC{
+		trManager:      trManager,
 		account:        account,
 		accountRole:    accountRole,
 		refreshSession: refreshSession,
@@ -43,7 +47,7 @@ func NewLoginUC(
 }
 
 func (uc *LoginUC) Execute(ctx context.Context, in dto.LoginInput) (dto.LoginOutput, error) {
-	// Find an account
+	// Find an account and compare passwords
 	account, err := uc.account.GetByEmail(ctx, in.Email)
 	if err != nil {
 		if errors.Is(err, pkgerrs.ErrObjectNotFound) {
@@ -61,19 +65,6 @@ func (uc *LoginUC) Execute(ctx context.Context, in dto.LoginInput) (dto.LoginOut
 	// Account validation
 	if ok := account.CanLogin(); !ok {
 		return dto.LoginOutput{}, ucerrs.ErrCannotLogin
-	}
-
-	// Update account
-	if err = account.MarkLogin(); err != nil {
-		return dto.LoginOutput{}, ucerrs.Wrap(
-			ucerrs.ErrInvalidInput, err,
-		)
-	}
-
-	if err = uc.account.Update(ctx, account); err != nil {
-		return dto.LoginOutput{}, ucerrs.Wrap(
-			ucerrs.ErrUpdateAccountDB, err,
-		)
 	}
 
 	// Find an account role
@@ -97,26 +88,50 @@ func (uc *LoginUC) Execute(ctx context.Context, in dto.LoginInput) (dto.LoginOut
 		)
 	}
 
-	// Create a refresh session
-	refreshSession, err := model.NewRefreshSession(
-		sessionID, account.ID(), utils.HashToken(tokensPair.Refresh),
-		nil, in.IP, in.UserAgent, uc.refreshTTL,
-	)
+	var output dto.LoginOutput
+
+	err = uc.trManager.Do(ctx, func(txCtx context.Context) error {
+		// Update account
+		updErr := account.MarkLogin()
+		if updErr != nil {
+			return ucerrs.Wrap(ucerrs.ErrInvalidInput, updErr)
+		}
+
+		if updErr = uc.account.Update(ctx, account); updErr != nil {
+			return ucerrs.Wrap(ucerrs.ErrUpdateAccountDB, updErr)
+		}
+
+		// Revoke all sessions for the same device
+		if updErr = uc.refreshSession.RevokeAllForAccountByIPUA(ctx,
+			account.ID(), in.IP, in.UserAgent,
+			utils.VPtr(model.ReasonReAuth.String()),
+		); updErr != nil {
+			return ucerrs.Wrap(ucerrs.ErrRevokeAllForAccountByIPUADB, updErr)
+		}
+
+		// Create a refresh session and save it into database
+		refreshSession, createErr := model.NewRefreshSession(
+			sessionID, account.ID(), utils.HashToken(tokensPair.Refresh),
+			nil, in.IP, in.UserAgent, uc.refreshTTL,
+		)
+		if createErr != nil {
+			return ucerrs.Wrap(ucerrs.ErrInvalidInput, createErr)
+		}
+
+		if createErr = uc.refreshSession.Create(ctx, refreshSession); createErr != nil {
+			return ucerrs.Wrap(ucerrs.ErrCreateRefreshSessionDB, createErr)
+		}
+
+		output = dto.LoginOutput{
+			AccessToken:  tokensPair.Access,
+			RefreshToken: tokensPair.Refresh,
+		}
+
+		return nil
+	})
 	if err != nil {
-		return dto.LoginOutput{}, ucerrs.Wrap(
-			ucerrs.ErrInvalidInput, err,
-		)
+		return dto.LoginOutput{}, err
 	}
 
-	if err = uc.refreshSession.Create(ctx, refreshSession); err != nil {
-		return dto.LoginOutput{}, ucerrs.Wrap(
-			ucerrs.ErrCreateRefreshSessionDB, err,
-		)
-	}
-
-	// Output
-	return dto.LoginOutput{
-		AccessToken:  tokensPair.Access,
-		RefreshToken: tokensPair.Refresh,
-	}, nil
+	return output, nil
 }

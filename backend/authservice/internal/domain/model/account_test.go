@@ -5,6 +5,7 @@ import (
 	"time"
 
 	"github.com/brianvoe/gofakeit/v7"
+	"github.com/maket12/ads-service/authservice/internal/domain/model"
 	pkgerrs "github.com/maket12/ads-service/authservice/pkg/errs"
 
 	"github.com/google/uuid"
@@ -68,13 +69,13 @@ func TestNewAccount(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			acc, err := NewAccount(tt.email, tt.passwordHash)
+			acc, err := model.NewAccount(tt.email, tt.passwordHash)
 			if tt.expect == nil {
 				require.NoError(t, err)
 				assert.NotNil(t, acc.ID())
 				assert.Equal(t, tt.email, acc.Email())
 				assert.Equal(t, tt.passwordHash, acc.PasswordHash())
-				assert.Equal(t, acc.Status(), AccountActive)
+				assert.Equal(t, acc.Status(), model.AccountActive)
 				assert.False(t, acc.EmailVerified())
 				assert.Nil(t, acc.LastLoginAt())
 			} else {
@@ -89,31 +90,31 @@ func TestNewAccount(t *testing.T) {
 func TestAccount_CanLogin(t *testing.T) {
 	type testCase struct {
 		name     string
-		status   AccountStatus
+		status   model.AccountStatus
 		expected bool
 	}
 
 	var tests = []testCase{
 		{
 			name:     "active - can login",
-			status:   AccountActive,
+			status:   model.AccountActive,
 			expected: true,
 		},
 		{
 			name:     "blocked - cannot login",
-			status:   AccountBlocked,
+			status:   model.AccountBlocked,
 			expected: false,
 		},
 		{
 			name:     "deleted - cannot login",
-			status:   AccountDeleted,
+			status:   model.AccountDeleted,
 			expected: false,
 		},
 	}
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			acc := RestoreAccount(
+			acc := model.RestoreAccount(
 				uuid.New(), testEmail, testPassword,
 				tt.status, false, time.Now(),
 				time.Now(), nil)
@@ -125,31 +126,31 @@ func TestAccount_CanLogin(t *testing.T) {
 func TestAccount_IsBlocked(t *testing.T) {
 	type testCase struct {
 		name     string
-		status   AccountStatus
+		status   model.AccountStatus
 		expected bool
 	}
 
 	var tests = []testCase{
 		{
 			name:     "active - false",
-			status:   AccountActive,
+			status:   model.AccountActive,
 			expected: false,
 		},
 		{
 			name:     "blocked - true",
-			status:   AccountBlocked,
+			status:   model.AccountBlocked,
 			expected: true,
 		},
 		{
 			name:     "deleted - false",
-			status:   AccountDeleted,
+			status:   model.AccountDeleted,
 			expected: false,
 		},
 	}
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			acc := RestoreAccount(
+			acc := model.RestoreAccount(
 				uuid.New(), testEmail, testPassword,
 				tt.status, false, time.Now(),
 				time.Now(), nil)
@@ -161,31 +162,31 @@ func TestAccount_IsBlocked(t *testing.T) {
 func TestAccount_IsDeleted(t *testing.T) {
 	type testCase struct {
 		name     string
-		status   AccountStatus
+		status   model.AccountStatus
 		expected bool
 	}
 
 	var tests = []testCase{
 		{
 			name:     "active - false",
-			status:   AccountActive,
+			status:   model.AccountActive,
 			expected: false,
 		},
 		{
 			name:     "blocked - false",
-			status:   AccountBlocked,
+			status:   model.AccountBlocked,
 			expected: false,
 		},
 		{
 			name:     "deleted - true",
-			status:   AccountDeleted,
+			status:   model.AccountDeleted,
 			expected: true,
 		},
 	}
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			acc := RestoreAccount(
+			acc := model.RestoreAccount(
 				uuid.New(), testEmail, testPassword,
 				tt.status, false, time.Now(),
 				time.Now(), nil)
@@ -195,7 +196,7 @@ func TestAccount_IsDeleted(t *testing.T) {
 }
 
 func TestAccount_Block(t *testing.T) {
-	acc, _ := NewAccount(testEmail, testPassword)
+	acc, _ := model.NewAccount(testEmail, testPassword)
 
 	// First case: block successfully
 	err := acc.Block()
@@ -208,7 +209,7 @@ func TestAccount_Block(t *testing.T) {
 }
 
 func TestAccount_Delete(t *testing.T) {
-	acc, _ := NewAccount(testEmail, testPassword)
+	acc, _ := model.NewAccount(testEmail, testPassword)
 
 	// First case: delete successfully
 	err := acc.Delete()
@@ -221,7 +222,7 @@ func TestAccount_Delete(t *testing.T) {
 }
 
 func TestAccount_MarkLogin(t *testing.T) {
-	acc, _ := NewAccount(testEmail, testPassword)
+	acc, _ := model.NewAccount(testEmail, testPassword)
 
 	// First case: login is succeeded
 	err := acc.MarkLogin()
@@ -235,7 +236,7 @@ func TestAccount_MarkLogin(t *testing.T) {
 }
 
 func TestAccount_VerifyEmail(t *testing.T) {
-	acc, _ := NewAccount(testEmail, testPassword)
+	acc, _ := model.NewAccount(testEmail, testPassword)
 	acc.VerifyEmail()
 	assert.True(t, acc.EmailVerified())
 }

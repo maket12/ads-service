@@ -12,7 +12,7 @@ import (
 	"github.com/google/uuid"
 )
 
-func MapRefreshSessionToSQLCCreate(session *model.RefreshSession) sqlc.CreateRefreshSessionParams {
+func MapRefreshSessionToSQLCCreate(session *model.RefreshSession) sqlc.CreateSessionParams {
 	var (
 		revokedAt    pgtype.Timestamptz
 		revokeReason pgtype.Text
@@ -50,7 +50,7 @@ func MapRefreshSessionToSQLCCreate(session *model.RefreshSession) sqlc.CreateRef
 		userAgent = pgtype.Text{String: *session.UserAgent(), Valid: true}
 	}
 
-	return sqlc.CreateRefreshSessionParams{
+	return sqlc.CreateSessionParams{
 		ID:               pgtype.UUID{Bytes: session.ID(), Valid: true},
 		AccountID:        pgtype.UUID{Bytes: session.AccountID(), Valid: true},
 		RefreshTokenHash: session.RefreshTokenHash(),
@@ -64,7 +64,7 @@ func MapRefreshSessionToSQLCCreate(session *model.RefreshSession) sqlc.CreateRef
 	}
 }
 
-func MapRefreshSessionToSQLCUpdate(session *model.RefreshSession) sqlc.UpdateRefreshSessionParams {
+func MapRefreshSessionToSQLCUpdate(session *model.RefreshSession) sqlc.UpdateSessionParams {
 	var (
 		revokedAt    pgtype.Timestamptz
 		revokeReason pgtype.Text
@@ -106,7 +106,7 @@ func MapRefreshSessionToSQLCUpdate(session *model.RefreshSession) sqlc.UpdateRef
 		}
 	}
 
-	return sqlc.UpdateRefreshSessionParams{
+	return sqlc.UpdateSessionParams{
 		ID: pgtype.UUID{
 			Bytes: session.ID(),
 			Valid: true,
@@ -132,7 +132,7 @@ func MapRefreshSessionToSQLCUpdate(session *model.RefreshSession) sqlc.UpdateRef
 	}
 }
 
-func MapToSQLCRevokeAllForAccount(accountID uuid.UUID, reason *string) sqlc.RevokeAllAccountRefreshSessionsParams {
+func MapToSQLCRevokeAllForAccount(accountID uuid.UUID, reason *string) sqlc.RevokeAllAccountSessionsParams {
 	var revokeReason pgtype.Text
 	if reason != nil {
 		revokeReason = pgtype.Text{
@@ -141,14 +141,14 @@ func MapToSQLCRevokeAllForAccount(accountID uuid.UUID, reason *string) sqlc.Revo
 		}
 	}
 
-	return sqlc.RevokeAllAccountRefreshSessionsParams{
+	return sqlc.RevokeAllAccountSessionsParams{
 		AccountID:    pgtype.UUID{Bytes: accountID, Valid: true},
 		RevokedAt:    pgtype.Timestamptz{Time: time.Now(), Valid: true},
 		RevokeReason: revokeReason,
 	}
 }
 
-func MapToSQLCRevokeDescendants(sessionID uuid.UUID, reason *string) sqlc.RevokeRefreshSessionDescendantsParams {
+func MapToSQLCRevokeDescendants(sessionID uuid.UUID, reason *string) sqlc.RevokeSessionDescendantsParams {
 	var revokeReason pgtype.Text
 	if reason != nil {
 		revokeReason = pgtype.Text{
@@ -156,9 +156,50 @@ func MapToSQLCRevokeDescendants(sessionID uuid.UUID, reason *string) sqlc.Revoke
 			Valid:  true,
 		}
 	}
-	return sqlc.RevokeRefreshSessionDescendantsParams{
+	return sqlc.RevokeSessionDescendantsParams{
 		ID:           pgtype.UUID{Bytes: sessionID, Valid: true},
 		RevokedAt:    pgtype.Timestamptz{Time: time.Now(), Valid: true},
+		RevokeReason: revokeReason,
+	}
+}
+
+func MapToSQLCRevokeAllForAccountByIPUA(
+	accID uuid.UUID,
+	ip, userAgent, reason *string,
+) sqlc.RevokeAllSessionsForAccountByIPUAParams {
+	var (
+		revokeReason pgtype.Text
+		parsedIP     *netip.Addr
+		parsedUA     pgtype.Text
+	)
+
+	if reason != nil {
+		revokeReason = pgtype.Text{
+			String: *reason,
+			Valid:  true,
+		}
+	}
+
+	if ip != nil && *ip != "" {
+		parsed, _ := netip.ParseAddr(*ip)
+		parsedIP = &parsed
+	}
+
+	if userAgent != nil {
+		parsedUA = pgtype.Text{String: *userAgent, Valid: true}
+	}
+
+	return sqlc.RevokeAllSessionsForAccountByIPUAParams{
+		AccountID: pgtype.UUID{
+			Bytes: accID,
+			Valid: true,
+		},
+		Ip:        parsedIP,
+		UserAgent: parsedUA,
+		RevokedAt: pgtype.Timestamptz{
+			Time:  time.Now(),
+			Valid: true,
+		},
 		RevokeReason: revokeReason,
 	}
 }

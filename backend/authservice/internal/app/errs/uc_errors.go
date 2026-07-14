@@ -37,17 +37,18 @@ var (
 ================ Repositories failures ================
 */
 var (
-	ErrCreateAccountDB         = errors.New("failed to create account using db")
-	ErrGetAccountByIDDB        = errors.New("failed to get account by id using db")
-	ErrGetAccountByEmailDB     = errors.New("failed to get account by email using db")
-	ErrUpdateAccountDB         = errors.New("failed to update account using db")
-	ErrCreateAccountRoleDB     = errors.New("failed to create account role using db")
-	ErrGetAccountRoleDB        = errors.New("failed to get account role using db")
-	ErrUpdateAccountRoleDB     = errors.New("failed to update account role using db")
-	ErrCreateRefreshSessionDB  = errors.New("failed to create refresh session using db")
-	ErrGetRefreshSessionByIDDB = errors.New("failed to get refresh session by ID using db")
-	ErrRevokeRefreshSessionDB  = errors.New("failed to revoke refresh session using db")
-	ErrRevokeAllForAccountDB   = errors.New("failed to revoke all refresh session for account using db")
+	ErrCreateAccountDB             = errors.New("failed to create account using db")
+	ErrGetAccountByIDDB            = errors.New("failed to get account by id using db")
+	ErrGetAccountByEmailDB         = errors.New("failed to get account by email using db")
+	ErrUpdateAccountDB             = errors.New("failed to update account using db")
+	ErrCreateAccountRoleDB         = errors.New("failed to create account role using db")
+	ErrGetAccountRoleDB            = errors.New("failed to get account role using db")
+	ErrUpdateAccountRoleDB         = errors.New("failed to update account role using db")
+	ErrCreateRefreshSessionDB      = errors.New("failed to create refresh session using db")
+	ErrGetRefreshSessionByIDDB     = errors.New("failed to get refresh session by ID using db")
+	ErrRevokeRefreshSessionDB      = errors.New("failed to revoke refresh session using db")
+	ErrRevokeAllForAccountDB       = errors.New("failed to revoke all refresh session for account using db")
+	ErrRevokeAllForAccountByIPUADB = errors.New("failed to revoke all refresh session for account by ip and user agent using db")
 
 	ErrAccountAlreadyExists = errors.New("account with given email already exists")
 
