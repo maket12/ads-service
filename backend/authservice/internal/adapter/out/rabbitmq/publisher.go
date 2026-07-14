@@ -24,13 +24,13 @@ func NewPublisherConfig(exchange, routingKey string) *PublisherConfig {
 
 type AccountPublisher struct {
 	cfg     *PublisherConfig
-	client  *pkgrabbitmq.RabbitClient
+	client  *pkgrabbitmq.Client
 	channel *amqp.Channel
 }
 
 func NewAccountPublisher(
 	cfg *PublisherConfig,
-	client *pkgrabbitmq.RabbitClient,
+	client *pkgrabbitmq.Client,
 ) (*AccountPublisher, error) {
 	ch, err := client.Conn.Channel()
 	if err != nil {

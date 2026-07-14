@@ -108,8 +108,8 @@ func closeRedisClient(
 	}
 }
 
-func newRabbitMQClient(cfg *config.Config) (*pkgrabbitmq.RabbitClient, error) {
-	rabbitConfig := pkgrabbitmq.NewRabbitConfig(
+func newRabbitMQClient(cfg *config.Config) (*pkgrabbitmq.Client, error) {
+	rabbitConfig := pkgrabbitmq.NewConfig(
 		cfg.RabbitHost,
 		cfg.RabbitPort,
 		cfg.RabbitUser,
@@ -118,7 +118,7 @@ func newRabbitMQClient(cfg *config.Config) (*pkgrabbitmq.RabbitClient, error) {
 		cfg.RabbitAttempts,
 	)
 
-	rabbitClient, err := pkgrabbitmq.NewRabbitClient(rabbitConfig)
+	rabbitClient, err := pkgrabbitmq.NewClient(rabbitConfig)
 	if err != nil {
 		return nil, err
 	}
@@ -129,7 +129,7 @@ func newRabbitMQClient(cfg *config.Config) (*pkgrabbitmq.RabbitClient, error) {
 func closeRabbitMQClient(
 	ctx context.Context,
 	logger *slog.Logger,
-	rabbitClient *pkgrabbitmq.RabbitClient,
+	rabbitClient *pkgrabbitmq.Client,
 ) {
 	logger.InfoContext(ctx, "closing rabbitmq connection...")
 	if err := rabbitClient.Close(); err != nil {
@@ -140,7 +140,7 @@ func closeRabbitMQClient(
 }
 
 func newAccountPublisher(
-	cfg *config.Config, rabbitClient *pkgrabbitmq.RabbitClient,
+	cfg *config.Config, rabbitClient *pkgrabbitmq.Client,
 ) (*adaptermq.AccountPublisher, error) {
 	publisherConfig := adaptermq.NewPublisherConfig(
 		cfg.ExchangeName, cfg.RoutingKey,

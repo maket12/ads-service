@@ -7,7 +7,7 @@ import (
 	amqp "github.com/rabbitmq/amqp091-go"
 )
 
-type RabbitConfig struct {
+type Config struct {
 	Host     string
 	Port     int
 	User     string
@@ -16,15 +16,13 @@ type RabbitConfig struct {
 	Attempts int           // amount of retries to connect
 }
 
-func NewRabbitConfig(
-	host string,
-	port int,
-	user string,
-	password string,
+func NewConfig(
+	host string, port int,
+	user, password string,
 	waitTime time.Duration,
 	attempts int,
-) *RabbitConfig {
-	return &RabbitConfig{
+) *Config {
+	return &Config{
 		Host:     host,
 		Port:     port,
 		User:     user,
@@ -35,17 +33,17 @@ func NewRabbitConfig(
 }
 
 // Builds connection url
-func (c *RabbitConfig) url() string {
+func (c *Config) url() string {
 	return fmt.Sprintf("amqp://%s:%s@%s:%d/",
 		c.User, c.Password, c.Host, c.Port,
 	)
 }
 
-type RabbitClient struct {
+type Client struct {
 	Conn *amqp.Connection
 }
 
-func NewRabbitClient(config *RabbitConfig) (*RabbitClient, error) {
+func NewClient(config *Config) (*Client, error) {
 	var (
 		conn *amqp.Connection
 		err  error
@@ -55,7 +53,7 @@ func NewRabbitClient(config *RabbitConfig) (*RabbitClient, error) {
 	for i := 1; i <= config.Attempts; i++ {
 		conn, err = amqp.Dial(config.url())
 		if err == nil {
-			return &RabbitClient{Conn: conn}, nil
+			return &Client{Conn: conn}, nil
 		}
 
 		time.Sleep(config.WaitTime)
@@ -66,6 +64,6 @@ func NewRabbitClient(config *RabbitConfig) (*RabbitClient, error) {
 	)
 }
 
-func (c *RabbitClient) Close() error {
+func (c *Client) Close() error {
 	return c.Conn.Close()
 }
