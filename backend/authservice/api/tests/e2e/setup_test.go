@@ -12,12 +12,15 @@ import (
 
 	trmpgx "github.com/avito-tech/go-transaction-manager/drivers/pgxv5/v2"
 	"github.com/avito-tech/go-transaction-manager/trm/v2/manager"
+	"github.com/brianvoe/gofakeit/v7"
 	"github.com/maket12/ads-service/authservice/internal/fakes"
 	"github.com/maket12/ads-service/authservice/migrations"
 	"github.com/stretchr/testify/require"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"
 	"google.golang.org/grpc/test/bufconn"
+
+	_ "github.com/golang-migrate/migrate/v4/database/postgres"
 
 	"github.com/maket12/ads-service/authservice/cmd/app/config"
 	adaptergrpc "github.com/maket12/ads-service/authservice/internal/adapter/in/grpc"
@@ -82,22 +85,26 @@ func setupE2E(t *testing.T) *testApp {
 		logger := newLogger()
 
 		pgClient, err := pkgpostgres.NewClient(ctx, pkgpostgres.NewConfig(
-			cfg.DbHost, cfg.DbPort, cfg.DbUser, cfg.DbPassword,
-			cfg.DbName, cfg.DbSSLMode, cfg.DbMaxConn,
-			cfg.DbMinConn, cfg.DbMaxConnLifeTime, cfg.DbMaxConnIdleTime,
+			pg.Config.Host, pg.Config.Port, pg.Config.User,
+			pg.Config.Password, pg.Config.Name, pg.Config.SSLMode,
+			pg.Config.MaxConn, pg.Config.MinConn,
+			pg.Config.MaxConnLifeTime, pg.Config.MaxConnIdleTime,
 		))
 		require.NoError(t, err)
 
 		redisClient, err := pkgredis.NewClient(ctx, pkgredis.NewConfig(
-			cfg.RedisHost, cfg.RedisPort, cfg.RedisPassword, cfg.RedisDBNumber,
-			cfg.RedisPoolSize, cfg.RedisMinIdleConn,
-			cfg.RedisDialTimeout, cfg.RedisReadTimeout, cfg.RedisWriteTimeout,
+			redisC.Config.Host, redisC.Config.Port,
+			redisC.Config.Password, redisC.Config.DB,
+			redisC.Config.PoolSize, redisC.Config.MinIdleConn,
+			redisC.Config.DialTimeout, redisC.Config.ReadTimeout,
+			redisC.Config.WriteTimeout,
 		))
 		require.NoError(t, err)
 
 		rabbitClient, err := pkgrabbitmq.NewClient(pkgrabbitmq.NewConfig(
-			cfg.RabbitHost, cfg.RabbitPort, cfg.RabbitUser, cfg.RabbitPassword,
-			cfg.RabbitWaitTime, cfg.RabbitAttempts,
+			rabbitC.Config.Host, rabbitC.Config.Port,
+			rabbitC.Config.User, rabbitC.Config.Password,
+			rabbitC.Config.WaitTime, rabbitC.Config.Attempts,
 		))
 		require.NoError(t, err)
 
@@ -184,4 +191,37 @@ func (a *testApp) cleanData(t *testing.T, ctx context.Context) {
 	require.NoError(t, err, "failed to flush all")
 
 	a.email.Reset()
+}
+
+// Helper for e2e tests.
+// Creates a new user with specified parameters by calling `Register` method.
+//
+// If parameters are not specified, then it uses random values instead.
+//
+// Returns the external account id.
+func (a *testApp) createAccount(t *testing.T, email, password *string) string {
+	var (
+		regEmail    = gofakeit.Email()
+		regPassword = gofakeit.Password(
+			true, true, true,
+			false, false, 12,
+		)
+	)
+
+	if email != nil {
+		regEmail = *email
+	}
+	if password != nil {
+		regPassword = *password
+	}
+
+	resp, err := a.client.Register(context.Background(), &auth_v1.RegisterRequest{
+		Email:    regEmail,
+		Password: regPassword,
+	})
+
+	require.NoError(t, err)
+	require.NotEmpty(t, resp.GetAccountId())
+
+	return resp.GetAccountId()
 }

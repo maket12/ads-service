@@ -116,13 +116,13 @@ type TestConfig struct {
 	RabbitAttempts int           `env:"TEST_RABBIT_ATTEMPTS"`
 
 	ExchangeName string `env:"TEST_ACCOUNT_EXCHANGE" envDefault:"account_topic"`
-	RoutingKey   string `env:"TEST_ACCOUNT_ROUTING_KEY,required"`
+	RoutingKey   string `env:"TEST_ACCOUNT_ROUTING_KEY" envDefault:"account.created"`
 
 	// SMTP Client
-	SMTPHost     string `env:"TEST_SMTP_HOST,required"`
-	SMTPPort     string `env:"TEST_SMTP_PORT,required"`
-	SMTPEmail    string `env:"TEST_SMTP_EMAIL,required"`
-	SMTPPassword string `env:"TEST_SMTP_PASSWORD,required"`
+	SMTPHost     string `env:"TEST_SMTP_HOST"`
+	SMTPPort     string `env:"TEST_SMTP_PORT"`
+	SMTPEmail    string `env:"TEST_SMTP_EMAIL"`
+	SMTPPassword string `env:"TEST_SMTP_PASSWORD"`
 
 	VerificationBaseURL string        `env:"TEST_VERIFICATION_BASE_URL"`
 	VerificationTTL     time.Duration `env:"TEST_VERIFICATION_TTL" envDefault:"1m"`
