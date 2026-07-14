@@ -23,20 +23,12 @@ type TestContainer struct {
 
 // StartTestContainer Creates and launches a Postgres container for tests.
 // Do not use it as a database because the data will be lost once the program stops.
-// You can either specify a configuration for the container (user, passwd and db name)
-// or omit it to get the default configuration.
-func StartTestContainer(ctx context.Context, cfg *Config) (*TestContainer, error) {
+func StartTestContainer(ctx context.Context) (*TestContainer, error) {
 	var (
 		user     = "user"
 		password = "password"
 		dbName   = "testdb"
 	)
-
-	if cfg != nil {
-		user = cfg.User
-		password = cfg.Password
-		dbName = cfg.Name
-	}
 
 	pgContainer, err := container.Run(ctx,
 		"postgres:15-alpine",
@@ -61,7 +53,7 @@ func StartTestContainer(ctx context.Context, cfg *Config) (*TestContainer, error
 		return nil, fmt.Errorf("failed to get port: %w", err)
 	}
 
-	cfg = NewConfig(host, int(port.Num()), user, password, dbName,
+	cfg := NewConfig(host, int(port.Num()), user, password, dbName,
 		"disable", 10, 5, time.Minute, time.Minute,
 	)
 

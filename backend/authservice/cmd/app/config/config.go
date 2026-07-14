@@ -150,3 +150,12 @@ func Load() (*Config, error) {
 
 	return cfg, nil
 }
+
+func LoadTest() (*TestConfig, error) {
+	cfg := &TestConfig{}
+	if err := env.Parse(cfg); err != nil {
+		return nil, fmt.Errorf("failed to load test config: %v", err)
+	}
+
+	return cfg, nil
+}

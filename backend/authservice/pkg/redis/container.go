@@ -18,9 +18,7 @@ type TestContainer struct {
 
 // StartTestContainer Creates and launches a Redis container for tests.
 // Do not use it as a database because the data will be lost once the program stops.
-// You can either specify a configuration for the container (db, timeouts, etc.)
-// or omit it to get the default configuration.
-func StartTestContainer(ctx context.Context, cfg *Config) (*TestContainer, error) {
+func StartTestContainer(ctx context.Context) (*TestContainer, error) {
 	redisContainer, err := container.Run(ctx,
 		"redis:8.8.0-alpine",
 		testcontainers.WithWaitStrategy(
@@ -50,22 +48,13 @@ func StartTestContainer(ctx context.Context, cfg *Config) (*TestContainer, error
 		db           = 0
 	)
 
-	if cfg != nil {
-		poolSize = cfg.PoolSize
-		minIdleConn = cfg.MinIdleConn
-		dialTimeout = cfg.DialTimeout
-		readTimeout = cfg.ReadTimeout
-		writeTimeout = cfg.WriteTimeout
-		db = cfg.DB
-	}
-
-	newCfg := NewConfig(host, int(port.Num()), "", db,
+	cfg := NewConfig(host, int(port.Num()), "", db,
 		poolSize, minIdleConn, dialTimeout, readTimeout, writeTimeout,
 	)
 
 	return &TestContainer{
 		Container: redisContainer,
-		Config:    newCfg,
+		Config:    cfg,
 	}, nil
 }
 

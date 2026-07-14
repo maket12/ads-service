@@ -16,22 +16,13 @@ type TestContainer struct {
 // StartTestContainer Creates and launches a RabbitMQ container for tests.
 // Do not use it as a real queue because the data will be lost once the program stops.
 // You can either specify a configuration for the container
-// (user, password, conn wait time and conn attempts)
-// or omit it to get the default configuration.
-func StartTestContainer(ctx context.Context, cfg *Config) (*TestContainer, error) {
+func StartTestContainer(ctx context.Context) (*TestContainer, error) {
 	var (
 		user     = "user"
 		password = "password"
 		waitTime = time.Second * 10
 		attempts = 5
 	)
-
-	if cfg != nil {
-		user = cfg.User
-		password = cfg.Password
-		waitTime = cfg.WaitTime
-		attempts = cfg.Attempts
-	}
 
 	rabbitMQContainer, err := container.Run(ctx,
 		"rabbitmq:4.2.2-management-alpine",
@@ -52,7 +43,7 @@ func StartTestContainer(ctx context.Context, cfg *Config) (*TestContainer, error
 		return nil, fmt.Errorf("failed to get port: %w", err)
 	}
 
-	cfg = NewConfig(host, int(port.Num()), user,
+	cfg := NewConfig(host, int(port.Num()), user,
 		password, waitTime, attempts,
 	)
 

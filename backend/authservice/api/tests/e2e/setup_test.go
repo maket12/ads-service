@@ -12,6 +12,8 @@ import (
 
 	trmpgx "github.com/avito-tech/go-transaction-manager/drivers/pgxv5/v2"
 	"github.com/avito-tech/go-transaction-manager/trm/v2/manager"
+	"github.com/maket12/ads-service/authservice/internal/fakes"
+	"github.com/maket12/ads-service/authservice/migrations"
 	"github.com/stretchr/testify/require"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"
@@ -22,11 +24,9 @@ import (
 	adapterpg "github.com/maket12/ads-service/authservice/internal/adapter/out/postgres"
 	adaptermq "github.com/maket12/ads-service/authservice/internal/adapter/out/rabbitmq"
 	adapterredis "github.com/maket12/ads-service/authservice/internal/adapter/out/redis"
-	adapteryamail "github.com/maket12/ads-service/authservice/internal/adapter/out/yandexmail"
 	"github.com/maket12/ads-service/authservice/internal/app/usecase"
 	infrajwt "github.com/maket12/ads-service/authservice/internal/infrastructure/jwt"
 	infrapassw "github.com/maket12/ads-service/authservice/internal/infrastructure/password"
-	"github.com/maket12/ads-service/authservice/internal/testhelpers"
 	"github.com/maket12/ads-service/authservice/pkg/generated/auth_v1"
 	pkgpostgres "github.com/maket12/ads-service/authservice/pkg/postgres"
 	pkgrabbitmq "github.com/maket12/ads-service/authservice/pkg/rabbitmq"
@@ -38,12 +38,12 @@ const bufSize = 1024 * 1024
 type testApp struct {
 	client   auth_v1.AuthServiceClient
 	conn     *grpc.ClientConn
-	pg       *testhelpers.PostgresContainer
-	redisC   *testhelpers.RedisContainer
-	rabbitC  *testhelpers.RabbitMQContainer
-	mailpitC *testhelpers.MailpitContainer
+	pg       *pkgpostgres.TestContainer
+	redisC   *pkgredis.TestContainer
+	rabbitC  *pkgrabbitmq.TestContainer
+	email    *fakes.FakeMailSender
 	dbClient *pkgpostgres.Client
-	cfg      *config.Config
+	cfg      *config.TestConfig
 }
 
 var (
@@ -63,25 +63,21 @@ func setupE2E(t *testing.T) *testApp {
 		require.NoError(t, err)
 
 		// --- containers ---
-		pg, err := testhelpers.StartPostgresContainer(ctx)
+		pg, err := pkgpostgres.StartTestContainer(ctx)
 		require.NoError(t, err)
-		require.NoError(t, pg.MigrateUp())
+		require.NoError(t, pg.MigrateUp(migrations.FS, 3))
 
-		redisC, err := testhelpers.StartRedisContainer(ctx)
-		require.NoError(t, err)
-
-		rabbitC, err := testhelpers.StartRabbitMQContainer(ctx)
+		redisC, err := pkgredis.StartTestContainer(ctx)
 		require.NoError(t, err)
 
-		mailpitC, err := testhelpers.StartMailpitContainer(ctx)
+		rabbitC, err := pkgrabbitmq.StartTestContainer(ctx)
 		require.NoError(t, err)
 
 		cfg.DbHost, cfg.DbPort = pg.Config.Host, pg.Config.Port
 		cfg.DbUser, cfg.DbPassword, cfg.DbName = pg.Config.User, pg.Config.Password, pg.Config.Name
 
-		cfg.RedisHost, cfg.RedisPort = redisC.Host, redisC.Port
-		cfg.RabbitHost, cfg.RabbitPort = rabbitC.Host, rabbitC.Port
-		cfg.SMTPHost, cfg.SMTPPort = mailpitC.SMTPHost, mailpitC.SMTPPort
+		cfg.RedisHost, cfg.RedisPort = redisC.Config.Host, redisC.Config.Port
+		cfg.RabbitHost, cfg.RabbitPort = rabbitC.Config.Host, rabbitC.Config.Port
 
 		logger := newLogger()
 
@@ -113,15 +109,16 @@ func setupE2E(t *testing.T) *testApp {
 		rSessRepo := adapterpg.NewRefreshSessionsRepository(pgClient, trmpgx.DefaultCtxGetter)
 		vTokenRepo := adapterredis.NewVerificationTokenRepository(redisClient)
 
-		smtpClient := adapteryamail.NewSmtpClient(
-			cfg.SMTPHost, cfg.SMTPPort, cfg.SMTPEmail, cfg.SMTPPassword, cfg.VerificationBaseURL,
-		)
+		// smtp client
+		smtpClient := fakes.NewFakeMailSender()
 
+		// infrastructure
 		passwordHasher := infrapassw.NewHasher(cfg.PasswordCost)
 		tokenGenerator := infrajwt.NewGenerator(
 			cfg.AccessSecret, cfg.RefreshSecret, cfg.AccessTTL, cfg.RefreshTTL,
 		)
 
+		// event publisher
 		accountPublisher, err := adaptermq.NewAccountPublisher(
 			adaptermq.NewPublisherConfig(cfg.ExchangeName, cfg.RoutingKey), rabbitClient,
 		)
@@ -129,7 +126,7 @@ func setupE2E(t *testing.T) *testApp {
 
 		// use-cases
 		registerUC := usecase.NewRegisterUC(trManager, accRepo, accRoleRepo, passwordHasher, accountPublisher)
-		loginUC := usecase.NewLoginUC(accRepo, accRoleRepo, rSessRepo, passwordHasher, tokenGenerator, cfg.RefreshTTL)
+		loginUC := usecase.NewLoginUC(trManager, accRepo, accRoleRepo, rSessRepo, passwordHasher, tokenGenerator, cfg.RefreshTTL)
 		logoutUC := usecase.NewLogoutUC(rSessRepo, tokenGenerator)
 		refreshSessionUC := usecase.NewRefreshSessionUC(accRoleRepo, rSessRepo, tokenGenerator, cfg.RefreshTTL)
 		validateAccessUC := usecase.NewValidateAccessTokenUC(accRepo, tokenGenerator)
@@ -168,7 +165,7 @@ func setupE2E(t *testing.T) *testApp {
 			pg:       pg,
 			redisC:   redisC,
 			rabbitC:  rabbitC,
-			mailpitC: mailpitC,
+			email:    smtpClient,
 			dbClient: pgClient,
 			cfg:      cfg,
 		}
@@ -182,4 +179,9 @@ func setupE2E(t *testing.T) *testApp {
 func (a *testApp) cleanData(t *testing.T, ctx context.Context) {
 	err := a.pg.TruncateTables(ctx)
 	require.NoError(t, err, "failed to truncate tables")
+
+	err = a.redisC.FlushAll(ctx)
+	require.NoError(t, err, "failed to flush all")
+
+	a.email.Reset()
 }

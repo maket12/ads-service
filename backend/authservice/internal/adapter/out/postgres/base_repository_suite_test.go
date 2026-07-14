@@ -23,7 +23,7 @@ func TestMain(m *testing.M) {
 	ctx := context.Background()
 
 	// Init postgres container with default parameters
-	pgContainer, err := pkgpostgres.StartTestContainer(ctx, nil)
+	pgContainer, err := pkgpostgres.StartTestContainer(ctx)
 	if err != nil {
 		log.Fatalf("Could not start postgres: %v", err)
 	}
