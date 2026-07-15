@@ -25,7 +25,6 @@ import (
 	"github.com/maket12/ads-service/authservice/cmd/app/config"
 	adaptergrpc "github.com/maket12/ads-service/authservice/internal/adapter/in/grpc"
 	adapterpg "github.com/maket12/ads-service/authservice/internal/adapter/out/postgres"
-	adaptermq "github.com/maket12/ads-service/authservice/internal/adapter/out/rabbitmq"
 	adapterredis "github.com/maket12/ads-service/authservice/internal/adapter/out/redis"
 	"github.com/maket12/ads-service/authservice/internal/app/usecase"
 	infrajwt "github.com/maket12/ads-service/authservice/internal/infrastructure/jwt"
@@ -101,13 +100,6 @@ func setupE2E(t *testing.T) *testApp {
 		))
 		require.NoError(t, err)
 
-		rabbitClient, err := pkgrabbitmq.NewClient(pkgrabbitmq.NewConfig(
-			rabbitC.Config.Host, rabbitC.Config.Port,
-			rabbitC.Config.User, rabbitC.Config.Password,
-			rabbitC.Config.WaitTime, rabbitC.Config.Attempts,
-		))
-		require.NoError(t, err)
-
 		trManager := manager.Must(trmpgx.NewDefaultFactory(pgClient.Pool))
 
 		// repositories
@@ -126,10 +118,7 @@ func setupE2E(t *testing.T) *testApp {
 		)
 
 		// event publisher
-		accountPublisher, err := adaptermq.NewAccountPublisher(
-			adaptermq.NewPublisherConfig(cfg.ExchangeName, cfg.RoutingKey), rabbitClient,
-		)
-		require.NoError(t, err)
+		accountPublisher := fakes.NewFakePublisher()
 
 		// use-cases
 		registerUC := usecase.NewRegisterUC(trManager, accRepo, accRoleRepo, passwordHasher, accountPublisher)
