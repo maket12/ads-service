@@ -60,6 +60,7 @@ func gRPCError(err error) *pkgerrs.OutErr {
 
 	case errors.Is(err, ucerrs.ErrInvalidCredentials),
 		errors.Is(err, ucerrs.ErrInvalidAccountID),
+		errors.Is(err, ucerrs.ErrAccountNotFound),
 		errors.Is(err, ucerrs.ErrVerificationTokenNotFound):
 		return pkgerrs.NewOutError(codes.NotFound, err.Error(), nil)
 
