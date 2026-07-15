@@ -22,7 +22,10 @@ func TestLogin_Success(t *testing.T) {
 	// Create a new account in advance
 	email := gofakeit.Email()
 	password := gofakeit.Password(true, true, true, true, true, 10)
-	_ = app.createAccount(t, &email, &password)
+	_, _, _ = app.createAccount(t,
+		&email, &password,
+		nil, nil, false,
+	)
 
 	resp, err := app.client.Login(ctx, &auth_v1.LoginRequest{
 		Email:     email,
@@ -43,7 +46,10 @@ func TestLogin_BadCases(t *testing.T) {
 	// Create an account in advance for checking invalid credentials case
 	existingEmail := gofakeit.Email()
 	existingPassword := gofakeit.Password(true, true, true, true, true, 10)
-	_ = app.createAccount(t, &existingEmail, &existingPassword)
+	_, _, _ = app.createAccount(t,
+		&existingEmail, &existingPassword,
+		nil, nil, false,
+	)
 
 	type testCase struct {
 		name          string

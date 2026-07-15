@@ -187,8 +187,11 @@ func (a *testApp) cleanData(t *testing.T, ctx context.Context) {
 //
 // If parameters are not specified, then it uses random values instead.
 //
-// Returns the external account id.
-func (a *testApp) createAccount(t *testing.T, email, password *string) string {
+// Returns the external account id and jwt tokens if they were requested.
+func (a *testApp) createAccount(t *testing.T,
+	email, password, ip, ua *string,
+	needTokens bool,
+) (string, string, string) {
 	var (
 		regEmail    = gofakeit.Email()
 		regPassword = gofakeit.Password(
@@ -204,13 +207,46 @@ func (a *testApp) createAccount(t *testing.T, email, password *string) string {
 		regPassword = *password
 	}
 
-	resp, err := a.client.Register(context.Background(), &auth_v1.RegisterRequest{
+	regResp, err := a.client.Register(context.Background(), &auth_v1.RegisterRequest{
 		Email:    regEmail,
 		Password: regPassword,
 	})
-
 	require.NoError(t, err)
-	require.NotEmpty(t, resp.GetAccountId())
+	require.NotEmpty(t, regResp.GetAccountId())
 
-	return resp.GetAccountId()
+	if !needTokens {
+		return regResp.GetAccountId(), "", ""
+	}
+
+	var (
+		loginIP = gofakeit.IPv4Address()
+		loginUA = gofakeit.UserAgent()
+	)
+
+	if ip != nil {
+		loginIP = *ip
+	}
+	if ua != nil {
+		loginUA = *ua
+	}
+
+	loginResp, err := a.client.Login(context.Background(), &auth_v1.LoginRequest{
+		Email:     regEmail,
+		Password:  regPassword,
+		Ip:        &loginIP,
+		UserAgent: &loginUA,
+	})
+	require.NoError(t, err)
+	require.NotEmpty(t, loginResp.GetAccessToken())
+	require.NotEmpty(t, loginResp.GetRefreshToken())
+
+	return regResp.GetAccountId(), loginResp.GetAccessToken(), loginResp.GetRefreshToken()
+}
+
+func (a *testApp) logout(t *testing.T, refreshToken string) {
+	resp, err := a.client.Logout(context.Background(), &auth_v1.LogoutRequest{
+		RefreshToken: refreshToken,
+	})
+	require.NoError(t, err)
+	require.True(t, resp.GetLogout())
 }

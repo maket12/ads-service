@@ -51,15 +51,11 @@ func (uc *LogoutUC) Execute(ctx context.Context, in dto.LogoutInput) (dto.Logout
 
 	// Validate and revoke
 	if !session.IsActive() {
-		return dto.LogoutOutput{}, ucerrs.Wrap(
-			ucerrs.ErrInvalidRefreshToken, errors.New("session in expired"),
-		)
+		return dto.LogoutOutput{}, ucerrs.ErrCannotLogout
 	}
 
 	if utils.HashToken(in.RefreshToken) != session.RefreshTokenHash() {
-		return dto.LogoutOutput{}, ucerrs.Wrap(
-			ucerrs.ErrInvalidRefreshToken, errors.New("invalid token hash"),
-		)
+		return dto.LogoutOutput{}, ucerrs.ErrInvalidRefreshToken
 	}
 
 	if err = session.RevokeByLogout(); err != nil {

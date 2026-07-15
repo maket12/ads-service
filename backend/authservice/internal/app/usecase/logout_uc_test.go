@@ -142,7 +142,7 @@ func TestLogoutUC_Execute(t *testing.T) {
 					GetByID(mock.Anything, sessionID).
 					Return(session, nil)
 			},
-			expectErr: ucerrs.ErrInvalidRefreshToken,
+			expectErr: ucerrs.ErrCannotLogout,
 		},
 		{
 			name: "Failure - token hash mismatch",

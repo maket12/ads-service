@@ -33,7 +33,10 @@ func TestRegister_BadCases(t *testing.T) {
 
 	// Create an account in advance for checking email duplicate case
 	existingEmail := gofakeit.Email()
-	_ = app.createAccount(t, &existingEmail, nil)
+	_, _, _ = app.createAccount(t,
+		&existingEmail, nil,
+		nil, nil, false,
+	)
 
 	type testCase struct {
 		name          string

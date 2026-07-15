@@ -46,7 +46,7 @@ func gRPCError(err error) *pkgerrs.OutErr {
 
 		case errors.Is(err, ucerrs.ErrInvalidAccessToken),
 			errors.Is(err, ucerrs.ErrInvalidRefreshToken):
-			return pkgerrs.NewOutError(codes.Unauthenticated, err.Error(), w.Reason)
+			return pkgerrs.NewOutError(codes.InvalidArgument, err.Error(), w.Reason)
 
 		default:
 			return pkgerrs.NewOutError(codes.Internal, "internal error", w.Reason)
@@ -54,6 +54,10 @@ func gRPCError(err error) *pkgerrs.OutErr {
 	}
 
 	switch {
+	case errors.Is(err, ucerrs.ErrInvalidAccessToken),
+		errors.Is(err, ucerrs.ErrInvalidRefreshToken):
+		return pkgerrs.NewOutError(codes.InvalidArgument, err.Error(), w.Reason)
+
 	case errors.Is(err, ucerrs.ErrInvalidCredentials),
 		errors.Is(err, ucerrs.ErrInvalidAccountID),
 		errors.Is(err, ucerrs.ErrVerificationTokenNotFound):
@@ -64,12 +68,9 @@ func gRPCError(err error) *pkgerrs.OutErr {
 
 	case errors.Is(err, ucerrs.ErrCannotLogin),
 		errors.Is(err, ucerrs.ErrCannotAssign),
+		errors.Is(err, ucerrs.ErrCannotLogout),
 		errors.Is(err, ucerrs.ErrCannotRevoke):
 		return pkgerrs.NewOutError(codes.FailedPrecondition, err.Error(), nil)
-
-	case errors.Is(err, ucerrs.ErrInvalidAccessToken),
-		errors.Is(err, ucerrs.ErrInvalidRefreshToken):
-		return pkgerrs.NewOutError(codes.Unauthenticated, err.Error(), nil)
 	}
 
 	return pkgerrs.NewOutError(codes.Internal, "internal error", nil)
