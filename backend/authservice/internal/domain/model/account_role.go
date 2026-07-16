@@ -46,6 +46,11 @@ func RestoreAccountRole(accountID uuid.UUID, role Role) *AccountRole {
 func (a *AccountRole) AccountID() uuid.UUID { return a.accountID }
 func (a *AccountRole) Role() Role           { return a.role }
 
+// ================ Business Logic ================
+
+func (a *AccountRole) IsUser() bool  { return a.role == RoleUser }
+func (a *AccountRole) IsAdmin() bool { return a.role == RoleAdmin }
+
 // ================ Mutation ================
 
 func (a *AccountRole) Assign(rawRole string) error {

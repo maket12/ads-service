@@ -14,7 +14,7 @@ import (
 	"google.golang.org/grpc/status"
 )
 
-func TestSendVerification_Success(t *testing.T) {
+func TestVerifyEmail_Success(t *testing.T) {
 	app := setupE2E(t)
 	ctx := context.Background()
 	accountID, _, _ := app.createAccount(t, nil, nil, nil, nil, true)

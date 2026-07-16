@@ -96,3 +96,13 @@ func TestAccountRole_Assign(t *testing.T) {
 		})
 	}
 }
+
+func TestAccountRole_IsUserIsAdmin(t *testing.T) {
+	accRole, _ := model.NewAccountRole(uuid.New())
+	require.True(t, accRole.IsUser())
+	require.False(t, accRole.IsAdmin())
+
+	_ = accRole.Assign(model.RoleAdmin.String())
+	require.False(t, accRole.IsUser())
+	require.True(t, accRole.IsAdmin())
+}
