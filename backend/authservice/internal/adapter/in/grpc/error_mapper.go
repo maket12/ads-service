@@ -72,7 +72,8 @@ func gRPCError(err error) *pkgerrs.OutErr {
 		errors.Is(err, ucerrs.ErrCannotBlock),
 		errors.Is(err, ucerrs.ErrCannotDelete),
 		errors.Is(err, ucerrs.ErrCannotLogout),
-		errors.Is(err, ucerrs.ErrCannotRevoke):
+		errors.Is(err, ucerrs.ErrCannotRevoke),
+		errors.Is(err, ucerrs.ErrCannotVerify):
 		return pkgerrs.NewOutError(codes.FailedPrecondition, err.Error(), nil)
 	}
 

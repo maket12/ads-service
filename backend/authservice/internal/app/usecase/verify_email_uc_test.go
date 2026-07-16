@@ -59,6 +59,17 @@ func TestVerifyEmailUC_Execute(t *testing.T) {
 			expectErr: ucerrs.ErrVerificationTokenNotFound,
 		},
 		{
+			name: "Failure - token is expired",
+			input: dto.VerifyEmailInput{
+				Token: rawTokenStr,
+			},
+			mockBehaviour: func(a adapter, account *model.Account, vToken *model.VerificationToken) {
+				expired := model.RestoreVerificationToken(rawTokenStr, uuid.New(), time.Nanosecond, time.Now().Add(-1*time.Second))
+				a.verificationToken.EXPECT().Get(mock.Anything, rawTokenStr).Return(expired, nil)
+			},
+			expectErr: ucerrs.ErrCannotVerify,
+		},
+		{
 			name: "Failure - targeted account records missing",
 			input: dto.VerifyEmailInput{
 				Token: rawTokenStr,

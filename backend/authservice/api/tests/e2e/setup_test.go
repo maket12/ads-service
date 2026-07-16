@@ -9,12 +9,15 @@ import (
 	"os"
 	"sync"
 	"testing"
+	"time"
 
 	trmpgx "github.com/avito-tech/go-transaction-manager/drivers/pgxv5/v2"
 	"github.com/avito-tech/go-transaction-manager/trm/v2/manager"
 	"github.com/brianvoe/gofakeit/v7"
 	"github.com/google/uuid"
 	"github.com/maket12/ads-service/authservice/internal/app/dto"
+	"github.com/maket12/ads-service/authservice/internal/domain/model"
+	"github.com/maket12/ads-service/authservice/internal/domain/port"
 	"github.com/maket12/ads-service/authservice/internal/fakes"
 	"github.com/maket12/ads-service/authservice/migrations"
 	"github.com/stretchr/testify/require"
@@ -40,14 +43,17 @@ import (
 const bufSize = 1024 * 1024
 
 type testApp struct {
-	client   auth_v1.AuthServiceClient
-	conn     *grpc.ClientConn
-	pg       *pkgpostgres.TestContainer
-	redisC   *pkgredis.TestContainer
-	rabbitC  *pkgrabbitmq.TestContainer
-	email    *fakes.FakeMailSender
-	dbClient *pkgpostgres.Client
-	cfg      *config.TestConfig
+	client      auth_v1.AuthServiceClient
+	conn        *grpc.ClientConn
+	pg          *pkgpostgres.TestContainer
+	redisC      *pkgredis.TestContainer
+	rabbitC     *pkgrabbitmq.TestContainer
+	email       *fakes.FakeMailSender
+	accRepo     port.AccountRepository
+	accRoleRepo port.AccountRoleRepository
+	tokenRepo   port.VerificationTokenRepository
+	dbClient    *pkgpostgres.Client
+	cfg         *config.TestConfig
 }
 
 var (
@@ -158,14 +164,17 @@ func setupE2E(t *testing.T) *testApp {
 		require.NoError(t, err)
 
 		appInstance = &testApp{
-			client:   auth_v1.NewAuthServiceClient(conn),
-			conn:     conn,
-			pg:       pg,
-			redisC:   redisC,
-			rabbitC:  rabbitC,
-			email:    smtpClient,
-			dbClient: pgClient,
-			cfg:      cfg,
+			client:      auth_v1.NewAuthServiceClient(conn),
+			conn:        conn,
+			pg:          pg,
+			redisC:      redisC,
+			rabbitC:     rabbitC,
+			email:       smtpClient,
+			accRepo:     accRepo,
+			accRoleRepo: accRoleRepo,
+			tokenRepo:   vTokenRepo,
+			dbClient:    pgClient,
+			cfg:         cfg,
 		}
 	})
 
@@ -246,10 +255,7 @@ func (a *testApp) createAccount(t *testing.T,
 }
 
 func (a *testApp) blockAccount(t *testing.T, accountID string) {
-	accRepo := adapterpg.NewAccountsRepository(a.dbClient, trmpgx.DefaultCtxGetter)
-	accRoleRepo := adapterpg.NewAccountRolesRepository(a.dbClient, trmpgx.DefaultCtxGetter)
-
-	uc := usecase.NewBlockAccountUC(accRepo, accRoleRepo)
+	uc := usecase.NewBlockAccountUC(a.accRepo, a.accRoleRepo)
 	out, err := uc.Execute(context.Background(), dto.BlockAccountInput{AccountID: uuid.MustParse(accountID)})
 
 	require.NoError(t, err)
@@ -257,10 +263,7 @@ func (a *testApp) blockAccount(t *testing.T, accountID string) {
 }
 
 func (a *testApp) deleteAccount(t *testing.T, accountID string) {
-	accRepo := adapterpg.NewAccountsRepository(a.dbClient, trmpgx.DefaultCtxGetter)
-	accRoleRepo := adapterpg.NewAccountRolesRepository(a.dbClient, trmpgx.DefaultCtxGetter)
-
-	uc := usecase.NewDeleteAccountUC(accRepo, accRoleRepo)
+	uc := usecase.NewDeleteAccountUC(a.accRepo, a.accRoleRepo)
 	out, err := uc.Execute(context.Background(), dto.DeleteAccountInput{AccountID: uuid.MustParse(accountID)})
 
 	require.NoError(t, err)
@@ -273,4 +276,37 @@ func (a *testApp) logout(t *testing.T, refreshToken string) {
 	})
 	require.NoError(t, err)
 	require.True(t, resp.GetLogout())
+}
+
+// Helper for e2e tests.
+// Creates a new verification token for specified account id.
+// Set `shortLive` parameter if you need a short living token for tests
+// such as testing of expiration.
+//
+// Returns the token.
+func (a *testApp) sendToken(t *testing.T, accountID, email string, shortLive bool) string {
+	if !shortLive {
+		resp, err := a.client.SendVerification(context.Background(), &auth_v1.SendVerificationRequest{AccountId: accountID})
+		require.NoError(t, err)
+		require.True(t, resp.Sent)
+	} else {
+		vToken := model.RestoreVerificationToken(
+			uuid.NewString(),
+			uuid.MustParse(accountID),
+			time.Minute,
+			time.Now().Add(time.Microsecond),
+		)
+
+		err := a.tokenRepo.Save(context.Background(), vToken)
+		require.NoError(t, err)
+
+		err = a.email.SendVerificationEmail(context.Background(), email, vToken.Token())
+		require.NoError(t, err)
+	}
+
+	token, ok := a.email.LastToken(email)
+	require.NotEmpty(t, token)
+	require.True(t, ok)
+
+	return token
 }

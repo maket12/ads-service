@@ -42,9 +42,7 @@ func (uc *VerifyEmailUC) Execute(ctx context.Context, in dto.VerifyEmailInput) (
 
 	// Validation
 	if vToken.IsExpired() {
-		return dto.VerifyEmailOutput{Verified: false}, ucerrs.Wrap(
-			ucerrs.ErrInvalidInput, errors.New("token is expired"),
-		)
+		return dto.VerifyEmailOutput{Verified: false}, ucerrs.ErrCannotVerify
 	}
 
 	// Find account and update it

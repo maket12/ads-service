@@ -13,6 +13,7 @@ var (
 	ErrCannotAssign        = errors.New("account cannot be assigned to this role")
 	ErrCannotBlock         = errors.New("account cannot be blocked due to its status or insufficient permissions")
 	ErrCannotDelete        = errors.New("account cannot be deleted due to its status or insufficient permissions")
+	ErrCannotVerify        = errors.New("verification token has been expired")
 	ErrInvalidRefreshToken = errors.New("refresh token is invalid or not found")
 	ErrCannotRevoke        = errors.New("refresh token has been already rotated or invalid")
 	ErrInvalidAccessToken  = errors.New("access token is invalid")
