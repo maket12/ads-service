@@ -28,9 +28,7 @@ func NewLogoutUC(
 
 func (uc *LogoutUC) Execute(ctx context.Context, in dto.LogoutInput) (dto.LogoutOutput, error) {
 	// Find session
-	_, sessionID, err := uc.tokenGenerator.ValidateRefreshToken(
-		ctx, in.RefreshToken,
-	)
+	_, sessionID, err := uc.tokenGenerator.ValidateRefreshToken(ctx, in.RefreshToken)
 	if err != nil && !errors.Is(err, port.ErrTokenExpired) {
 		return dto.LogoutOutput{}, ucerrs.Wrap(
 			ucerrs.ErrInvalidRefreshToken, err,

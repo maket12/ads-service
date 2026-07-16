@@ -6,6 +6,7 @@ import (
 	"testing"
 	"time"
 
+	"github.com/brianvoe/gofakeit/v7"
 	"github.com/maket12/ads-service/authservice/internal/app/dto"
 	ucerrs "github.com/maket12/ads-service/authservice/internal/app/errs"
 	"github.com/maket12/ads-service/authservice/internal/app/usecase"
@@ -34,7 +35,7 @@ func TestSendVerificationUC_Execute(t *testing.T) {
 	}
 
 	accountID := uuid.New()
-	email := "verify@example.com"
+	email := gofakeit.Email()
 
 	unverifiedAccount, err := model.NewAccount(email, "hashed-pass")
 	assert.NoError(t, err)

@@ -43,13 +43,21 @@ func TestLogin_BadCases(t *testing.T) {
 	app := setupE2E(t)
 	ctx := context.Background()
 
-	// Create an account in advance for checking invalid credentials case
-	existingEmail := gofakeit.Email()
-	existingPassword := gofakeit.Password(true, true, true, true, true, 10)
-	_, _, _ = app.createAccount(t,
-		&existingEmail, &existingPassword,
-		nil, nil, false,
-	)
+	/*
+		Prepare test data:
+		1) Create an account in advance for checking invalid credentials case
+		2) Create another account and block it
+		3) Create the third account and delete it
+	*/
+	existingEmail, blockedEmail, deletedEmail := gofakeit.Email(), gofakeit.Email(), gofakeit.Email()
+	password := gofakeit.Password(true, true, true, true, true, 10)
+
+	_, _, _ = app.createAccount(t, &existingEmail, &password, nil, nil, false)
+	blockedAccID, _, _ := app.createAccount(t, &blockedEmail, &password, nil, nil, false)
+	deletedAccID, _, _ := app.createAccount(t, &deletedEmail, &password, nil, nil, false)
+
+	app.blockAccount(t, blockedAccID)
+	app.deleteAccount(t, deletedAccID)
 
 	type testCase struct {
 		name          string
@@ -73,6 +81,20 @@ func TestLogin_BadCases(t *testing.T) {
 			password:      gofakeit.Password(true, true, true, true, true, 10),
 			expectedCode:  codes.NotFound,
 			expectedError: "invalid email or password",
+		},
+		{
+			name:          "Failed Precondition - Account Is Blocked",
+			email:         blockedEmail,
+			password:      password,
+			expectedCode:  codes.FailedPrecondition,
+			expectedError: "account is either blocked or not exists",
+		},
+		{
+			name:          "Failed Precondition - Account Is Deleted",
+			email:         deletedEmail,
+			password:      password,
+			expectedCode:  codes.FailedPrecondition,
+			expectedError: "account is either blocked or not exists",
 		},
 	}
 

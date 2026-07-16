@@ -5,6 +5,7 @@ import (
 	"errors"
 	"testing"
 
+	"github.com/brianvoe/gofakeit/v7"
 	"github.com/maket12/ads-service/authservice/internal/app/dto"
 	ucerrs "github.com/maket12/ads-service/authservice/internal/app/errs"
 	"github.com/maket12/ads-service/authservice/internal/app/usecase"
@@ -31,9 +32,9 @@ func TestRegisterUC_Execute(t *testing.T) {
 		expectErr     error
 	}
 
-	email := "newuser@example.com"
-	password := "plain-password"
-	hashedPassword := "hashed-password"
+	email := gofakeit.Email()
+	password := gofakeit.Password(true, true, true, true, true, 10)
+	hashedPassword := "hashed-" + password
 
 	var tests = []testCase{
 		{
@@ -85,7 +86,6 @@ func TestRegisterUC_Execute(t *testing.T) {
 					Hash(password).
 					Return(hashedPassword, nil)
 
-				// Благодаря вашему фиксу, теперь эта ошибка корректно обрабатывается
 				a.account.EXPECT().
 					Create(mock.Anything, mock.AnythingOfType("*model.Account")).
 					Return(pkgerrs.ErrObjectAlreadyExists)

@@ -6,6 +6,7 @@ import (
 	"testing"
 	"time"
 
+	"github.com/brianvoe/gofakeit/v7"
 	"github.com/maket12/ads-service/authservice/internal/app/dto"
 	ucerrs "github.com/maket12/ads-service/authservice/internal/app/errs"
 	"github.com/maket12/ads-service/authservice/internal/app/usecase"
@@ -35,10 +36,12 @@ func TestLoginUC_Execute(t *testing.T) {
 		expectErr     error
 	}
 
-	email := "user@example.com"
-	password := "correct-password"
-	hashedPassword := "hashed-password"
+	email := gofakeit.Email()
+	password := gofakeit.Password(true, true, true, true, true, 10)
+	hashedPassword := "hashed-" + password
 	ttl := 24 * time.Hour
+	ip := gofakeit.IPv4Address()
+	userAgent := gofakeit.UserAgent()
 
 	var tests = []testCase{
 		{
@@ -46,8 +49,8 @@ func TestLoginUC_Execute(t *testing.T) {
 			input: dto.LoginInput{
 				Email:     email,
 				Password:  password,
-				IP:        utils.VPtr("1.2.3.4"),
-				UserAgent: utils.VPtr("Mozilla"),
+				IP:        utils.VPtr(ip),
+				UserAgent: utils.VPtr(userAgent),
 			},
 			mockBehaviour: func(a adapter, acc *model.Account) {
 				a.account.EXPECT().
@@ -71,7 +74,7 @@ func TestLoginUC_Execute(t *testing.T) {
 					Return(&port.TokensPair{Access: "access", Refresh: "refresh"}, nil)
 
 				a.refreshSession.EXPECT().
-					RevokeAllForAccountByIPUA(mock.Anything, acc.ID(), utils.VPtr("1.2.3.4"), utils.VPtr("Mozilla"), mock.AnythingOfType("*string")).
+					RevokeAllForAccountByIPUA(mock.Anything, acc.ID(), utils.VPtr(ip), utils.VPtr(userAgent), mock.AnythingOfType("*string")).
 					Return(nil)
 
 				a.refreshSession.EXPECT().

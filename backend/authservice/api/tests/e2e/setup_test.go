@@ -13,6 +13,8 @@ import (
 	trmpgx "github.com/avito-tech/go-transaction-manager/drivers/pgxv5/v2"
 	"github.com/avito-tech/go-transaction-manager/trm/v2/manager"
 	"github.com/brianvoe/gofakeit/v7"
+	"github.com/google/uuid"
+	"github.com/maket12/ads-service/authservice/internal/app/dto"
 	"github.com/maket12/ads-service/authservice/internal/fakes"
 	"github.com/maket12/ads-service/authservice/migrations"
 	"github.com/stretchr/testify/require"
@@ -241,6 +243,28 @@ func (a *testApp) createAccount(t *testing.T,
 	require.NotEmpty(t, loginResp.GetRefreshToken())
 
 	return regResp.GetAccountId(), loginResp.GetAccessToken(), loginResp.GetRefreshToken()
+}
+
+func (a *testApp) blockAccount(t *testing.T, accountID string) {
+	accRepo := adapterpg.NewAccountsRepository(a.dbClient, trmpgx.DefaultCtxGetter)
+	accRoleRepo := adapterpg.NewAccountRolesRepository(a.dbClient, trmpgx.DefaultCtxGetter)
+
+	uc := usecase.NewBlockAccountUC(accRepo, accRoleRepo)
+	out, err := uc.Execute(context.Background(), dto.BlockAccountInput{AccountID: uuid.MustParse(accountID)})
+
+	require.NoError(t, err)
+	require.True(t, out.Blocked)
+}
+
+func (a *testApp) deleteAccount(t *testing.T, accountID string) {
+	accRepo := adapterpg.NewAccountsRepository(a.dbClient, trmpgx.DefaultCtxGetter)
+	accRoleRepo := adapterpg.NewAccountRolesRepository(a.dbClient, trmpgx.DefaultCtxGetter)
+
+	uc := usecase.NewDeleteAccountUC(accRepo, accRoleRepo)
+	out, err := uc.Execute(context.Background(), dto.DeleteAccountInput{AccountID: uuid.MustParse(accountID)})
+
+	require.NoError(t, err)
+	require.True(t, out.Deleted)
 }
 
 func (a *testApp) logout(t *testing.T, refreshToken string) {
