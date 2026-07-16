@@ -44,6 +44,14 @@ func TestSendVerificationUC_Execute(t *testing.T) {
 	assert.NoError(t, err)
 	verifiedAccount.VerifyEmail()
 
+	blockedAccount, err := model.NewAccount(email, "hashed-pass")
+	assert.NoError(t, err)
+	_ = blockedAccount.Block()
+
+	deletedAccount, err := model.NewAccount(email, "hashed-pass")
+	assert.NoError(t, err)
+	_ = deletedAccount.Delete()
+
 	var tests = []testCase{
 		{
 			name:  "Success",
@@ -63,6 +71,24 @@ func TestSendVerificationUC_Execute(t *testing.T) {
 				a.account.EXPECT().GetByID(mock.Anything, accountID).Return(verifiedAccount, nil)
 			},
 			expectErr:  nil,
+			expectSent: false,
+		},
+		{
+			name:  "Failure - account is blocked",
+			input: dto.SendVerificationInput{AccountID: accountID},
+			mockBehaviour: func(a adapter) {
+				a.account.EXPECT().GetByID(mock.Anything, accountID).Return(blockedAccount, nil)
+			},
+			expectErr:  ucerrs.ErrCannotLogin,
+			expectSent: false,
+		},
+		{
+			name:  "Failure - account is deleted",
+			input: dto.SendVerificationInput{AccountID: accountID},
+			mockBehaviour: func(a adapter) {
+				a.account.EXPECT().GetByID(mock.Anything, accountID).Return(deletedAccount, nil)
+			},
+			expectErr:  ucerrs.ErrCannotLogin,
 			expectSent: false,
 		},
 		{

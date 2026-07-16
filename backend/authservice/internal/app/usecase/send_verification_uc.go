@@ -49,6 +49,10 @@ func (uc *SendVerificationUC) Execute(ctx context.Context, in dto.SendVerificati
 		return dto.SendVerificationOutput{Sent: false}, nil
 	}
 
+	if !account.CanLogin() {
+		return dto.SendVerificationOutput{}, ucerrs.ErrCannotLogin
+	}
+
 	// Create verification token
 	vToken, err := model.NewVerificationToken(account.ID(), uc.tokenTTL)
 	if err != nil {

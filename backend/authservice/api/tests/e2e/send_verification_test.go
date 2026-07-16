@@ -34,6 +34,20 @@ func TestSendVerification_BadCases(t *testing.T) {
 	app := setupE2E(t)
 	ctx := context.Background()
 
+	/*
+		Prepare test data:
+		1) Create another account and block it
+		2) Create the third account and delete it
+	*/
+	_, blockedEmail, deletedEmail := gofakeit.Email(), gofakeit.Email(), gofakeit.Email()
+	password := gofakeit.Password(true, true, true, true, true, 10)
+
+	blockedAccID, _, _ := app.createAccount(t, &blockedEmail, &password, nil, nil, false)
+	deletedAccID, _, _ := app.createAccount(t, &deletedEmail, &password, nil, nil, false)
+
+	app.blockAccount(t, blockedAccID)
+	app.deleteAccount(t, deletedAccID)
+
 	type testCase struct {
 		name          string
 		accountID     string
@@ -47,6 +61,18 @@ func TestSendVerification_BadCases(t *testing.T) {
 			accountID:     gofakeit.UUID(),
 			expectedCode:  codes.NotFound,
 			expectedError: "account not found",
+		},
+		{
+			name:          "Failed Precondition - Account Is Blocked",
+			accountID:     blockedAccID,
+			expectedCode:  codes.FailedPrecondition,
+			expectedError: "account is either blocked or not exists",
+		},
+		{
+			name:          "Failed Precondition - Account Is Deleted",
+			accountID:     deletedAccID,
+			expectedCode:  codes.FailedPrecondition,
+			expectedError: "account is either blocked or not exists",
 		},
 	}
 

@@ -27,9 +27,7 @@ func NewValidateAccessTokenUC(
 
 func (uc *ValidateAccessTokenUC) Execute(ctx context.Context, in dto.ValidateAccessTokenInput) (dto.ValidateAccessTokenOutput, error) {
 	// Parse access token
-	accountID, role, err := uc.tokenGenerator.ValidateAccessToken(
-		ctx, in.AccessToken,
-	)
+	accountID, role, err := uc.tokenGenerator.ValidateAccessToken(ctx, in.AccessToken)
 	if err != nil {
 		return dto.ValidateAccessTokenOutput{}, ucerrs.Wrap(
 			ucerrs.ErrInvalidAccessToken, err,

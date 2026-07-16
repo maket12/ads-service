@@ -6,6 +6,7 @@ import (
 	"context"
 	"testing"
 
+	"github.com/brianvoe/gofakeit/v7"
 	"github.com/maket12/ads-service/authservice/pkg/generated/auth_v1"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
@@ -32,7 +33,21 @@ func TestValidateAccessToken_Success(t *testing.T) {
 func TestValidateAccessToken_BadCases(t *testing.T) {
 	app := setupE2E(t)
 	ctx := context.Background()
-	
+
+	/*
+		Prepare test data:
+		1) Create an account and block it
+		2) Create another account and delete it
+	*/
+	blockedEmail, deletedEmail := gofakeit.Email(), gofakeit.Email()
+	password := gofakeit.Password(true, true, true, true, true, 10)
+
+	blockedAccID, blockedAccess, _ := app.createAccount(t, &blockedEmail, &password, nil, nil, true)
+	deletedAccID, deletedAccess, _ := app.createAccount(t, &deletedEmail, &password, nil, nil, true)
+
+	app.blockAccount(t, blockedAccID)
+	app.deleteAccount(t, deletedAccID)
+
 	type testCase struct {
 		name          string
 		accessToken   string
@@ -46,6 +61,18 @@ func TestValidateAccessToken_BadCases(t *testing.T) {
 			accessToken:   "not-a-token",
 			expectedCode:  codes.InvalidArgument,
 			expectedError: "access token is invalid",
+		},
+		{
+			name:          "Failed Precondition - Account Is Blocked",
+			accessToken:   blockedAccess,
+			expectedCode:  codes.FailedPrecondition,
+			expectedError: "account is either blocked or not exists",
+		},
+		{
+			name:          "Failed Precondition - Account Is Deleted",
+			accessToken:   deletedAccess,
+			expectedCode:  codes.FailedPrecondition,
+			expectedError: "account is either blocked or not exists",
 		},
 	}
 
