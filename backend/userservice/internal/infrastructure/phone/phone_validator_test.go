@@ -1,9 +1,10 @@
-package validator_test
+package phone_test
 
 import (
 	"context"
 	"testing"
 
+	"github.com/maket12/ads-service/userservice/internal/infrastructure/phone"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
@@ -31,7 +32,7 @@ func TestNewPhoneValidator(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			val := NewPhoneValidator(tt.region)
+			val := phone.NewValidator(tt.region)
 			assert.NotNil(t, val)
 		})
 	}
@@ -84,7 +85,7 @@ func TestPhoneValidator_Validate(t *testing.T) {
 		},
 	}
 
-	phoneValidator := NewPhoneValidator("")
+	phoneValidator := phone.NewValidator("")
 	testCtx := context.Background()
 
 	for _, tt := range tests {

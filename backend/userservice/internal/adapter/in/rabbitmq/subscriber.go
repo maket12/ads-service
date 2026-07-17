@@ -6,9 +6,9 @@ import (
 	"fmt"
 	"log/slog"
 
-	"github.com/maket12/ads-service/pkg/rabbitmq"
 	"github.com/maket12/ads-service/userservice/internal/app/dto"
 	"github.com/maket12/ads-service/userservice/internal/app/usecase"
+	"github.com/maket12/ads-service/userservice/pkg/rabbitmq"
 
 	amqp "github.com/rabbitmq/amqp091-go"
 )

@@ -5,9 +5,9 @@ import (
 	"testing"
 	"time"
 
-	"github.com/maket12/ads-service/pkg/utils"
 	"github.com/maket12/ads-service/userservice/internal/adapter/out/postgres/sqlc"
 	"github.com/maket12/ads-service/userservice/internal/domain/model"
+	"github.com/maket12/ads-service/userservice/pkg/errs"
 
 	"github.com/google/uuid"
 	"github.com/stretchr/testify/assert"

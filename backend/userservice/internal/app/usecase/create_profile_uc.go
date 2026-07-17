@@ -4,11 +4,11 @@ import (
 	"context"
 	"errors"
 
-	pkgerrs "github.com/maket12/ads-service/pkg/errs"
 	"github.com/maket12/ads-service/userservice/internal/app/dto"
 	ucerrs "github.com/maket12/ads-service/userservice/internal/app/errs"
 	"github.com/maket12/ads-service/userservice/internal/domain/model"
 	"github.com/maket12/ads-service/userservice/internal/domain/port"
+	pkgerrs "github.com/maket12/ads-service/userservice/pkg/errs"
 )
 
 type CreateProfileUC struct {

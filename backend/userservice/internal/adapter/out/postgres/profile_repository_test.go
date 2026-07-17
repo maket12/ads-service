@@ -6,10 +6,10 @@ import (
 	"testing"
 	"time"
 
-	pkgerrs "github.com/maket12/ads-service/pkg/errs"
-	pkgpostgres "github.com/maket12/ads-service/pkg/postgres"
 	"github.com/maket12/ads-service/userservice/internal/domain/model"
 	"github.com/maket12/ads-service/userservice/migrations"
+	pkgerrs "github.com/maket12/ads-service/userservice/pkg/errs"
+	pkgpostgres "github.com/maket12/ads-service/userservice/pkg/postgres"
 
 	"github.com/golang-migrate/migrate/v4"
 	_ "github.com/golang-migrate/migrate/v4/database/postgres"

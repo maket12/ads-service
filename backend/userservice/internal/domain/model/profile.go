@@ -1,11 +1,12 @@
 package model
 
 import (
+	"strings"
 	"time"
-
-	pkgerrs "github.com/maket12/ads-service/pkg/errs"
+	"unicode/utf8"
 
 	"github.com/google/uuid"
+	pkgerrs "github.com/maket12/ads-service/userservice/pkg/errs"
 )
 
 // ================ Rich model for Profile ================
@@ -30,8 +31,9 @@ func NewProfile(accountID uuid.UUID) (*Profile, error) {
 	}, nil
 }
 
-func RestoreProfile(accountID uuid.UUID, firstName, lastName,
-	phone, avatarURL, bio *string, updatedAt time.Time,
+func RestoreProfile(accountID uuid.UUID,
+	firstName, lastName, phone, avatarURL, bio *string,
+	updatedAt time.Time,
 ) *Profile {
 	return &Profile{
 		accountID: accountID,
@@ -56,17 +58,17 @@ func (p *Profile) UpdatedAt() time.Time { return p.updatedAt }
 
 // ================ Mutation ================
 
-func (p *Profile) Update(
-	firstName, lastName, phone,
-	avatarURL, bio *string,
-) error {
-	if firstName != nil && len(*firstName) < 3 {
+func (p *Profile) Update(firstName, lastName, phone, avatarURL, bio *string) error {
+	if firstName != nil &&
+		utf8.RuneCountInString(strings.TrimSpace(*firstName)) < 3 {
 		return pkgerrs.NewValueInvalidError("first_name")
 	}
-	if lastName != nil && len(*lastName) < 3 {
+	if lastName != nil &&
+		utf8.RuneCountInString(strings.TrimSpace(*lastName)) < 3 {
 		return pkgerrs.NewValueInvalidError("last_name")
 	}
-	if phone != nil && *phone == "" {
+	if phone != nil &&
+		utf8.RuneCountInString(strings.TrimSpace(*phone)) < 4 {
 		return pkgerrs.NewValueInvalidError("phone")
 	}
 	if avatarURL != nil && *avatarURL == "" {
@@ -76,23 +78,32 @@ func (p *Profile) Update(
 		return pkgerrs.NewValueInvalidError("bio")
 	}
 
+	var changed bool
+
 	if firstName != nil {
 		p.firstName = firstName
+		changed = true
 	}
 	if lastName != nil {
 		p.lastName = lastName
+		changed = true
 	}
 	if phone != nil {
 		p.phone = phone
+		changed = true
 	}
 	if avatarURL != nil {
 		p.avatarURL = avatarURL
+		changed = true
 	}
 	if bio != nil {
 		p.bio = bio
+		changed = true
 	}
 
-	p.updatedAt = time.Now()
+	if changed {
+		p.updatedAt = time.Now()
+	}
 
 	return nil
 }

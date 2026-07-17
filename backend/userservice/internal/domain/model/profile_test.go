@@ -4,9 +4,11 @@ import (
 	"testing"
 	"time"
 
+	"github.com/brianvoe/gofakeit/v7"
 	"github.com/google/uuid"
-	pkgerrs "github.com/maket12/ads-service/pkg/errs"
-	"github.com/maket12/ads-service/pkg/utils"
+	"github.com/maket12/ads-service/userservice/internal/domain/model"
+	pkgerrs "github.com/maket12/ads-service/userservice/pkg/errs"
+	"github.com/maket12/ads-service/userservice/pkg/utils"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
@@ -33,7 +35,7 @@ func TestNewProfile(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			profile, err := NewProfile(tt.accountID)
+			profile, err := model.NewProfile(tt.accountID)
 			if tt.expect == nil {
 				require.NoError(t, err)
 				assert.Equal(t, tt.accountID, profile.AccountID())
@@ -60,9 +62,9 @@ func TestProfile_Update(t *testing.T) {
 
 	var (
 		testAccID     = uuid.New()
-		testFirstName = utils.VPtr("Vladimir")
-		testLastName  = utils.VPtr("Ziabkin")
-		testPhone     = utils.VPtr("+79137918725")
+		testFirstName = utils.VPtr(gofakeit.FirstName())
+		testLastName  = utils.VPtr(gofakeit.LastName())
+		testPhone     = utils.VPtr(gofakeit.Phone())
 		testAvatarURL = utils.VPtr("https://img.com/a-stunning-cyberpunk-scenery.jpg")
 		testBio       = utils.VPtr("programmer, seller, digital nomad")
 	)
@@ -135,7 +137,7 @@ func TestProfile_Update(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			profile, _ := NewProfile(testAccID)
+			profile, _ := model.NewProfile(testAccID)
 			updAt := profile.UpdatedAt()
 
 			// Wait to update current time
@@ -148,23 +150,32 @@ func TestProfile_Update(t *testing.T) {
 			if tt.expect == nil {
 				require.NoError(t, err)
 
+				var updated bool
+
 				if tt.firstName != nil {
 					assert.Equal(t, tt.firstName, profile.FirstName())
+					updated = true
 				}
 				if tt.lastName != nil {
 					assert.Equal(t, tt.lastName, profile.LastName())
+					updated = true
 				}
 				if tt.phone != nil {
 					assert.Equal(t, tt.phone, profile.Phone())
+					updated = true
 				}
 				if tt.avatarURL != nil {
 					assert.Equal(t, tt.avatarURL, profile.AvatarURL())
+					updated = true
 				}
 				if tt.bio != nil {
 					assert.Equal(t, tt.bio, profile.Bio())
+					updated = true
 				}
 
-				assert.NotEqual(t, updAt, profile.UpdatedAt())
+				if updated {
+					assert.NotEqual(t, updAt, profile.UpdatedAt())
+				}
 			} else {
 				require.Error(t, err)
 				assert.ErrorIs(t, err, tt.expect)

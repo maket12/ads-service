@@ -5,11 +5,11 @@ import (
 	"database/sql"
 	"errors"
 
-	pkgerrs "github.com/maket12/ads-service/pkg/errs"
-	pkgpostgres "github.com/maket12/ads-service/pkg/postgres"
 	"github.com/maket12/ads-service/userservice/internal/adapter/out/postgres/mapper"
 	"github.com/maket12/ads-service/userservice/internal/adapter/out/postgres/sqlc"
 	"github.com/maket12/ads-service/userservice/internal/domain/model"
+	pkgerrs "github.com/maket12/ads-service/userservice/pkg/errs"
+	pkgpostgres "github.com/maket12/ads-service/userservice/pkg/postgres"
 
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5/pgconn"
