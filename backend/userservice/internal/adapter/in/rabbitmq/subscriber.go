@@ -6,9 +6,10 @@ import (
 	"fmt"
 	"log/slog"
 
+	"github.com/maket12/ads-service/authservice/pkg/rabbitmq"
 	"github.com/maket12/ads-service/userservice/internal/app/dto"
 	"github.com/maket12/ads-service/userservice/internal/app/usecase"
-	"github.com/maket12/ads-service/userservice/pkg/rabbitmq"
+	pkgrabbitmq "github.com/maket12/ads-service/userservice/pkg/rabbitmq"
 
 	amqp "github.com/rabbitmq/amqp091-go"
 )
@@ -30,14 +31,14 @@ func NewSubscriberConfig(exchange, queue, routingKey string) *SubscriberConfig {
 type AccountSubscriber struct {
 	cfg      *SubscriberConfig
 	log      *slog.Logger
-	client   *rabbitmq.RabbitClient
+	client   *pkgrabbitmq.Client
 	createUC *usecase.CreateProfileUC
 }
 
 func NewAccountSubscriber(
 	cfg *SubscriberConfig,
 	log *slog.Logger,
-	client *rabbitmq.RabbitClient,
+	client *pkgrabbitmq.Client,
 	createUC *usecase.CreateProfileUC,
 ) *AccountSubscriber {
 	return &AccountSubscriber{

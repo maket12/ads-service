@@ -6,13 +6,12 @@ import (
 
 	"github.com/maket12/ads-service/userservice/internal/app/dto"
 	ucerrs "github.com/maket12/ads-service/userservice/internal/app/errs"
+	"github.com/maket12/ads-service/userservice/internal/app/mapper"
 	"github.com/maket12/ads-service/userservice/internal/domain/port"
 	pkgerrs "github.com/maket12/ads-service/userservice/pkg/errs"
 )
 
-type GetProfileUC struct {
-	profile port.ProfileRepository
-}
+type GetProfileUC struct{ profile port.ProfileRepository }
 
 func NewGetProfileUC(profile port.ProfileRepository) *GetProfileUC {
 	return &GetProfileUC{profile: profile}
@@ -22,18 +21,9 @@ func (uc *GetProfileUC) Execute(ctx context.Context, in dto.GetProfileInput) (dt
 	profile, err := uc.profile.Get(ctx, in.AccountID)
 	if err != nil {
 		if errors.Is(err, pkgerrs.ErrObjectNotFound) {
-			return dto.GetProfileOutput{}, ucerrs.ErrInvalidAccountID
+			return dto.GetProfileOutput{}, ucerrs.ErrProfileNotFound
 		}
-		return dto.GetProfileOutput{},
-			ucerrs.Wrap(ucerrs.ErrGetProfileDB, err)
+		return dto.GetProfileOutput{}, ucerrs.Wrap(ucerrs.ErrGetProfileDB, err)
 	}
-	return dto.GetProfileOutput{
-		AccountID: profile.AccountID(),
-		FirstName: profile.FirstName(),
-		LastName:  profile.LastName(),
-		Phone:     profile.Phone(),
-		AvatarURL: profile.AvatarURL(),
-		Bio:       profile.Bio(),
-		UpdatedAt: profile.UpdatedAt(),
-	}, nil
+	return mapper.MapProfileToGetProfileDTO(profile), nil
 }

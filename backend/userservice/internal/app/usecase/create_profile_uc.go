@@ -11,22 +11,20 @@ import (
 	pkgerrs "github.com/maket12/ads-service/userservice/pkg/errs"
 )
 
-type CreateProfileUC struct {
-	profile port.ProfileRepository
-}
+type CreateProfileUC struct{ profile port.ProfileRepository }
 
 func NewCreateProfileUC(profile port.ProfileRepository) *CreateProfileUC {
 	return &CreateProfileUC{profile: profile}
 }
 
 func (uc *CreateProfileUC) Execute(ctx context.Context, in dto.CreateProfileInput) error {
-	// Create profile
+	// Create profile and save it into database
 	profile, err := model.NewProfile(in.AccountID)
 	if err != nil {
-		return ucerrs.ErrInvalidAccountID
+		return ucerrs.Wrap(ucerrs.ErrInvalidInput, err)
 	}
 
-	if err := uc.profile.Create(ctx, profile); err != nil {
+	if err = uc.profile.Create(ctx, profile); err != nil {
 		if errors.Is(err, pkgerrs.ErrObjectAlreadyExists) {
 			return nil
 		}
