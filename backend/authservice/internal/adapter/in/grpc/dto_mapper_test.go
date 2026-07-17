@@ -16,9 +16,7 @@ func TestMapRegisterPbToDTO(t *testing.T) {
 	pass := gofakeit.Password(true, true, true, true, true, 10)
 
 	req := &auth_v1.RegisterRequest{Email: email, Password: pass}
-
 	expected := dto.RegisterInput{Email: email, Password: pass}
-
 	actual := MapRegisterPbToDTO(req)
 
 	require.Equal(t, expected, actual)
@@ -28,9 +26,7 @@ func TestMapRegisterDTOToPb(t *testing.T) {
 	accID := uuid.New()
 
 	out := dto.RegisterOutput{AccountID: accID}
-
 	expected := &auth_v1.RegisterResponse{AccountId: accID.String()}
-
 	actual := MapRegisterDTOToPb(out)
 
 	require.Equal(t, expected, actual)
@@ -84,9 +80,7 @@ func TestMapLogoutPbToDTO(t *testing.T) {
 	refreshToken := gofakeit.UUID()
 
 	req := &auth_v1.LogoutRequest{RefreshToken: refreshToken}
-
 	expected := dto.LogoutInput{RefreshToken: refreshToken}
-
 	actual := MapLogoutPbToDTO(req)
 
 	require.Equal(t, expected, actual)
@@ -96,9 +90,7 @@ func TestMapLogoutDTOToPb(t *testing.T) {
 	logout := gofakeit.Bool()
 
 	out := dto.LogoutOutput{Logout: logout}
-
 	expected := &auth_v1.LogoutResponse{Logout: logout}
-
 	actual := MapLogoutDTOToPb(out)
 
 	require.Equal(t, expected, actual)
@@ -149,9 +141,7 @@ func TestMapValidateAccessTokenPbToDTO(t *testing.T) {
 	accessToken := gofakeit.UUID()
 
 	req := &auth_v1.ValidateAccessTokenRequest{AccessToken: accessToken}
-
 	expected := dto.ValidateAccessTokenInput{AccessToken: accessToken}
-
 	actual := MapValidateAccessTokenPbToDTO(req)
 
 	require.Equal(t, expected, actual)
@@ -217,9 +207,7 @@ func TestMapAssignRoleDTOToPb(t *testing.T) {
 	assigned := gofakeit.Bool()
 
 	out := dto.AssignRoleOutput{Assigned: assigned}
-
 	expected := &auth_v1.AssignRoleResponse{Assigned: assigned}
-
 	actual := MapAssignRoleDTOToPb(out)
 
 	require.Equal(t, expected, actual)
@@ -247,9 +235,7 @@ func TestMapSendVerificationDTOToPb(t *testing.T) {
 	sent := gofakeit.Bool()
 
 	out := dto.SendVerificationOutput{Sent: sent}
-
 	expected := &auth_v1.SendVerificationResponse{Sent: sent}
-
 	actual := MapSendVerificationDTOToPb(out)
 
 	require.Equal(t, expected, actual)
@@ -259,9 +245,7 @@ func TestMapVerifyEmailPbToDTO(t *testing.T) {
 	token := gofakeit.UUID()
 
 	req := &auth_v1.VerifyEmailRequest{Token: token}
-
 	expected := dto.VerifyEmailInput{Token: token}
-
 	actual := MapVerifyEmailPbToDTO(req)
 
 	require.Equal(t, expected, actual)
@@ -271,9 +255,7 @@ func TestMapVerifyEmailDTOToPb(t *testing.T) {
 	verified := gofakeit.Bool()
 
 	out := dto.VerifyEmailOutput{Verified: verified}
-
 	expected := &auth_v1.VerifyEmailResponse{Verified: verified}
-
 	actual := MapVerifyEmailDTOToPb(out)
 
 	require.Equal(t, expected, actual)

@@ -29,9 +29,7 @@ func (uc *ValidateAccessTokenUC) Execute(ctx context.Context, in dto.ValidateAcc
 	// Parse access token
 	accountID, role, err := uc.tokenGenerator.ValidateAccessToken(ctx, in.AccessToken)
 	if err != nil {
-		return dto.ValidateAccessTokenOutput{}, ucerrs.Wrap(
-			ucerrs.ErrInvalidAccessToken, err,
-		)
+		return dto.ValidateAccessTokenOutput{}, ucerrs.ErrInvalidAccessToken
 	}
 
 	// Get account and check if it is not active

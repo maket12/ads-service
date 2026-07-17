@@ -30,17 +30,13 @@ func (uc *LogoutUC) Execute(ctx context.Context, in dto.LogoutInput) (dto.Logout
 	// Find session
 	_, sessionID, err := uc.tokenGenerator.ValidateRefreshToken(ctx, in.RefreshToken)
 	if err != nil && !errors.Is(err, port.ErrTokenExpired) {
-		return dto.LogoutOutput{}, ucerrs.Wrap(
-			ucerrs.ErrInvalidRefreshToken, err,
-		)
+		return dto.LogoutOutput{}, ucerrs.ErrInvalidRefreshToken
 	}
 
 	session, err := uc.refreshSession.GetByID(ctx, sessionID)
 	if err != nil {
 		if errors.Is(err, pkgerrs.ErrObjectNotFound) {
-			return dto.LogoutOutput{}, ucerrs.Wrap(
-				ucerrs.ErrInvalidRefreshToken, err,
-			)
+			return dto.LogoutOutput{}, ucerrs.ErrInvalidRefreshToken
 		}
 		return dto.LogoutOutput{}, ucerrs.Wrap(
 			ucerrs.ErrGetRefreshSessionByIDDB, err,
