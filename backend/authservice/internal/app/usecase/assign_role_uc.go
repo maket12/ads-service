@@ -32,33 +32,30 @@ func (uc *AssignRoleUC) Execute(ctx context.Context, in dto.AssignRoleInput) (dt
 	accRole, err := uc.accountRole.Get(ctx, in.AccountID)
 	if err != nil {
 		if errors.Is(err, pkgerrs.ErrObjectNotFound) {
-			return dto.AssignRoleOutput{Assigned: false},
-				ucerrs.ErrInvalidAccountID
+			return dto.AssignRoleOutput{}, ucerrs.ErrAccountNotFound
 		}
-		return dto.AssignRoleOutput{Assigned: false},
-			ucerrs.Wrap(ucerrs.ErrGetAccountRoleDB, err)
+		return dto.AssignRoleOutput{}, ucerrs.Wrap(
+			ucerrs.ErrGetAccountRoleDB, err,
+		)
 	}
 
-	// Assigned
+	// Assign the account and save it into database
 	if err = accRole.Assign(in.Role); err != nil {
-		return dto.AssignRoleOutput{Assigned: false},
-			ucerrs.ErrCannotAssign
+		return dto.AssignRoleOutput{}, ucerrs.ErrInvalidRole
 	}
 
-	// Update db
 	if err = uc.accountRole.Update(ctx, accRole); err != nil {
-		return dto.AssignRoleOutput{Assigned: false},
-			ucerrs.Wrap(ucerrs.ErrUpdateAccountRoleDB, err)
+		return dto.AssignRoleOutput{}, ucerrs.Wrap(
+			ucerrs.ErrUpdateAccountRoleDB, err,
+		)
 	}
 
 	// Revoke all refresh tokens for security
-	err = uc.refreshSession.RevokeAllForAccount(
-		ctx,
-		in.AccountID,
+	err = uc.refreshSession.RevokeAllForAccount(ctx, in.AccountID,
 		utils.VPtr(model.ReasonRoleChanged.String()),
 	)
 	if err != nil {
-		return dto.AssignRoleOutput{Assigned: false}, ucerrs.Wrap(
+		return dto.AssignRoleOutput{}, ucerrs.Wrap(
 			ucerrs.ErrRevokeRefreshSessionDB, err,
 		)
 	}

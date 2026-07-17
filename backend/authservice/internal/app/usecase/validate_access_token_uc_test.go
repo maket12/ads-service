@@ -64,7 +64,7 @@ func TestValidateAccessTokenUC_Execute(t *testing.T) {
 				a.tokenGenerator.EXPECT().ValidateAccessToken(mock.Anything, tokenStr).Return(accountID, roleName, nil)
 				a.account.EXPECT().GetByID(mock.Anything, accountID).Return(nil, pkgerrs.ErrObjectNotFound)
 			},
-			expectErr: ucerrs.ErrInvalidAccessToken,
+			expectErr: ucerrs.ErrAccountNotFound,
 		},
 		{
 			name: "Failure - database connection reset",

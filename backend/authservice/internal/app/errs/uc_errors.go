@@ -7,16 +7,15 @@ import "errors"
 */
 var (
 	ErrInvalidCredentials  = errors.New("invalid email or password")
+	ErrInvalidRole         = errors.New("account cannot be assigned to this role")
 	ErrCannotLogin         = errors.New("account is either blocked or not exists")
 	ErrCannotLogout        = errors.New("session is already expired or revoked")
-	ErrInvalidAccountID    = errors.New("account id is invalid or account with this id not found")
-	ErrCannotAssign        = errors.New("account cannot be assigned to this role")
 	ErrCannotBlock         = errors.New("account cannot be blocked due to its status or insufficient permissions")
 	ErrCannotDelete        = errors.New("account cannot be deleted due to its status or insufficient permissions")
 	ErrCannotVerify        = errors.New("verification token has been expired")
+	ErrInvalidAccessToken  = errors.New("access token is invalid")
 	ErrInvalidRefreshToken = errors.New("refresh token is invalid or not found")
 	ErrCannotRevoke        = errors.New("refresh token has been already rotated or invalid")
-	ErrInvalidAccessToken  = errors.New("access token is invalid")
 
 	ErrInvalidInput = errors.New("invalid input") // for rich models
 )

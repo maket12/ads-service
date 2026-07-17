@@ -38,9 +38,7 @@ func (uc *ValidateAccessTokenUC) Execute(ctx context.Context, in dto.ValidateAcc
 	account, err := uc.account.GetByID(ctx, accountID)
 	if err != nil {
 		if errors.Is(err, pkgerrs.ErrObjectNotFound) {
-			return dto.ValidateAccessTokenOutput{}, ucerrs.Wrap(
-				ucerrs.ErrInvalidAccessToken, err,
-			)
+			return dto.ValidateAccessTokenOutput{}, ucerrs.ErrAccountNotFound
 		}
 		return dto.ValidateAccessTokenOutput{}, ucerrs.Wrap(
 			ucerrs.ErrGetAccountByIDDB, err,

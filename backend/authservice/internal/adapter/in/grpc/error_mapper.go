@@ -55,11 +55,11 @@ func gRPCError(err error) *pkgerrs.OutErr {
 
 	switch {
 	case errors.Is(err, ucerrs.ErrInvalidAccessToken),
-		errors.Is(err, ucerrs.ErrInvalidRefreshToken):
+		errors.Is(err, ucerrs.ErrInvalidRefreshToken),
+		errors.Is(err, ucerrs.ErrInvalidRole):
 		return pkgerrs.NewOutError(codes.InvalidArgument, err.Error(), w.Reason)
 
 	case errors.Is(err, ucerrs.ErrInvalidCredentials),
-		errors.Is(err, ucerrs.ErrInvalidAccountID),
 		errors.Is(err, ucerrs.ErrAccountNotFound),
 		errors.Is(err, ucerrs.ErrVerificationTokenNotFound):
 		return pkgerrs.NewOutError(codes.NotFound, err.Error(), nil)
@@ -68,7 +68,6 @@ func gRPCError(err error) *pkgerrs.OutErr {
 		return pkgerrs.NewOutError(codes.AlreadyExists, err.Error(), nil)
 
 	case errors.Is(err, ucerrs.ErrCannotLogin),
-		errors.Is(err, ucerrs.ErrCannotAssign),
 		errors.Is(err, ucerrs.ErrCannotBlock),
 		errors.Is(err, ucerrs.ErrCannotDelete),
 		errors.Is(err, ucerrs.ErrCannotLogout),

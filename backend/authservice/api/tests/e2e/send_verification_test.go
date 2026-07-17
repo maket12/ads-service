@@ -17,7 +17,7 @@ import (
 func TestSendVerification_Success(t *testing.T) {
 	app := setupE2E(t)
 	ctx := context.Background()
-	accountID, _, _ := app.createAccount(t, nil, nil, nil, nil, true)
+	accountID, _, _ := app.createAccount(t, nil, nil, nil, nil, false)
 
 	t.Run("Successfully sent", func(t *testing.T) {
 		resp, err := app.client.SendVerification(ctx,

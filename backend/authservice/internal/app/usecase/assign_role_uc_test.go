@@ -65,7 +65,7 @@ func TestAssignRoleUC_Execute(t *testing.T) {
 					Get(mock.Anything, accountID).
 					Return(nil, pkgerrs.ErrObjectNotFound)
 			},
-			expectErr:    ucerrs.ErrInvalidAccountID,
+			expectErr:    ucerrs.ErrAccountNotFound,
 			expectAssign: false,
 		},
 		{

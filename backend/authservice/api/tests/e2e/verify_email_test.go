@@ -20,7 +20,7 @@ func TestVerifyEmail_Success(t *testing.T) {
 	ctx := context.Background()
 
 	email := gofakeit.Email()
-	accountID, _, _ := app.createAccount(t, utils.VPtr(email), nil, nil, nil, true)
+	accountID, _, _ := app.createAccount(t, utils.VPtr(email), nil, nil, nil, false)
 	token := app.sendToken(t, accountID, email, false)
 
 	t.Run("Successfully verified", func(t *testing.T) {
@@ -39,7 +39,7 @@ func TestVerifyEmail_BadCases(t *testing.T) {
 	ctx := context.Background()
 
 	email := gofakeit.Email()
-	accountID, _, _ := app.createAccount(t, utils.VPtr(email), nil, nil, nil, true)
+	accountID, _, _ := app.createAccount(t, utils.VPtr(email), nil, nil, nil, false)
 	expiredToken := app.sendToken(t, accountID, email, true)
 
 	type testCase struct {
