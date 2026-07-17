@@ -1,115 +1,46 @@
+//go:build integration
+
 package postgres_test
 
 import (
 	"context"
-	"errors"
 	"testing"
 	"time"
 
+	trmpgx "github.com/avito-tech/go-transaction-manager/drivers/pgxv5/v2"
+	adapterpg "github.com/maket12/ads-service/userservice/internal/adapter/out/postgres"
 	"github.com/maket12/ads-service/userservice/internal/domain/model"
-	"github.com/maket12/ads-service/userservice/migrations"
 	pkgerrs "github.com/maket12/ads-service/userservice/pkg/errs"
-	pkgpostgres "github.com/maket12/ads-service/userservice/pkg/postgres"
 
-	"github.com/golang-migrate/migrate/v4"
 	_ "github.com/golang-migrate/migrate/v4/database/postgres"
-	"github.com/golang-migrate/migrate/v4/source/iofs"
+
 	"github.com/google/uuid"
 	"github.com/stretchr/testify/suite"
 )
 
-type AccountsRepoSuite struct {
-	suite.Suite
-	dbClient    *pkgpostgres.Client
-	repo        *ProfileRepository
-	ctx         context.Context
-	migrate     *migrate.Migrate
+type ProfilesRepoSuite struct {
+	BaseRepoSuite
+	repo        *adapterpg.ProfileRepository
 	testProfile *model.Profile
 }
 
-func TestAccountsRepoSuite(t *testing.T) {
-	if testing.Short() {
-		t.Skip("Skipping integration tests in short mode")
-	}
-	suite.Run(t, new(AccountsRepoSuite))
+func TestProfilesRepoSuite(t *testing.T) {
+	suite.Run(t, new(ProfilesRepoSuite))
 }
 
-func (s *AccountsRepoSuite) setupDatabase() {
-	const targetVersion = 1
-
-	dbConfig := pkgpostgres.NewConfig(
-		"localhost", 5432,
-		"test", "test", "testdb",
-		"disable", 25, 25, time.Minute*5,
-	)
-	dsn := "postgres://test:test@localhost:5432/testdb?sslmode=disable"
-
-	dbClient, err := pkgpostgres.NewClient(dbConfig)
-	s.Require().NoError(err)
-	s.dbClient = dbClient
-
-	sourceDriver, err := iofs.New(migrations.FS, ".")
-	s.Require().NoError(err, "failed to create iofs driver")
-
-	m, err := migrate.NewWithSourceInstance(
-		"iofs",
-		sourceDriver,
-		dsn,
-	)
-	s.Require().NoError(err, "failed to create migration instance")
-
-	s.migrate = m
-
-	err = m.Migrate(targetVersion)
-
-	// If migration is correct - setup has done
-	if err == nil || errors.Is(err, migrate.ErrNoChange) {
-		return
-	}
-
-	// Except dirty db as a normal scenario
-	var dirtyErr migrate.ErrDirty
-	if !errors.As(err, &dirtyErr) {
-		s.FailNowf("failed to migrate up", "unexpected error: %v", err)
-	}
-
-	// ================ Restore dirty database ================
-	_ = m.Force(dirtyErr.Version)
-
-	err = m.Down()
-	if err != nil && !errors.Is(err, migrate.ErrNoChange) {
-		s.Require().NoError(err, "failed to migrate down during recovery")
-	}
-
-	err = m.Migrate(targetVersion)
-	if err != nil && !errors.Is(err, migrate.ErrNoChange) {
-		s.Require().NoError(err, "failed to migrate up after recovery")
-	}
-}
-
-func (s *AccountsRepoSuite) SetupSuite() {
-	s.setupDatabase()
-	s.repo = NewProfileRepository(s.dbClient)
+func (s *ProfilesRepoSuite) SetupSuite() {
+	s.SetupBase(1)
+	s.repo = adapterpg.NewProfileRepository(s.dbClient, trmpgx.DefaultCtxGetter)
 	s.ctx = context.Background()
 	s.testProfile, _ = model.NewProfile(uuid.New())
 }
 
-func (s *AccountsRepoSuite) TearDownSuite() {
-	if s.migrate != nil {
-		if err := s.migrate.Down(); err != nil && !errors.Is(err, migrate.ErrNoChange) {
-			s.Require().NoError(err, "failed to migrate down")
-		}
-	}
-	err := s.dbClient.Close()
-	s.Require().NoError(err, "failed to close db connection")
-}
-
-func (s *AccountsRepoSuite) SetupTest() {
-	_, err := s.dbClient.DB.Exec("TRUNCATE TABLE profiles CASCADE")
+func (s *ProfilesRepoSuite) SetupTest() {
+	err := s.pgContainer.TruncateTables(s.ctx, "profiles")
 	s.Require().NoError(err)
 }
 
-func (s *AccountsRepoSuite) TestCreateGet() {
+func (s *ProfilesRepoSuite) TestCreateGet() {
 	// Create at first
 	err := s.repo.Create(s.ctx, s.testProfile)
 	s.Require().NoError(err)
@@ -121,7 +52,7 @@ func (s *AccountsRepoSuite) TestCreateGet() {
 	s.Require().WithinDuration(s.testProfile.UpdatedAt(), profile.UpdatedAt(), time.Microsecond)
 }
 
-func (s *AccountsRepoSuite) TestCreate_Duplicate() {
+func (s *ProfilesRepoSuite) TestCreate_Duplicate() {
 	// Create a profile
 	_ = s.repo.Create(s.ctx, s.testProfile)
 
@@ -131,7 +62,7 @@ func (s *AccountsRepoSuite) TestCreate_Duplicate() {
 	s.Require().ErrorIs(err, pkgerrs.ErrObjectAlreadyExists)
 }
 
-func (s *AccountsRepoSuite) TestGet_NotFound() {
+func (s *ProfilesRepoSuite) TestGet_NotFound() {
 	// Trying to get non-existing profile
 	var unexistingAccountID = uuid.New()
 	_, err := s.repo.Get(s.ctx, unexistingAccountID)
@@ -140,7 +71,7 @@ func (s *AccountsRepoSuite) TestGet_NotFound() {
 	s.Require().ErrorIs(err, pkgerrs.ErrObjectNotFound)
 }
 
-func (s *AccountsRepoSuite) TestUpdate() {
+func (s *ProfilesRepoSuite) TestUpdate() {
 	// Create a profile in advance
 	_ = s.repo.Create(s.ctx, s.testProfile)
 
@@ -170,7 +101,7 @@ func (s *AccountsRepoSuite) TestUpdate() {
 	s.Require().Equal(bio, *profile.Bio())
 }
 
-func (s *AccountsRepoSuite) TestDelete() {
+func (s *ProfilesRepoSuite) TestDelete() {
 	// Create a profile in advance
 	_ = s.repo.Create(s.ctx, s.testProfile)
 
@@ -185,7 +116,7 @@ func (s *AccountsRepoSuite) TestDelete() {
 	s.Require().ErrorIs(err, pkgerrs.ErrObjectNotFound)
 }
 
-func (s *AccountsRepoSuite) TestListProfiles() {
+func (s *ProfilesRepoSuite) TestListProfiles() {
 	// Create profiles
 	ids := []uuid.UUID{uuid.New(), uuid.New(), uuid.New()}
 	for _, id := range ids {

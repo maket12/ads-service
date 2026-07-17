@@ -1,65 +1,66 @@
 package mapper
 
 import (
-	"database/sql"
 	"time"
 
+	"github.com/jackc/pgx/v5/pgtype"
 	"github.com/maket12/ads-service/userservice/internal/adapter/out/postgres/sqlc"
 	"github.com/maket12/ads-service/userservice/internal/domain/model"
 )
 
 func MapProfileToSQLCCreate(profile *model.Profile) sqlc.CreateProfileParams {
 	var (
-		firstName sql.NullString
-		lastName  sql.NullString
-		phone     sql.NullString
-		avatarURL sql.NullString
-		bio       sql.NullString
+		firstName pgtype.Text
+		lastName  pgtype.Text
+		phone     pgtype.Text
+		avatarURL pgtype.Text
+		bio       pgtype.Text
 	)
 	if profile.FirstName() != nil {
-		firstName = sql.NullString{
+		firstName = pgtype.Text{
 			String: *profile.FirstName(),
 			Valid:  true,
 		}
 	}
 	if profile.LastName() != nil {
-		lastName = sql.NullString{
+		lastName = pgtype.Text{
 			String: *profile.LastName(),
 			Valid:  true,
 		}
 	}
 	if profile.Phone() != nil {
-		phone = sql.NullString{
+		phone = pgtype.Text{
 			String: *profile.Phone(),
 			Valid:  true,
 		}
 	}
 	if profile.AvatarURL() != nil {
-		avatarURL = sql.NullString{
+		avatarURL = pgtype.Text{
 			String: *profile.AvatarURL(),
 			Valid:  true,
 		}
 	}
 	if profile.Bio() != nil {
-		bio = sql.NullString{
+		bio = pgtype.Text{
 			String: *profile.Bio(),
 			Valid:  true,
 		}
 	}
 
-	updatedAt := sql.NullTime{
-		Time:  profile.UpdatedAt(),
-		Valid: true,
-	}
-
 	return sqlc.CreateProfileParams{
-		AccountID: profile.AccountID(),
+		AccountID: pgtype.UUID{
+			Bytes: profile.AccountID(),
+			Valid: true,
+		},
 		FirstName: firstName,
 		LastName:  lastName,
 		Phone:     phone,
 		AvatarUrl: avatarURL,
 		Bio:       bio,
-		UpdatedAt: updatedAt,
+		UpdatedAt: pgtype.Timestamptz{
+			Time:  profile.UpdatedAt(),
+			Valid: true,
+		},
 	}
 }
 
@@ -92,7 +93,7 @@ func MapSQLCToProfile(rawProfile sqlc.Profile) *model.Profile {
 	}
 
 	return model.RestoreProfile(
-		rawProfile.AccountID,
+		rawProfile.AccountID.Bytes,
 		firstName,
 		lastName,
 		phone,
@@ -104,56 +105,57 @@ func MapSQLCToProfile(rawProfile sqlc.Profile) *model.Profile {
 
 func MapProfileToSQLCUpdate(profile *model.Profile) sqlc.UpdateProfileParams {
 	var (
-		firstName sql.NullString
-		lastName  sql.NullString
-		phone     sql.NullString
-		avatarURL sql.NullString
-		bio       sql.NullString
+		firstName pgtype.Text
+		lastName  pgtype.Text
+		phone     pgtype.Text
+		avatarURL pgtype.Text
+		bio       pgtype.Text
 	)
 	if profile.FirstName() != nil {
-		firstName = sql.NullString{
+		firstName = pgtype.Text{
 			String: *profile.FirstName(),
 			Valid:  true,
 		}
 	}
 	if profile.LastName() != nil {
-		lastName = sql.NullString{
+		lastName = pgtype.Text{
 			String: *profile.LastName(),
 			Valid:  true,
 		}
 	}
 	if profile.Phone() != nil {
-		phone = sql.NullString{
+		phone = pgtype.Text{
 			String: *profile.Phone(),
 			Valid:  true,
 		}
 	}
 	if profile.AvatarURL() != nil {
-		avatarURL = sql.NullString{
+		avatarURL = pgtype.Text{
 			String: *profile.AvatarURL(),
 			Valid:  true,
 		}
 	}
 	if profile.Bio() != nil {
-		bio = sql.NullString{
+		bio = pgtype.Text{
 			String: *profile.Bio(),
 			Valid:  true,
 		}
 	}
 
-	updatedAt := sql.NullTime{
-		Time:  profile.UpdatedAt(),
-		Valid: true,
-	}
-
 	return sqlc.UpdateProfileParams{
-		AccountID: profile.AccountID(),
+		AccountID: pgtype.UUID{
+			Bytes: profile.AccountID(),
+			Valid: true,
+		},
 		FirstName: firstName,
 		LastName:  lastName,
 		Phone:     phone,
 		AvatarUrl: avatarURL,
 		Bio:       bio,
-		UpdatedAt: updatedAt,
+		UpdatedAt: pgtype.Timestamptz{
+			Time:  profile.UpdatedAt(),
+			Valid: true,
+		},
 	}
 }
 
