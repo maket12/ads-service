@@ -8,6 +8,7 @@ import (
 	"github.com/maket12/ads-service/userservice/internal/app/usecase"
 	"github.com/maket12/ads-service/userservice/pkg/generated/user_v1"
 	"github.com/maket12/ads-service/userservice/pkg/utils"
+	"google.golang.org/grpc/codes"
 
 	"github.com/google/uuid"
 	"google.golang.org/grpc/status"
@@ -48,18 +49,10 @@ func (h *UserHandler) GetProfile(ctx context.Context, _ *user_v1.GetProfileReque
 		return nil, gRPCErr
 	}
 
-	ucResp, err := h.getProfileUC.Execute(
-		ctx, dto.GetProfileInput{AccountID: accountID},
-	)
-
+	ucResp, err := h.getProfileUC.Execute(ctx, dto.GetProfileInput{AccountID: accountID})
 	if err != nil {
-		outErr := gRPCError(err)
-		h.log.ErrorContext(ctx, "failed to get profile",
-			slog.Int("code", int(outErr.Code)),
-			slog.String("public_msg", outErr.Message),
-			slog.Any("reason", outErr.Reason),
-		)
-		return nil, status.Error(outErr.Code, outErr.Message)
+		code, msg := h.handleError(ctx, err, "failed to get profile")
+		return nil, status.Error(code, msg)
 	}
 
 	return MapGetProfileDTOToPb(ucResp), nil
@@ -71,19 +64,24 @@ func (h *UserHandler) UpdateProfile(ctx context.Context, req *user_v1.UpdateProf
 		return nil, gRPCErr
 	}
 
-	ucResp, err := h.updateProfileUC.Execute(ctx,
-		MapUpdateProfilePbToDTO(accountID, req),
-	)
-
+	ucResp, err := h.updateProfileUC.Execute(ctx, MapUpdateProfilePbToDTO(accountID, req))
 	if err != nil {
-		outErr := gRPCError(err)
-		h.log.ErrorContext(ctx, "failed to update profile",
-			slog.Int("code", int(outErr.Code)),
-			slog.String("public_msg", outErr.Message),
-			slog.Any("reason", outErr.Reason),
-		)
-		return nil, status.Error(outErr.Code, outErr.Message)
+		code, msg := h.handleError(ctx, err, "failed to update profile")
+		return nil, status.Error(code, msg)
 	}
 
 	return MapUpdateProfileDTOToPb(ucResp), nil
+}
+
+func (h *UserHandler) handleError(
+	ctx context.Context, err error,
+	logMsg string,
+) (codes.Code, string) {
+	outErr := gRPCError(err)
+	h.log.ErrorContext(ctx, logMsg,
+		slog.Int("code", int(outErr.Code)),
+		slog.String("public_msg", outErr.Message),
+		slog.Any("reason", outErr.Reason),
+	)
+	return outErr.Code, outErr.Message
 }

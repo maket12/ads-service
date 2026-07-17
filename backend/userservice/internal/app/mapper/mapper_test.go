@@ -17,8 +17,8 @@ func TestMapProfileToGetProfileDTO(t *testing.T) {
 		utils.VPtr(gofakeit.FirstName()),
 		utils.VPtr(gofakeit.LastName()),
 		utils.VPtr(gofakeit.PhoneFormatted()),
-		utils.VPtr("https://web3-ui.com/cyberpunk-view.png"),
-		utils.VPtr("Not a bad person"), time.Now(),
+		utils.VPtr(gofakeit.URL()),
+		utils.VPtr(gofakeit.Bio()), time.Now(),
 	)
 
 	mapped := mapper.MapProfileToGetProfileDTO(profile)
