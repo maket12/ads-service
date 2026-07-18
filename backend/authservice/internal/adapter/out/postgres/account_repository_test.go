@@ -8,6 +8,7 @@ import (
 
 	trmpgx "github.com/avito-tech/go-transaction-manager/drivers/pgxv5/v2"
 	_ "github.com/golang-migrate/migrate/v4/database/postgres"
+	adapterpg "github.com/maket12/ads-service/authservice/internal/adapter/out/postgres"
 	"github.com/maket12/ads-service/authservice/internal/domain/model"
 	pkgerrs "github.com/maket12/ads-service/authservice/pkg/errs"
 	"github.com/stretchr/testify/suite"
@@ -15,7 +16,7 @@ import (
 
 type AccountsRepoSuite struct {
 	BaseRepoSuite
-	repo        *AccountRepository
+	repo        *adapterpg.AccountRepository
 	testAccount *model.Account
 }
 
@@ -23,9 +24,7 @@ func TestAccountsRepoSuite(t *testing.T) { suite.Run(t, new(AccountsRepoSuite)) 
 
 func (s *AccountsRepoSuite) SetupSuite() {
 	s.SetupBase(1)
-	s.repo = NewAccountsRepository(s.dbClient,
-		trmpgx.DefaultCtxGetter,
-	)
+	s.repo = adapterpg.NewAccountsRepository(s.dbClient, trmpgx.DefaultCtxGetter)
 	s.testAccount, _ = model.NewAccount("new@email.com", "hashed-secret-pass")
 }
 

@@ -6,6 +6,7 @@ import (
 	"time"
 
 	"github.com/brianvoe/gofakeit/v7"
+	"github.com/maket12/ads-service/authservice/internal/adapter/out/postgres/mapper"
 
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5/pgtype"
@@ -42,7 +43,7 @@ func TestMapRefreshSessionToSQLCCreate(t *testing.T) {
 		&userAgent,
 	)
 
-	expected := sqlc.CreateRefreshSessionParams{
+	expected := sqlc.CreateSessionParams{
 		ID: pgtype.UUID{
 			Bytes: id,
 			Valid: true,
@@ -79,7 +80,7 @@ func TestMapRefreshSessionToSQLCCreate(t *testing.T) {
 		},
 	}
 
-	actual := MapRefreshSessionToSQLCCreate(session)
+	actual := mapper.MapRefreshSessionToSQLCCreate(session)
 
 	require.Equal(t, expected, actual)
 }
@@ -104,7 +105,7 @@ func TestMapRefreshSessionToSQLCCreate_NilOptionalFields(t *testing.T) {
 		nil,
 	)
 
-	expected := sqlc.CreateRefreshSessionParams{
+	expected := sqlc.CreateSessionParams{
 		ID: pgtype.UUID{
 			Bytes: id,
 			Valid: true,
@@ -129,7 +130,7 @@ func TestMapRefreshSessionToSQLCCreate_NilOptionalFields(t *testing.T) {
 		UserAgent:    pgtype.Text{},
 	}
 
-	actual := MapRefreshSessionToSQLCCreate(session)
+	actual := mapper.MapRefreshSessionToSQLCCreate(session)
 
 	require.Equal(t, expected, actual)
 }
@@ -198,7 +199,7 @@ func TestMapSQLCToRefreshSession(t *testing.T) {
 		&userAgent,
 	)
 
-	actual := MapSQLCToRefreshSession(raw)
+	actual := mapper.MapSQLCToRefreshSession(raw)
 
 	require.Equal(t, expected, actual)
 }
@@ -248,7 +249,7 @@ func TestMapSQLCToRefreshSession_NilOptionalFields(t *testing.T) {
 		nil,
 	)
 
-	actual := MapSQLCToRefreshSession(raw)
+	actual := mapper.MapSQLCToRefreshSession(raw)
 
 	require.Equal(t, expected, actual)
 }
@@ -281,7 +282,7 @@ func TestMapRefreshSessionToSQLCRevoke(t *testing.T) {
 		&userAgent,
 	)
 
-	expected := sqlc.UpdateRefreshSessionParams{
+	expected := sqlc.UpdateSessionParams{
 		ID:               pgtype.UUID{Bytes: id, Valid: true},
 		AccountID:        pgtype.UUID{Bytes: accountID, Valid: true},
 		RefreshTokenHash: refreshTokenHash,
@@ -294,7 +295,7 @@ func TestMapRefreshSessionToSQLCRevoke(t *testing.T) {
 		UserAgent:        pgtype.Text{String: userAgent, Valid: true},
 	}
 
-	actual := MapRefreshSessionToSQLCUpdate(session)
+	actual := mapper.MapRefreshSessionToSQLCUpdate(session)
 
 	require.Equal(t, expected, actual)
 }
@@ -321,7 +322,7 @@ func TestMapRefreshSessionToSQLCRevoke_NilOptionalFields(t *testing.T) {
 		nil,
 	)
 
-	expected := sqlc.UpdateRefreshSessionParams{
+	expected := sqlc.UpdateSessionParams{
 		ID:               pgtype.UUID{Bytes: id, Valid: true},
 		AccountID:        pgtype.UUID{Bytes: accountID, Valid: true},
 		RefreshTokenHash: refreshTokenHash,
@@ -334,7 +335,7 @@ func TestMapRefreshSessionToSQLCRevoke_NilOptionalFields(t *testing.T) {
 		UserAgent:        pgtype.Text{},
 	}
 
-	actual := MapRefreshSessionToSQLCUpdate(session)
+	actual := mapper.MapRefreshSessionToSQLCUpdate(session)
 
 	require.Equal(t, expected, actual)
 }
@@ -344,7 +345,7 @@ func TestMapToSQLCRevokeAllForAccount(t *testing.T) {
 	reason := "security incident"
 
 	before := time.Now()
-	actual := MapToSQLCRevokeAllForAccount(accountID, &reason)
+	actual := mapper.MapToSQLCRevokeAllForAccount(accountID, &reason)
 	after := time.Now()
 
 	require.Equal(t, pgtype.UUID{Bytes: accountID, Valid: true}, actual.AccountID)
@@ -357,7 +358,7 @@ func TestMapToSQLCRevokeAllForAccount_NilReason(t *testing.T) {
 	accountID := uuid.New()
 
 	before := time.Now()
-	actual := MapToSQLCRevokeAllForAccount(accountID, nil)
+	actual := mapper.MapToSQLCRevokeAllForAccount(accountID, nil)
 	after := time.Now()
 
 	require.Equal(t, pgtype.UUID{Bytes: accountID, Valid: true}, actual.AccountID)
@@ -371,7 +372,7 @@ func TestMapToSQLCRevokeDescendants(t *testing.T) {
 	reason := "rotation"
 
 	before := time.Now()
-	actual := MapToSQLCRevokeDescendants(sessionID, &reason)
+	actual := mapper.MapToSQLCRevokeDescendants(sessionID, &reason)
 	after := time.Now()
 
 	require.Equal(t, pgtype.UUID{Bytes: sessionID, Valid: true}, actual.ID)
@@ -384,7 +385,7 @@ func TestMapToSQLCRevokeDescendants_NilReason(t *testing.T) {
 	sessionID := uuid.New()
 
 	before := time.Now()
-	actual := MapToSQLCRevokeDescendants(sessionID, nil)
+	actual := mapper.MapToSQLCRevokeDescendants(sessionID, nil)
 	after := time.Now()
 
 	require.Equal(t, pgtype.UUID{Bytes: sessionID, Valid: true}, actual.ID)
@@ -445,13 +446,13 @@ func TestMapSQLCToListRefreshSession(t *testing.T) {
 		),
 	}
 
-	actual := MapSQLCToListRefreshSession(rawList)
+	actual := mapper.MapSQLCToListRefreshSession(rawList)
 
 	require.Equal(t, expected, actual)
 }
 
 func TestMapSQLCToListRefreshSession_Empty(t *testing.T) {
-	actual := MapSQLCToListRefreshSession([]sqlc.RefreshSession{})
+	actual := mapper.MapSQLCToListRefreshSession([]sqlc.RefreshSession{})
 
 	require.Empty(t, actual)
 	require.NotNil(t, actual)

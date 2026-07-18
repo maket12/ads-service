@@ -7,6 +7,7 @@ import (
 
 	trmpgx "github.com/avito-tech/go-transaction-manager/drivers/pgxv5/v2"
 	"github.com/google/uuid"
+	adapterpg "github.com/maket12/ads-service/authservice/internal/adapter/out/postgres"
 	"github.com/maket12/ads-service/authservice/internal/domain/model"
 	pkgerrs "github.com/maket12/ads-service/authservice/pkg/errs"
 	"github.com/stretchr/testify/suite"
@@ -14,7 +15,7 @@ import (
 
 type AccountRolesRepoSuite struct {
 	BaseRepoSuite
-	repo     *AccountRoleRepository
+	repo     *adapterpg.AccountRoleRepository
 	testRole *model.AccountRole
 }
 
@@ -24,7 +25,7 @@ func TestAccountRolesRepoSuite(t *testing.T) {
 
 func (s *AccountRolesRepoSuite) SetupSuite() {
 	s.SetupBase(3)
-	s.repo = NewAccountRolesRepository(s.dbClient,
+	s.repo = adapterpg.NewAccountRolesRepository(s.dbClient,
 		trmpgx.DefaultCtxGetter,
 	)
 }
@@ -39,7 +40,7 @@ func (s *AccountRolesRepoSuite) SetupTest() {
 func (s *AccountRolesRepoSuite) seedData() {
 	testAccount, _ := model.NewAccount("new@email.com", "hashed-secret-pass")
 
-	accountsRepo := NewAccountsRepository(s.dbClient,
+	accountsRepo := adapterpg.NewAccountsRepository(s.dbClient,
 		trmpgx.DefaultCtxGetter,
 	)
 	_ = accountsRepo.Create(s.ctx, testAccount)

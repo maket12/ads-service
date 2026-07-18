@@ -5,6 +5,7 @@ import (
 
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5/pgtype"
+	"github.com/maket12/ads-service/authservice/internal/adapter/out/postgres/mapper"
 	"github.com/stretchr/testify/require"
 
 	"github.com/maket12/ads-service/authservice/internal/adapter/out/postgres/sqlc"
@@ -27,7 +28,7 @@ func TestMapAccountRoleToSQLCCreate(t *testing.T) {
 		Role: model.RoleAdmin.String(),
 	}
 
-	actual := MapAccountRoleToSQLCCreate(accRole)
+	actual := mapper.MapAccountRoleToSQLCCreate(accRole)
 
 	require.Equal(t, expected, actual)
 }
@@ -48,7 +49,7 @@ func TestMapAccountRoleToSQLCUpdate(t *testing.T) {
 		Role: model.RoleUser.String(),
 	}
 
-	actual := MapAccountRoleToSQLCUpdate(accRole)
+	actual := mapper.MapAccountRoleToSQLCUpdate(accRole)
 
 	require.Equal(t, expected, actual)
 }
@@ -69,7 +70,7 @@ func TestMapSQLCToAccountRole(t *testing.T) {
 		model.RoleAdmin,
 	)
 
-	actual := MapSQLCToAccountRole(raw)
+	actual := mapper.MapSQLCToAccountRole(raw)
 
 	require.Equal(t, expected, actual)
 }
