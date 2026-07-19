@@ -43,9 +43,7 @@ func (uc *UpdateProfileUC) Execute(ctx context.Context, in dto.UpdateProfileInpu
 		normPhone, phoneErr := uc.phone.Validate(ctx, *in.Phone)
 		if phoneErr != nil {
 			return dto.UpdateProfileOutput{}, ucerrs.Wrap(
-				ucerrs.ErrInvalidInput, pkgerrs.NewValueInvalidErrorWithReason(
-					"phone", phoneErr,
-				),
+				ucerrs.ErrInvalidInput, phoneErr,
 			)
 		}
 		validatedPhone = &normPhone

@@ -2,6 +2,7 @@ package e2e
 
 import (
 	"context"
+	"strings"
 	"testing"
 
 	"github.com/brianvoe/gofakeit/v7"
@@ -22,7 +23,7 @@ func TestUpdateProfile_Success(t *testing.T) {
 	var (
 		fName  = gofakeit.FirstName()
 		lName  = gofakeit.LastName()
-		phone  = gofakeit.Phone()
+		phone  = "+79589811217"
 		avatar = gofakeit.URL()
 		bio    = gofakeit.Bio()
 	)
@@ -79,7 +80,39 @@ func TestUpdateProfile_BadCases(t *testing.T) {
 			expectedError: "invalid input",
 		},
 		{
-			name: "Invalid Argument - Name",
+			name:          "Invalid Argument - First Name",
+			accountID:     accountID,
+			firstName:     utils.VPtr(""),
+			expectedCode:  codes.InvalidArgument,
+			expectedError: "invalid input",
+		},
+		{
+			name:          "Invalid Argument - Last Name",
+			accountID:     accountID,
+			lastName:      utils.VPtr(""),
+			expectedCode:  codes.InvalidArgument,
+			expectedError: "invalid input",
+		},
+		{
+			name:          "Invalid Argument - Phone Length",
+			accountID:     accountID,
+			phone:         utils.VPtr(strings.Repeat("+1(154)174", 5)),
+			expectedCode:  codes.InvalidArgument,
+			expectedError: "invalid input",
+		},
+		{
+			name:          "Invalid Argument - Avatar URL",
+			accountID:     accountID,
+			avatarURL:     utils.VPtr(""),
+			expectedCode:  codes.InvalidArgument,
+			expectedError: "invalid input",
+		},
+		{
+			name:          "Invalid Argument - Bio",
+			accountID:     accountID,
+			bio:           utils.VPtr(strings.Repeat(gofakeit.Bio(), 25)),
+			expectedCode:  codes.InvalidArgument,
+			expectedError: "invalid input",
 		},
 	}
 

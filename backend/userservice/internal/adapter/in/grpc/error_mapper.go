@@ -22,7 +22,7 @@ func gRPCError(err error) *pkgerrs.OutErr {
 		case errors.Is(w.Public, ucerrs.ErrInvalidInput):
 			return pkgerrs.NewOutError(
 				codes.InvalidArgument,
-				w.Public.Error()+": "+w.Reason.Error(),
+				w.Public.Error(),
 				w.Reason,
 			)
 

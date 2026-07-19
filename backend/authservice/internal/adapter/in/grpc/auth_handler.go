@@ -184,7 +184,7 @@ func (h *AuthHandler) handleError(
 	logMsg string,
 ) (codes.Code, string) {
 	outErr := gRPCError(err)
-	h.log.ErrorContext(ctx, logMsg,
+	h.log.LogAttrs(ctx, outErr.Level, logMsg,
 		slog.Int("code", int(outErr.Code)),
 		slog.String("public_msg", outErr.Message),
 		slog.Any("reason", outErr.Reason),

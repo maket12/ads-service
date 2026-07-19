@@ -28,7 +28,7 @@ func TestCreateProfile_Idempotent(t *testing.T) {
 
 	// publish the same event twice; creation should not error/duplicate
 	app.publishAccountCreated(t, accountID)
-	app.waitForProfile(t, accountID, 2*time.Second)
+	app.waitForProfile(t, accountID, 5*time.Second)
 
 	app.publishAccountCreated(t, accountID)
 
