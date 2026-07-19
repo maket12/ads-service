@@ -36,7 +36,6 @@ import (
 	infrapassw "github.com/maket12/ads-service/authservice/internal/infrastructure/password"
 	"github.com/maket12/ads-service/authservice/pkg/generated/auth_v1"
 	pkgpostgres "github.com/maket12/ads-service/authservice/pkg/postgres"
-	pkgrabbitmq "github.com/maket12/ads-service/authservice/pkg/rabbitmq"
 	pkgredis "github.com/maket12/ads-service/authservice/pkg/redis"
 )
 
@@ -47,7 +46,6 @@ type testApp struct {
 	conn        *grpc.ClientConn
 	pg          *pkgpostgres.TestContainer
 	redisC      *pkgredis.TestContainer
-	rabbitC     *pkgrabbitmq.TestContainer
 	email       *fakes.FakeMailSender
 	accRepo     port.AccountRepository
 	accRoleRepo port.AccountRoleRepository
@@ -80,14 +78,10 @@ func setupE2E(t *testing.T) *testApp {
 		redisC, err := pkgredis.StartTestContainer(ctx)
 		require.NoError(t, err)
 
-		rabbitC, err := pkgrabbitmq.StartTestContainer(ctx)
-		require.NoError(t, err)
-
 		cfg.DbHost, cfg.DbPort = pg.Config.Host, pg.Config.Port
 		cfg.DbUser, cfg.DbPassword, cfg.DbName = pg.Config.User, pg.Config.Password, pg.Config.Name
 
 		cfg.RedisHost, cfg.RedisPort = redisC.Config.Host, redisC.Config.Port
-		cfg.RabbitHost, cfg.RabbitPort = rabbitC.Config.Host, rabbitC.Config.Port
 
 		logger := newLogger()
 
@@ -168,7 +162,6 @@ func setupE2E(t *testing.T) *testApp {
 			conn:        conn,
 			pg:          pg,
 			redisC:      redisC,
-			rabbitC:     rabbitC,
 			email:       smtpClient,
 			accRepo:     accRepo,
 			accRoleRepo: accRoleRepo,

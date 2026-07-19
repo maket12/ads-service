@@ -4,15 +4,20 @@ package e2e
 
 import (
 	"context"
+	"encoding/json"
+	"fmt"
 	"log/slog"
 	"net"
 	"os"
 	"sync"
 	"testing"
+	"time"
 
 	trmpgx "github.com/avito-tech/go-transaction-manager/drivers/pgxv5/v2"
-	"github.com/brianvoe/gofakeit/v7"
 	"github.com/google/uuid"
+	"github.com/maket12/ads-service/userservice/internal/app/dto"
+	"github.com/maket12/ads-service/userservice/pkg/utils"
+	amqp "github.com/rabbitmq/amqp091-go"
 	"github.com/stretchr/testify/require"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"
@@ -27,8 +32,6 @@ import (
 	"github.com/maket12/ads-service/userservice/internal/app/usecase"
 	"github.com/maket12/ads-service/userservice/internal/domain/port"
 	adapterphone "github.com/maket12/ads-service/userservice/internal/infrastructure/phone"
-	// TODO: adjust to the actual migrations package path for userservice, mirroring
-	// authservice's `internal/.../migrations` package (embedded FS with .sql files).
 	"github.com/maket12/ads-service/userservice/migrations"
 	"github.com/maket12/ads-service/userservice/pkg/generated/user_v1"
 	pkgpostgres "github.com/maket12/ads-service/userservice/pkg/postgres"
@@ -38,13 +41,14 @@ import (
 const bufSize = 1024 * 1024
 
 type testApp struct {
-	client      user_v1.UserServiceClient
-	conn        *grpc.ClientConn
-	pg          *pkgpostgres.TestContainer
-	rabbitC     *pkgrabbitmq.TestContainer
-	profileRepo port.ProfileRepository
-	dbClient    *pkgpostgres.Client
-	cfg         *config.TestConfig // TODO: confirm userservice has a config.TestConfig / config.LoadTest, like authservice does
+	client       user_v1.UserServiceClient
+	conn         *grpc.ClientConn
+	pg           *pkgpostgres.TestContainer
+	rabbitC      *pkgrabbitmq.TestContainer
+	rabbitClient *pkgrabbitmq.Client
+	profileRepo  port.ProfileRepository
+	dbClient     *pkgpostgres.Client
+	cfg          *config.TestConfig
 }
 
 var (
@@ -66,7 +70,7 @@ func setupE2E(t *testing.T) *testApp {
 		// --- containers ---
 		pg, err := pkgpostgres.StartTestContainer(ctx)
 		require.NoError(t, err)
-		require.NoError(t, pg.MigrateUp(migrations.FS, 3)) // TODO: confirm migration version count for userservice
+		require.NoError(t, pg.MigrateUp(migrations.FS, 1))
 
 		rabbitC, err := pkgrabbitmq.StartTestContainer(ctx)
 		require.NoError(t, err)
@@ -75,6 +79,7 @@ func setupE2E(t *testing.T) *testApp {
 		cfg.DbUser, cfg.DbPassword, cfg.DbName = pg.Config.User, pg.Config.Password, pg.Config.Name
 
 		cfg.RabbitHost, cfg.RabbitPort = rabbitC.Config.Host, rabbitC.Config.Port
+		cfg.RabbitUser, cfg.RabbitPassword = rabbitC.Config.User, rabbitC.Config.Password
 
 		logger := newLogger()
 
@@ -118,6 +123,7 @@ func setupE2E(t *testing.T) *testApp {
 		handler := adaptergrpc.NewUserHandler(
 			logger, getProfileUC, updateProfileUC,
 		)
+		fmt.Println("handler")
 
 		// --- in-memory gRPC server via bufconn ---
 		lis := bufconn.Listen(bufSize)
@@ -139,16 +145,23 @@ func setupE2E(t *testing.T) *testApp {
 		)
 		require.NoError(t, err)
 
+		fmt.Println("app instance")
+
 		appInstance = &testApp{
-			client:      user_v1.NewUserServiceClient(conn),
-			conn:        conn,
-			pg:          pg,
-			rabbitC:     rabbitC,
-			profileRepo: profileRepo,
-			dbClient:    pgClient,
-			cfg:         cfg,
+			client:       user_v1.NewUserServiceClient(conn),
+			conn:         conn,
+			pg:           pg,
+			rabbitC:      rabbitC,
+			profileRepo:  profileRepo,
+			rabbitClient: rabbitClient,
+			dbClient:     pgClient,
+			cfg:          cfg,
 		}
 	})
+
+	if appInstance == nil {
+		t.Fatal("setupE2E: initialization failed on a previous test, appInstance is nil")
+	}
 
 	appInstance.cleanData(t, context.Background())
 
@@ -165,61 +178,89 @@ func (a *testApp) cleanData(t *testing.T, ctx context.Context) {
 // in userservice is triggered by a RabbitMQ event (AccountSubscriber -> CreateProfileUC)
 // rather than by a gRPC call, unlike authservice's Register.
 //
-// If parameters are not specified, then it uses random values instead.
+// If account id is not specified, then it uses random value instead.
 //
 // Returns the created profile's account id.
-func (a *testApp) createProfile(t *testing.T, accountID *string, firstName, lastName *string) string {
-	var (
-		id    = uuid.NewString()
-		fName = gofakeit.FirstName()
-		lName = gofakeit.LastName()
-	)
-
+func (a *testApp) createProfile(t *testing.T, accountID *string) string {
+	var id = uuid.NewString()
 	if accountID != nil {
 		id = *accountID
 	}
-	if firstName != nil {
-		fName = *firstName
-	}
-	if lastName != nil {
-		lName = *lastName
-	}
 
 	uc := usecase.NewCreateProfileUC(a.profileRepo)
-	// TODO: replace dto.CreateProfileInput with the actual input struct/fields for CreateProfileUC.
-	_, err := uc.Execute(context.Background(), usecase.CreateProfileInput{
-		AccountID: uuid.MustParse(id),
-		FirstName: fName,
-		LastName:  lName,
-	})
+	err := uc.Execute(context.Background(), dto.CreateProfileInput{AccountID: uuid.MustParse(id)})
 	require.NoError(t, err)
 
 	return id
 }
 
 // Helper for e2e tests.
-// Fetches a profile via the gRPC client.
+// Returns the profile with specified account id.
+//
+// Make sure the profile with this account id was created before.
 func (a *testApp) getProfile(t *testing.T, accountID string) *user_v1.GetProfileResponse {
-	resp, err := a.client.GetProfile(context.Background(), &user_v1.GetProfileRequest{
-		AccountId: accountID,
-	})
+	ctx := utils.PackAccountIDForGRPC(context.Background(), accountID)
+	resp, err := a.client.GetProfile(ctx, &user_v1.GetProfileRequest{})
+
 	require.NoError(t, err)
+	require.Equal(t, accountID, resp.GetAccountId())
 
 	return resp
 }
 
 // Helper for e2e tests.
-// Updates a profile via the gRPC client.
-func (a *testApp) updateProfile(t *testing.T, accountID string, firstName, lastName, phone *string) *user_v1.UpdateProfileResponse {
-	req := &user_v1.UpdateProfileRequest{
-		AccountId: accountID,
-		FirstName: firstName,
-		LastName:  lastName,
-		Phone:     phone,
-	}
+// Publishes an account.created event to RabbitMQ the same way authservice's
+// AccountPublisher does, so the AccountSubscriber -> CreateProfileUC path is
+// exercised for real instead of being bypassed.
+func (a *testApp) publishAccountCreated(t *testing.T, accountID string) {
+	ch, err := a.rabbitClient.Conn.Channel()
+	require.NoError(t, err)
+	defer ch.Close()
 
-	resp, err := a.client.UpdateProfile(context.Background(), req)
+	err = ch.ExchangeDeclare(
+		a.cfg.ExchangeName,
+		"topic",
+		true,
+		false,
+		false,
+		false,
+		nil,
+	)
 	require.NoError(t, err)
 
-	return resp
+	event := pkgrabbitmq.AccountCreatedEvent{AccountID: uuid.MustParse(accountID)}
+	body, err := json.Marshal(event)
+	require.NoError(t, err)
+
+	err = ch.PublishWithContext(
+		context.Background(),
+		a.cfg.ExchangeName,
+		a.cfg.RoutingKey,
+		false,
+		false,
+		amqp.Publishing{
+			ContentType: "application/json",
+			Body:        body,
+		},
+	)
+	require.NoError(t, err)
+}
+
+// Helper for e2e tests.
+// Polls GetProfile until the profile appears (or the timeout elapses),
+// since consumption of the published event is asynchronous.
+func (a *testApp) waitForProfile(t *testing.T, accountID string, timeout time.Duration) *user_v1.GetProfileResponse {
+	deadline := time.Now().Add(timeout)
+	ctx := utils.PackAccountIDForGRPC(context.Background(), accountID)
+
+	for time.Now().Before(deadline) {
+		resp, err := a.client.GetProfile(ctx, &user_v1.GetProfileRequest{})
+		if err == nil {
+			return resp
+		}
+		time.Sleep(100 * time.Millisecond)
+	}
+
+	t.Fatalf("timed out waiting for profile %s to be created", accountID)
+	return nil
 }
