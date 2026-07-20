@@ -14,6 +14,7 @@ var (
 	ErrCreateProfileDB = errors.New("failed to create profile using db")
 	ErrGetProfileDB    = errors.New("failed to get profile using db")
 	ErrUpdateProfileDB = errors.New("failed to update profile using db")
+	ErrDeleteProfileDB = errors.New("failed to delete profile using db")
 
 	ErrProfileNotFound = errors.New("profile not found")
 )

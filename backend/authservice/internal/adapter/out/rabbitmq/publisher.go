@@ -11,16 +11,17 @@ import (
 )
 
 type PublisherConfig struct {
-	Exchange   string
-	RoutingKey string
+	Exchange string
 }
 
-func NewPublisherConfig(exchange, routingKey string) *PublisherConfig {
-	return &PublisherConfig{
-		Exchange:   exchange,
-		RoutingKey: routingKey,
-	}
+func NewPublisherConfig(exchange string) *PublisherConfig {
+	return &PublisherConfig{Exchange: exchange}
 }
+
+const (
+	RoutingKeyAccountCreated = "account.created"
+	RoutingKeyAccountDeleted = "account.deleted"
+)
 
 type AccountPublisher struct {
 	cfg     *PublisherConfig
@@ -57,6 +58,20 @@ func NewAccountPublisher(
 	}, nil
 }
 
+func (p *AccountPublisher) publish(ctx context.Context, routingKey string, body []byte) error {
+	return p.channel.PublishWithContext(
+		ctx,
+		p.cfg.Exchange,
+		routingKey,
+		false,
+		false,
+		amqp.Publishing{
+			ContentType: "application/json",
+			Body:        body,
+		},
+	)
+}
+
 func (p *AccountPublisher) PublishAccountCreate(ctx context.Context, accountID uuid.UUID) error {
 	event := pkgrabbitmq.AccountCreatedEvent{AccountID: accountID}
 
@@ -65,21 +80,18 @@ func (p *AccountPublisher) PublishAccountCreate(ctx context.Context, accountID u
 		return fmt.Errorf("failed to marshal event: %w", err)
 	}
 
-	if err = p.channel.PublishWithContext(
-		ctx,
-		p.cfg.Exchange,
-		p.cfg.RoutingKey,
-		false,
-		false,
-		amqp.Publishing{
-			ContentType: "application/json",
-			Body:        body,
-		},
-	); err != nil {
-		return err
+	return p.publish(ctx, RoutingKeyAccountCreated, body)
+}
+
+func (p *AccountPublisher) PublishAccountDelete(ctx context.Context, accountID uuid.UUID) error {
+	event := pkgrabbitmq.AccountDeletedEvent{AccountID: accountID}
+
+	body, err := json.Marshal(event)
+	if err != nil {
+		return fmt.Errorf("failed to marshal event: %w", err)
 	}
 
-	return nil
+	return p.publish(ctx, RoutingKeyAccountDeleted, body)
 }
 
 func (p *AccountPublisher) Close() error {

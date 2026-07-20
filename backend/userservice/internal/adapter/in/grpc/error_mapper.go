@@ -16,7 +16,8 @@ func gRPCError(err error) *pkgerrs.OutErr {
 		switch {
 		case errors.Is(w.Public, ucerrs.ErrCreateProfileDB),
 			errors.Is(w.Public, ucerrs.ErrGetProfileDB),
-			errors.Is(w.Public, ucerrs.ErrUpdateProfileDB):
+			errors.Is(w.Public, ucerrs.ErrUpdateProfileDB),
+			errors.Is(w.Public, ucerrs.ErrDeleteProfileDB):
 			return pkgerrs.NewOutError(codes.Internal, w.Public.Error(), w.Reason)
 
 		case errors.Is(w.Public, ucerrs.ErrInvalidInput):

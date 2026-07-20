@@ -106,6 +106,7 @@ func closeRabbitMQClient(
 func newRabbitMQSubscriber(cfg *config.Config, logger *slog.Logger,
 	rabbitClient *pkgrabbitmq.Client,
 	createProfileUC *usecase.CreateProfileUC,
+	deleteProfileUC *usecase.DeleteProfileUC,
 ) *adapterrabbitmq.AccountSubscriber {
 	subConfig := adapterrabbitmq.NewSubscriberConfig(
 		cfg.ExchangeName,
@@ -118,6 +119,7 @@ func newRabbitMQSubscriber(cfg *config.Config, logger *slog.Logger,
 		logger,
 		rabbitClient,
 		createProfileUC,
+		deleteProfileUC,
 	)
 
 	return sub
@@ -150,9 +152,14 @@ func runServer(ctx context.Context, cfg *config.Config, logger *slog.Logger) err
 	createProfileUC := usecase.NewCreateProfileUC(profileRepo)
 	getProfileUC := usecase.NewGetProfileUC(profileRepo)
 	updateProfileUC := usecase.NewUpdateProfileUC(profileRepo, phoneValidator)
+	deleteProfileUC := usecase.NewDeleteProfileUC(profileRepo)
 
 	// RabbitMQ Subscriber
-	subscriber := newRabbitMQSubscriber(cfg, logger, rabbitClient, createProfileUC)
+	subscriber := newRabbitMQSubscriber(cfg, logger,
+		rabbitClient,
+		createProfileUC,
+		deleteProfileUC,
+	)
 
 	// Handler
 	userHandler := adaptergrpc.NewUserHandler(
