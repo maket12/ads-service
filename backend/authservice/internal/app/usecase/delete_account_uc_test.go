@@ -19,8 +19,9 @@ import (
 
 func TestDeleteAccountUC_Execute(t *testing.T) {
 	type adapter struct {
-		account     *mocks.MockAccountRepository
-		accountRole *mocks.MockAccountRoleRepository
+		account          *mocks.MockAccountRepository
+		accountRole      *mocks.MockAccountRoleRepository
+		accountPublisher *mocks.MockAccountPublisher
 	}
 
 	type testCase struct {
@@ -47,6 +48,10 @@ func TestDeleteAccountUC_Execute(t *testing.T) {
 
 				a.account.EXPECT().
 					Update(mock.Anything, acc).
+					Return(nil)
+
+				a.accountPublisher.EXPECT().
+					PublishAccountDelete(mock.Anything, acc.ID()).
 					Return(nil)
 			},
 			expectErr: nil,
@@ -112,6 +117,27 @@ func TestDeleteAccountUC_Execute(t *testing.T) {
 			},
 			expectErr: ucerrs.ErrUpdateAccountDB,
 		},
+		{
+			name: "Failure - publish event error",
+			mockBehaviour: func(a adapter, acc *model.Account) {
+				a.account.EXPECT().
+					GetByID(mock.Anything, acc.ID()).
+					Return(acc, nil)
+
+				a.accountRole.EXPECT().
+					Get(mock.Anything, acc.ID()).
+					Return(model.RestoreAccountRole(acc.ID(), model.RoleUser), nil)
+
+				a.account.EXPECT().
+					Update(mock.Anything, acc).
+					Return(nil)
+
+				a.accountPublisher.EXPECT().
+					PublishAccountDelete(mock.Anything, acc.ID()).
+					Return(errors.New("publish error"))
+			},
+			expectErr: ucerrs.ErrPublishEvent,
+		},
 	}
 
 	for _, tt := range tests {
@@ -123,13 +149,15 @@ func TestDeleteAccountUC_Execute(t *testing.T) {
 
 			accountRepo := mocks.NewMockAccountRepository(t)
 			accountRoleRepo := mocks.NewMockAccountRoleRepository(t)
+			accountPublisher := mocks.NewMockAccountPublisher(t)
 
 			tt.mockBehaviour(adapter{
-				account:     accountRepo,
-				accountRole: accountRoleRepo,
+				account:          accountRepo,
+				accountRole:      accountRoleRepo,
+				accountPublisher: accountPublisher,
 			}, acc)
 
-			uc := usecase.NewDeleteAccountUC(accountRepo, accountRoleRepo)
+			uc := usecase.NewDeleteAccountUC(accountRepo, accountRoleRepo, accountPublisher)
 
 			out, err := uc.Execute(context.Background(), tt.input)
 
