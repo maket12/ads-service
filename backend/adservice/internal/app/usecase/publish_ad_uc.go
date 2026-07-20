@@ -4,10 +4,10 @@ import (
 	"context"
 	"errors"
 
-	"github.com/maket12/ads-service/backend/adservice/internal/app/dto"
-	"github.com/maket12/ads-service/backend/adservice/internal/app/errs"
-	"github.com/maket12/ads-service/backend/adservice/internal/domain/port"
-	pkgerrs "github.com/maket12/ads-service/pkg/errs"
+	"github.com/maket12/ads-service/adservice/internal/app/dto"
+	"github.com/maket12/ads-service/adservice/internal/app/errs"
+	"github.com/maket12/ads-service/adservice/internal/domain/port"
+	pkgerrs "github.com/maket12/ads-service/adservice/pkg/errs"
 )
 
 type PublishAdUC struct {

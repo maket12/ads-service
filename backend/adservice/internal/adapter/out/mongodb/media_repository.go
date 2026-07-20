@@ -4,7 +4,7 @@ import (
 	"context"
 	"errors"
 
-	pkgmongo "github.com/maket12/ads-service/pkg/mongodb"
+	pkgmongo "github.com/maket12/ads-service/adservice/pkg/mongodb"
 
 	"github.com/google/uuid"
 	"go.mongodb.org/mongo-driver/v2/bson"

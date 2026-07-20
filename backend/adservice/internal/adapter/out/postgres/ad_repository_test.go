@@ -6,11 +6,11 @@ import (
 	"testing"
 	"time"
 
-	adapterpostgres "github.com/maket12/ads-service/backend/adservice/internal/adapter/out/postgres"
-	"github.com/maket12/ads-service/backend/adservice/internal/domain/model"
-	"github.com/maket12/ads-service/backend/adservice/migrations"
-	pkgerrs "github.com/maket12/ads-service/pkg/errs"
-	pkgpostgres "github.com/maket12/ads-service/pkg/postgres"
+	adapterpostgres "github.com/maket12/ads-service/adservice/internal/adapter/out/postgres"
+	"github.com/maket12/ads-service/adservice/internal/domain/model"
+	"github.com/maket12/ads-service/adservice/migrations"
+	pkgerrs "github.com/maket12/ads-service/adservice/pkg/errs"
+	pkgpostgres "github.com/maket12/ads-service/adservice/pkg/postgres"
 
 	"github.com/golang-migrate/migrate/v4"
 	_ "github.com/golang-migrate/migrate/v4/database/postgres"

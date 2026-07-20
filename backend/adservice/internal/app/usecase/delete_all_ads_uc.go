@@ -3,9 +3,9 @@ package usecase
 import (
 	"context"
 
-	"github.com/maket12/ads-service/backend/adservice/internal/app/dto"
-	"github.com/maket12/ads-service/backend/adservice/internal/app/errs"
-	"github.com/maket12/ads-service/backend/adservice/internal/domain/port"
+	"github.com/maket12/ads-service/adservice/internal/app/dto"
+	"github.com/maket12/ads-service/adservice/internal/app/errs"
+	"github.com/maket12/ads-service/adservice/internal/domain/port"
 )
 
 type DeleteAllAdsUC struct {
