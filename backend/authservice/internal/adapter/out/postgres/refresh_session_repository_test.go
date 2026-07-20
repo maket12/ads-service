@@ -8,6 +8,7 @@ import (
 
 	trmpgx "github.com/avito-tech/go-transaction-manager/drivers/pgxv5/v2"
 	"github.com/google/uuid"
+	adapterpg "github.com/maket12/ads-service/authservice/internal/adapter/out/postgres"
 	"github.com/maket12/ads-service/authservice/internal/domain/model"
 	pkgerrs "github.com/maket12/ads-service/authservice/pkg/errs"
 	"github.com/stretchr/testify/suite"
@@ -15,7 +16,7 @@ import (
 
 type RefreshSessionsRepoSuite struct {
 	BaseRepoSuite
-	repo        *RefreshSessionRepository
+	repo        *adapterpg.RefreshSessionRepository
 	testSession *model.RefreshSession
 }
 
@@ -25,7 +26,7 @@ func TestRefreshSessionRepoSuite(t *testing.T) {
 
 func (s *RefreshSessionsRepoSuite) SetupSuite() {
 	s.SetupBase(2)
-	s.repo = NewRefreshSessionsRepository(s.dbClient,
+	s.repo = adapterpg.NewRefreshSessionsRepository(s.dbClient,
 		trmpgx.DefaultCtxGetter,
 	)
 }
@@ -40,7 +41,7 @@ func (s *RefreshSessionsRepoSuite) SetupTest() {
 func (s *RefreshSessionsRepoSuite) seedData() {
 	testAccount, _ := model.NewAccount("new@email.com", "hashed-secret-pass")
 
-	accountsRepo := NewAccountsRepository(s.dbClient,
+	accountsRepo := adapterpg.NewAccountsRepository(s.dbClient,
 		trmpgx.DefaultCtxGetter,
 	)
 	err := accountsRepo.Create(s.ctx, testAccount)
@@ -120,18 +121,15 @@ func (s *RefreshSessionsRepoSuite) TestGetByHash_NotFound() {
 	s.Require().ErrorIs(err, pkgerrs.ErrObjectNotFound)
 }
 
-func (s *RefreshSessionsRepoSuite) TestRevoke() {
+func (s *RefreshSessionsRepoSuite) TestUpdate() {
 	// Create in advance
 	_ = s.repo.Create(s.ctx, s.testSession)
 
-	var (
-		revokedSession = *s.testSession
-		reason         = "account is blocked"
-	)
-	_ = revokedSession.Revoke(&reason)
+	var revokedSession = *s.testSession
+	_ = revokedSession.RevokeByLogout()
 
 	// Update the session
-	err := s.repo.Revoke(s.ctx, &revokedSession)
+	err := s.repo.Update(s.ctx, &revokedSession)
 	s.Require().NoError(err)
 
 	// Ensure the session has been revoked

@@ -4,24 +4,24 @@ import (
 	"context"
 	"errors"
 
-	pkgerrs "github.com/maket12/ads-service/pkg/errs"
 	"github.com/maket12/ads-service/userservice/internal/app/dto"
 	ucerrs "github.com/maket12/ads-service/userservice/internal/app/errs"
 	"github.com/maket12/ads-service/userservice/internal/domain/port"
+	pkgerrs "github.com/maket12/ads-service/userservice/pkg/errs"
 )
 
 type UpdateProfileUC struct {
-	profile        port.ProfileRepository
-	phoneValidator port.PhoneValidator
+	profile port.ProfileRepository
+	phone   port.PhoneValidator
 }
 
 func NewUpdateProfileUC(
 	profile port.ProfileRepository,
-	phoneValidator port.PhoneValidator,
+	phone port.PhoneValidator,
 ) *UpdateProfileUC {
 	return &UpdateProfileUC{
-		profile:        profile,
-		phoneValidator: phoneValidator,
+		profile: profile,
+		phone:   phone,
 	}
 }
 
@@ -30,20 +30,21 @@ func (uc *UpdateProfileUC) Execute(ctx context.Context, in dto.UpdateProfileInpu
 	profile, err := uc.profile.Get(ctx, in.AccountID)
 	if err != nil {
 		if errors.Is(err, pkgerrs.ErrObjectNotFound) {
-			return dto.UpdateProfileOutput{Success: false},
-				ucerrs.ErrInvalidAccountID
+			return dto.UpdateProfileOutput{}, ucerrs.ErrProfileNotFound
 		}
-		return dto.UpdateProfileOutput{Success: false},
-			ucerrs.Wrap(ucerrs.ErrGetProfileDB, err)
+		return dto.UpdateProfileOutput{}, ucerrs.Wrap(
+			ucerrs.ErrGetProfileDB, err,
+		)
 	}
 
 	// Phone number validation
 	var validatedPhone *string
 	if in.Phone != nil {
-		normPhone, err := uc.phoneValidator.Validate(ctx, *in.Phone)
-		if err != nil {
-			return dto.UpdateProfileOutput{Success: false},
-				ucerrs.ErrInvalidPhoneNumber
+		normPhone, phoneErr := uc.phone.Validate(ctx, *in.Phone)
+		if phoneErr != nil {
+			return dto.UpdateProfileOutput{}, ucerrs.Wrap(
+				ucerrs.ErrInvalidInput, phoneErr,
+			)
 		}
 		validatedPhone = &normPhone
 	}
@@ -57,12 +58,15 @@ func (uc *UpdateProfileUC) Execute(ctx context.Context, in dto.UpdateProfileInpu
 		in.Bio,
 	)
 	if err != nil {
-		return dto.UpdateProfileOutput{Success: false}, ucerrs.ErrInvalidProfileData
+		return dto.UpdateProfileOutput{}, ucerrs.Wrap(
+			ucerrs.ErrInvalidInput, err,
+		)
 	}
 
-	if err := uc.profile.Update(ctx, profile); err != nil {
-		return dto.UpdateProfileOutput{Success: false},
-			ucerrs.Wrap(ucerrs.ErrUpdateProfileDB, err)
+	if err = uc.profile.Update(ctx, profile); err != nil {
+		return dto.UpdateProfileOutput{}, ucerrs.Wrap(
+			ucerrs.ErrUpdateProfileDB, err,
+		)
 	}
 
 	return dto.UpdateProfileOutput{Success: true}, nil

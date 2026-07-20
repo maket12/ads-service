@@ -11,17 +11,20 @@ import (
 )
 
 type DeleteAccountUC struct {
-	account     port.AccountRepository
-	accountRole port.AccountRoleRepository
+	account          port.AccountRepository
+	accountRole      port.AccountRoleRepository
+	accountPublisher port.AccountPublisher
 }
 
 func NewDeleteAccountUC(
 	account port.AccountRepository,
 	accountRole port.AccountRoleRepository,
+	accountPublisher port.AccountPublisher,
 ) *DeleteAccountUC {
 	return &DeleteAccountUC{
-		account:     account,
-		accountRole: accountRole,
+		account:          account,
+		accountRole:      accountRole,
+		accountPublisher: accountPublisher,
 	}
 }
 
@@ -57,6 +60,14 @@ func (uc *DeleteAccountUC) Execute(ctx context.Context, in dto.DeleteAccountInpu
 	if err = uc.account.Update(ctx, account); err != nil {
 		return dto.DeleteAccountOutput{}, ucerrs.Wrap(
 			ucerrs.ErrUpdateAccountDB, err,
+		)
+	}
+
+	// Send an event to rabbitmq (delete profile)
+	err = uc.accountPublisher.PublishAccountDelete(ctx, account.ID())
+	if err != nil {
+		return dto.DeleteAccountOutput{}, ucerrs.Wrap(
+			ucerrs.ErrPublishEvent, err,
 		)
 	}
 

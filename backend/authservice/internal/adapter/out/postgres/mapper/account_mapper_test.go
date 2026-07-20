@@ -6,6 +6,7 @@ import (
 
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5/pgtype"
+	"github.com/maket12/ads-service/authservice/internal/adapter/out/postgres/mapper"
 	"github.com/stretchr/testify/require"
 
 	"github.com/maket12/ads-service/authservice/internal/adapter/out/postgres/sqlc"
@@ -52,7 +53,7 @@ func TestMapAccountToSQLCCreate(t *testing.T) {
 		},
 	}
 
-	actual := MapAccountToSQLCCreate(acc)
+	actual := mapper.MapAccountToSQLCCreate(acc)
 
 	require.Equal(t, expected, actual)
 }
@@ -93,7 +94,7 @@ func TestMapAccountToSQLCCreate_NilLastLogin(t *testing.T) {
 		LastLoginAt: pgtype.Timestamptz{},
 	}
 
-	actual := MapAccountToSQLCCreate(acc)
+	actual := mapper.MapAccountToSQLCCreate(acc)
 
 	require.Equal(t, expected, actual)
 }
@@ -140,7 +141,7 @@ func TestMapAccountToSQLCUpdate(t *testing.T) {
 		},
 	}
 
-	actual := MapAccountToSQLCUpdate(acc)
+	actual := mapper.MapAccountToSQLCUpdate(acc)
 
 	require.Equal(t, expected, actual)
 }
@@ -183,7 +184,7 @@ func TestMapAccountToSQLCUpdate_NilLastLogin(t *testing.T) {
 		LastLoginAt: pgtype.Timestamptz{},
 	}
 
-	actual := MapAccountToSQLCUpdate(acc)
+	actual := mapper.MapAccountToSQLCUpdate(acc)
 
 	require.Equal(t, expected, actual)
 }
@@ -228,7 +229,7 @@ func TestMapSQLCToAccount(t *testing.T) {
 		&lastLoginAt,
 	)
 
-	actual := MapSQLCToAccount(raw)
+	actual := mapper.MapSQLCToAccount(raw)
 
 	require.Equal(t, expected, actual)
 }
@@ -269,7 +270,7 @@ func TestMapSQLCToAccount_NilLastLogin(t *testing.T) {
 		nil,
 	)
 
-	actual := MapSQLCToAccount(raw)
+	actual := mapper.MapSQLCToAccount(raw)
 
 	require.Equal(t, expected, actual)
 }

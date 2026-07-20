@@ -1,11 +1,13 @@
 package model
 
 import (
+	"strings"
 	"time"
-
-	pkgerrs "github.com/maket12/ads-service/pkg/errs"
+	"unicode/utf8"
 
 	"github.com/google/uuid"
+	pkgerrs "github.com/maket12/ads-service/userservice/pkg/errs"
+	"github.com/maket12/ads-service/userservice/pkg/utils"
 )
 
 // ================ Rich model for Profile ================
@@ -30,8 +32,9 @@ func NewProfile(accountID uuid.UUID) (*Profile, error) {
 	}, nil
 }
 
-func RestoreProfile(accountID uuid.UUID, firstName, lastName,
-	phone, avatarURL, bio *string, updatedAt time.Time,
+func RestoreProfile(accountID uuid.UUID,
+	firstName, lastName, phone, avatarURL, bio *string,
+	updatedAt time.Time,
 ) *Profile {
 	return &Profile{
 		accountID: accountID,
@@ -56,43 +59,68 @@ func (p *Profile) UpdatedAt() time.Time { return p.updatedAt }
 
 // ================ Mutation ================
 
-func (p *Profile) Update(
-	firstName, lastName, phone,
-	avatarURL, bio *string,
-) error {
-	if firstName != nil && len(*firstName) < 3 {
-		return pkgerrs.NewValueInvalidError("first_name")
+func (p *Profile) Update(firstName, lastName, phone, avatarURL, bio *string) error {
+	if firstName != nil {
+		fNameLen := utf8.RuneCountInString(strings.TrimSpace(*firstName))
+		if fNameLen < 3 || fNameLen > 15 {
+			return pkgerrs.NewValueInvalidError("first_name")
+		}
 	}
-	if lastName != nil && len(*lastName) < 3 {
-		return pkgerrs.NewValueInvalidError("last_name")
+
+	if lastName != nil {
+		lNameLen := utf8.RuneCountInString(strings.TrimSpace(*lastName))
+		if lNameLen < 3 || lNameLen > 15 {
+			return pkgerrs.NewValueInvalidError("last_name")
+		}
 	}
-	if phone != nil && *phone == "" {
-		return pkgerrs.NewValueInvalidError("phone")
+
+	if phone != nil {
+		phoneLen := utf8.RuneCountInString(strings.TrimSpace(*phone))
+		if phoneLen < 4 || phoneLen > 18 {
+			return pkgerrs.NewValueInvalidError("phone")
+		}
 	}
-	if avatarURL != nil && *avatarURL == "" {
-		return pkgerrs.NewValueInvalidError("avatar_url")
+
+	if avatarURL != nil {
+		avatarLen := utf8.RuneCountInString(strings.TrimSpace(*avatarURL))
+		if avatarLen == 0 || avatarLen > 150 {
+			return pkgerrs.NewValueInvalidError("avatar_url")
+		}
 	}
-	if bio != nil && *bio == "" {
-		return pkgerrs.NewValueInvalidError("bio")
+
+	if bio != nil {
+		bioLen := utf8.RuneCountInString(strings.TrimSpace(*bio))
+		if bioLen == 0 || bioLen > 512 {
+			return pkgerrs.NewValueInvalidError("bio")
+		}
 	}
+
+	var changed bool
 
 	if firstName != nil {
-		p.firstName = firstName
+		p.firstName = utils.VPtr(strings.TrimSpace(*firstName))
+		changed = true
 	}
 	if lastName != nil {
-		p.lastName = lastName
+		p.lastName = utils.VPtr(strings.TrimSpace(*lastName))
+		changed = true
 	}
 	if phone != nil {
-		p.phone = phone
+		p.phone = utils.VPtr(strings.TrimSpace(*phone))
+		changed = true
 	}
 	if avatarURL != nil {
-		p.avatarURL = avatarURL
+		p.avatarURL = utils.VPtr(strings.TrimSpace(*avatarURL))
+		changed = true
 	}
 	if bio != nil {
-		p.bio = bio
+		p.bio = utils.VPtr(strings.TrimSpace(*bio))
+		changed = true
 	}
 
-	p.updatedAt = time.Now()
+	if changed {
+		p.updatedAt = time.Now()
+	}
 
 	return nil
 }

@@ -139,12 +139,8 @@ func closeRabbitMQClient(
 	}
 }
 
-func newAccountPublisher(
-	cfg *config.Config, rabbitClient *pkgrabbitmq.Client,
-) (*adaptermq.AccountPublisher, error) {
-	publisherConfig := adaptermq.NewPublisherConfig(
-		cfg.ExchangeName, cfg.RoutingKey,
-	)
+func newAccountPublisher(cfg *config.Config, rabbitClient *pkgrabbitmq.Client) (*adaptermq.AccountPublisher, error) {
+	publisherConfig := adaptermq.NewPublisherConfig(cfg.ExchangeName)
 
 	pub, err := adaptermq.NewAccountPublisher(publisherConfig, rabbitClient)
 	if err != nil {
@@ -232,7 +228,7 @@ func runServer(ctx context.Context, cfg *config.Config, logger *slog.Logger) err
 		accountPublisher,
 	)
 	loginUC := usecase.NewLoginUC(
-		accRepo, accRoleRepo,
+		trManager, accRepo, accRoleRepo,
 		rSessRepo, passwordHasher,
 		tokenGenerator, cfg.RefreshTTL,
 	)

@@ -10,15 +10,16 @@ import (
 	"os/signal"
 	"syscall"
 
-	"github.com/maket12/ads-service/pkg/generated/user_v1"
-	pkgpostgres "github.com/maket12/ads-service/pkg/postgres"
-	pkgrabbitmq "github.com/maket12/ads-service/pkg/rabbitmq"
+	trmpgx "github.com/avito-tech/go-transaction-manager/drivers/pgxv5/v2"
 	"github.com/maket12/ads-service/userservice/cmd/app/config"
 	adaptergrpc "github.com/maket12/ads-service/userservice/internal/adapter/in/grpc"
 	adapterrabbitmq "github.com/maket12/ads-service/userservice/internal/adapter/in/rabbitmq"
 	adapterpostgres "github.com/maket12/ads-service/userservice/internal/adapter/out/postgres"
-	adapterphone "github.com/maket12/ads-service/userservice/internal/adapter/out/validator"
 	"github.com/maket12/ads-service/userservice/internal/app/usecase"
+	adapterphone "github.com/maket12/ads-service/userservice/internal/infrastructure/phone"
+	"github.com/maket12/ads-service/userservice/pkg/generated/user_v1"
+	pkgpostgres "github.com/maket12/ads-service/userservice/pkg/postgres"
+	pkgrabbitmq "github.com/maket12/ads-service/userservice/pkg/rabbitmq"
 
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/reflection"
@@ -46,14 +47,15 @@ func newLogger(level string) *slog.Logger {
 	}))
 }
 
-func newPostgresClient(cfg *config.Config) (*pkgpostgres.Client, error) {
+func newPostgresClient(ctx context.Context, cfg *config.Config) (*pkgpostgres.Client, error) {
 	pgConfig := pkgpostgres.NewConfig(
-		cfg.PgHost, cfg.PgPort, cfg.PgUser, cfg.PgPassword,
-		cfg.PgDBName, cfg.PgSSLMode, cfg.PgOpenConn,
-		cfg.PgIdleConn, cfg.PgConnLifeTime,
+		cfg.DbHost, cfg.DbPort, cfg.DbUser, cfg.DbPassword,
+		cfg.DbName, cfg.DbSSLMode, cfg.DbMaxConn,
+		cfg.DbMinConn, cfg.DbMaxConnLifeTime,
+		cfg.DbMaxConnIdleTime,
 	)
 
-	pgClient, err := pkgpostgres.NewClient(pgConfig)
+	pgClient, err := pkgpostgres.NewClient(ctx, pgConfig)
 	if err != nil {
 		return nil, err
 	}
@@ -61,8 +63,17 @@ func newPostgresClient(cfg *config.Config) (*pkgpostgres.Client, error) {
 	return pgClient, nil
 }
 
-func newRabbitMQClient(cfg *config.Config) (*pkgrabbitmq.RabbitClient, error) {
-	rabbitConfig := pkgrabbitmq.NewRabbitConfig(
+func closePostgresClient(
+	ctx context.Context,
+	logger *slog.Logger,
+	client *pkgpostgres.Client,
+) {
+	logger.InfoContext(ctx, "closing postgres connection...")
+	client.Close()
+}
+
+func newRabbitMQClient(cfg *config.Config) (*pkgrabbitmq.Client, error) {
+	rabbitConfig := pkgrabbitmq.NewConfig(
 		cfg.RabbitHost,
 		cfg.RabbitPort,
 		cfg.RabbitUser,
@@ -71,7 +82,7 @@ func newRabbitMQClient(cfg *config.Config) (*pkgrabbitmq.RabbitClient, error) {
 		cfg.RabbitAttempts,
 	)
 
-	rabbitClient, err := pkgrabbitmq.NewRabbitClient(rabbitConfig)
+	rabbitClient, err := pkgrabbitmq.NewClient(rabbitConfig)
 	if err != nil {
 		return nil, err
 	}
@@ -79,11 +90,23 @@ func newRabbitMQClient(cfg *config.Config) (*pkgrabbitmq.RabbitClient, error) {
 	return rabbitClient, nil
 }
 
-func newRabbitMQSubscriber(
-	cfg *config.Config,
+func closeRabbitMQClient(
+	ctx context.Context,
 	logger *slog.Logger,
-	rabbitClient *pkgrabbitmq.RabbitClient,
+	rabbitClient *pkgrabbitmq.Client,
+) {
+	logger.InfoContext(ctx, "closing rabbitmq connection...")
+	if err := rabbitClient.Close(); err != nil {
+		logger.ErrorContext(ctx, "failed to close rabbitmq",
+			slog.Any("error", err),
+		)
+	}
+}
+
+func newRabbitMQSubscriber(cfg *config.Config, logger *slog.Logger,
+	rabbitClient *pkgrabbitmq.Client,
 	createProfileUC *usecase.CreateProfileUC,
+	deleteProfileUC *usecase.DeleteProfileUC,
 ) *adapterrabbitmq.AccountSubscriber {
 	subConfig := adapterrabbitmq.NewSubscriberConfig(
 		cfg.ExchangeName,
@@ -96,6 +119,7 @@ func newRabbitMQSubscriber(
 		logger,
 		rabbitClient,
 		createProfileUC,
+		deleteProfileUC,
 	)
 
 	return sub
@@ -103,20 +127,13 @@ func newRabbitMQSubscriber(
 
 func runServer(ctx context.Context, cfg *config.Config, logger *slog.Logger) error {
 	// Postgres client
-	pgClient, err := newPostgresClient(cfg)
+	pgClient, err := newPostgresClient(ctx, cfg)
 	if err != nil {
 		return fmt.Errorf("failed to init postgres client: %w", err)
 	}
 
 	// Close Postgres
-	defer func() {
-		logger.InfoContext(ctx, "closing postgres connection...")
-		if err := pgClient.Close(); err != nil {
-			logger.ErrorContext(ctx, "failed to close postgres",
-				slog.Any("error", err),
-			)
-		}
-	}()
+	defer closePostgresClient(ctx, logger, pgClient)
 
 	// RabbitMQ client
 	rabbitClient, err := newRabbitMQClient(cfg)
@@ -125,26 +142,24 @@ func runServer(ctx context.Context, cfg *config.Config, logger *slog.Logger) err
 	}
 
 	// Close RabbitMQ
-	defer func() {
-		logger.InfoContext(ctx, "closing rabbitmq connection...")
-		if err := rabbitClient.Close(); err != nil {
-			logger.ErrorContext(ctx, "failed to close rabbitmq",
-				slog.Any("error", err),
-			)
-		}
-	}()
+	defer closeRabbitMQClient(ctx, logger, rabbitClient)
 
-	// Repositories
-	profileRepo := adapterpostgres.NewProfileRepository(pgClient)
-	phoneValidator := adapterphone.NewPhoneValidator(cfg.PhoneDefaultRegion)
+	// Repositories and infrastructure
+	profileRepo := adapterpostgres.NewProfileRepository(pgClient, trmpgx.DefaultCtxGetter)
+	phoneValidator := adapterphone.NewValidator(cfg.PhoneDefaultRegion)
 
 	// Use-cases
 	createProfileUC := usecase.NewCreateProfileUC(profileRepo)
 	getProfileUC := usecase.NewGetProfileUC(profileRepo)
 	updateProfileUC := usecase.NewUpdateProfileUC(profileRepo, phoneValidator)
+	deleteProfileUC := usecase.NewDeleteProfileUC(profileRepo)
 
 	// RabbitMQ Subscriber
-	subscriber := newRabbitMQSubscriber(cfg, logger, rabbitClient, createProfileUC)
+	subscriber := newRabbitMQSubscriber(cfg, logger,
+		rabbitClient,
+		createProfileUC,
+		deleteProfileUC,
+	)
 
 	// Handler
 	userHandler := adaptergrpc.NewUserHandler(
@@ -210,7 +225,7 @@ func main() {
 	ctx, stop := signal.NotifyContext(context.Background(), syscall.SIGINT, syscall.SIGTERM)
 	defer stop()
 
-	if err := runServer(ctx, cfg, logger); err != nil {
+	if err = runServer(ctx, cfg, logger); err != nil {
 		logger.ErrorContext(
 			ctx, "userservice failed", slog.Any("error", err),
 		)

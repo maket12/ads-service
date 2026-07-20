@@ -3,8 +3,8 @@ package grpc
 import (
 	"errors"
 
-	pkgerrs "github.com/maket12/ads-service/pkg/errs"
 	ucerrs "github.com/maket12/ads-service/userservice/internal/app/errs"
+	pkgerrs "github.com/maket12/ads-service/userservice/pkg/errs"
 
 	"google.golang.org/grpc/codes"
 )
@@ -16,8 +16,16 @@ func gRPCError(err error) *pkgerrs.OutErr {
 		switch {
 		case errors.Is(w.Public, ucerrs.ErrCreateProfileDB),
 			errors.Is(w.Public, ucerrs.ErrGetProfileDB),
-			errors.Is(w.Public, ucerrs.ErrUpdateProfileDB):
+			errors.Is(w.Public, ucerrs.ErrUpdateProfileDB),
+			errors.Is(w.Public, ucerrs.ErrDeleteProfileDB):
 			return pkgerrs.NewOutError(codes.Internal, w.Public.Error(), w.Reason)
+
+		case errors.Is(w.Public, ucerrs.ErrInvalidInput):
+			return pkgerrs.NewOutError(
+				codes.InvalidArgument,
+				w.Public.Error(),
+				w.Reason,
+			)
 
 		default:
 			return pkgerrs.NewOutError(codes.Internal, "internal error", w.Reason)
@@ -25,12 +33,8 @@ func gRPCError(err error) *pkgerrs.OutErr {
 	}
 
 	switch {
-	case errors.Is(err, ucerrs.ErrInvalidAccountID):
+	case errors.Is(err, ucerrs.ErrProfileNotFound):
 		return pkgerrs.NewOutError(codes.NotFound, err.Error(), nil)
-
-	case errors.Is(err, ucerrs.ErrInvalidProfileData),
-		errors.Is(err, ucerrs.ErrInvalidPhoneNumber):
-		return pkgerrs.NewOutError(codes.InvalidArgument, err.Error(), nil)
 
 	case errors.Is(err, pkgerrs.ErrNotAuthenticated):
 		return pkgerrs.NewOutError(codes.Unauthenticated, err.Error(), nil)

@@ -107,9 +107,7 @@ func (h *AuthHandler) RefreshSession(
 	ucResp, err := h.refreshSessionUC.Execute(ctx, MapRefreshSessionPbToDTO(req))
 
 	if err != nil {
-		code, msg := h.handleError(ctx, err,
-			"failed to refresh session",
-		)
+		code, msg := h.handleError(ctx, err, "failed to refresh session")
 		return nil, status.Error(code, msg)
 	}
 
@@ -123,9 +121,7 @@ func (h *AuthHandler) ValidateAccessToken(
 	ucResp, err := h.validateAccessTokenUC.Execute(ctx, MapValidateAccessTokenPbToDTO(req))
 
 	if err != nil {
-		code, msg := h.handleError(ctx, err,
-			"failed to validate access token",
-		)
+		code, msg := h.handleError(ctx, err, "failed to validate access token")
 		return nil, status.Error(code, msg)
 	}
 
@@ -139,9 +135,7 @@ func (h *AuthHandler) AssignRole(
 	ucResp, err := h.assignRoleUC.Execute(ctx, MapAssignRolePbToDTO(req))
 
 	if err != nil {
-		code, msg := h.handleError(ctx, err,
-			"failed to assign account role",
-		)
+		code, msg := h.handleError(ctx, err, "failed to assign account role")
 		return nil, status.Error(code, msg)
 	}
 
@@ -160,9 +154,7 @@ func (h *AuthHandler) SendVerification(
 	ucResp, err := h.sendVerificationUC.Execute(ctx, MapSendVerificationPbToDTO(req))
 
 	if err != nil {
-		code, msg := h.handleError(ctx, err,
-			"failed to send verification",
-		)
+		code, msg := h.handleError(ctx, err, "failed to send verification")
 		return nil, status.Error(code, msg)
 	}
 
@@ -180,9 +172,7 @@ func (h *AuthHandler) VerifyEmail(
 	ucResp, err := h.verifyEmailUC.Execute(ctx, MapVerifyEmailPbToDTO(req))
 
 	if err != nil {
-		code, msg := h.handleError(ctx, err,
-			"failed to verify email",
-		)
+		code, msg := h.handleError(ctx, err, "failed to verify email")
 		return nil, status.Error(code, msg)
 	}
 
@@ -194,7 +184,7 @@ func (h *AuthHandler) handleError(
 	logMsg string,
 ) (codes.Code, string) {
 	outErr := gRPCError(err)
-	h.log.ErrorContext(ctx, logMsg,
+	h.log.LogAttrs(ctx, outErr.Level, logMsg,
 		slog.Int("code", int(outErr.Code)),
 		slog.String("public_msg", outErr.Message),
 		slog.Any("reason", outErr.Reason),

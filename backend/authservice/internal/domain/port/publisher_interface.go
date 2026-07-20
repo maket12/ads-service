@@ -8,4 +8,5 @@ import (
 
 type AccountPublisher interface {
 	PublishAccountCreate(ctx context.Context, accountID uuid.UUID) error
+	PublishAccountDelete(ctx context.Context, accountID uuid.UUID) error
 }
