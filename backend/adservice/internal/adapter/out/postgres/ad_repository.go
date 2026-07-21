@@ -53,11 +53,6 @@ func (r *AdRepository) Update(ctx context.Context, ad *model.Ad) error {
 	return r.q.UpdateAd(ctx, r.db(ctx), params)
 }
 
-func (r *AdRepository) UpdateStatus(ctx context.Context, ad *model.Ad) error {
-	params := mapper.MapAdToSQLCUpdateStatus(ad)
-	return r.q.UpdateAdStatus(ctx, r.db(ctx), params)
-}
-
 func (r *AdRepository) Delete(ctx context.Context, id uuid.UUID) error {
 	return r.q.DeleteAd(ctx, r.db(ctx),
 		pgtype.UUID{

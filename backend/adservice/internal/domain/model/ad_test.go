@@ -106,6 +106,7 @@ func TestNewAd(t *testing.T) {
 				assert.Equal(t, tt.sellerID, ad.SellerID())
 				assert.Equal(t, tt.title, ad.Title())
 				assert.Equal(t, tt.price, ad.Price())
+				assert.Equal(t, ad.Status(), model.AdOnModeration)
 				assert.Equal(t, tt.images, ad.Images())
 				assert.NotNil(t, ad.CreatedAt())
 				assert.Nil(t, ad.UpdatedAt())

@@ -1,4 +1,4 @@
-///go:build integration
+//go:build integration
 
 package postgres_test
 
@@ -88,21 +88,6 @@ func (s *AdRepoSuite) TestUpdate() {
 	s.Require().NotNil(ad)
 	s.Require().Exactly(testTitle, ad.Title())
 	s.Require().Exactly(testPrice, ad.Price())
-}
-
-func (s *AdRepoSuite) TestUpdateStatus() {
-	// Create an ad in advance
-	_ = s.repo.Create(s.ctx, s.testAd)
-
-	// Change status (for example, publish)
-	_ = s.testAd.Publish()
-	err := s.repo.UpdateStatus(s.ctx, s.testAd)
-	s.Require().NoError(err)
-
-	// Ensure update was successful
-	ad, _ := s.repo.Get(s.ctx, s.testAd.ID())
-	s.Require().NotNil(ad)
-	s.Require().Exactly(model.AdPublished, ad.Status())
 }
 
 func (s *AdRepoSuite) TestDelete() {

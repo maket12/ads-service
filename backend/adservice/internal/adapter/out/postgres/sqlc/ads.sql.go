@@ -204,44 +204,37 @@ func (q *Queries) ListSellerAds(ctx context.Context, db DBTX, arg ListSellerAdsP
 const updateAd = `-- name: UpdateAd :exec
 UPDATE ads
 SET
-    title = $2,
-    description = $3,
-    price = $4,
-    updated_at = $5
+    seller_id = $2,
+    title = $3,
+    description = $4,
+    price = $5,
+    status = $6,
+    created_at = $7,
+    updated_at = $8
 WHERE id = $1
 `
 
 type UpdateAdParams struct {
 	ID          pgtype.UUID
+	SellerID    pgtype.UUID
 	Title       string
 	Description pgtype.Text
 	Price       int64
+	Status      string
+	CreatedAt   pgtype.Timestamptz
 	UpdatedAt   pgtype.Timestamptz
 }
 
 func (q *Queries) UpdateAd(ctx context.Context, db DBTX, arg UpdateAdParams) error {
 	_, err := db.Exec(ctx, updateAd,
 		arg.ID,
+		arg.SellerID,
 		arg.Title,
 		arg.Description,
 		arg.Price,
+		arg.Status,
+		arg.CreatedAt,
 		arg.UpdatedAt,
 	)
-	return err
-}
-
-const updateAdStatus = `-- name: UpdateAdStatus :exec
-UPDATE ads
-SET status = $2
-WHERE id = $1
-`
-
-type UpdateAdStatusParams struct {
-	ID     pgtype.UUID
-	Status string
-}
-
-func (q *Queries) UpdateAdStatus(ctx context.Context, db DBTX, arg UpdateAdStatusParams) error {
-	_, err := db.Exec(ctx, updateAdStatus, arg.ID, arg.Status)
 	return err
 }

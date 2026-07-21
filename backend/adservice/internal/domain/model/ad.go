@@ -25,6 +25,8 @@ const (
 	AdDeleted      AdStatus = "deleted"
 )
 
+func (s AdStatus) String() string { return string(s) }
+
 const (
 	minTitleLen       = 5
 	maxTitleLen       = 128

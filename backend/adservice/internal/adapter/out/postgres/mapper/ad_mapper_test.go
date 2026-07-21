@@ -1,164 +1,261 @@
 package mapper_test
 
 import (
-	"database/sql"
+	"reflect"
 	"testing"
-	"time"
 
+	"github.com/jackc/pgx/v5/pgtype"
 	"github.com/maket12/ads-service/adservice/internal/adapter/out/postgres/mapper"
 	"github.com/maket12/ads-service/adservice/internal/adapter/out/postgres/sqlc"
-	sqlc2 "github.com/maket12/ads-service/adservice/internal/adapter/out/postgres/sqlc"
 	"github.com/maket12/ads-service/adservice/internal/domain/model"
 
+	"github.com/brianvoe/gofakeit/v7"
 	"github.com/google/uuid"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
 
 func TestMapSQLCToAd(t *testing.T) {
-	raw := sqlc2.Ad{
-		ID:       uuid.New(),
-		SellerID: uuid.New(),
-		Title:    "Sell a penthouse",
-		Description: sql.NullString{
-			String: "was built in 1983",
+	id := uuid.New()
+	sellerID := uuid.New()
+	description := gofakeit.Bio()
+	price := int64(gofakeit.Price(1000, 1000000))
+	createdAt := gofakeit.Date()
+	updatedAt := gofakeit.Date()
+
+	raw := sqlc.Ad{
+		ID:       pgtype.UUID{Bytes: id, Valid: true},
+		SellerID: pgtype.UUID{Bytes: sellerID, Valid: true},
+		Title:    gofakeit.ProductName(),
+		Description: pgtype.Text{
+			String: description,
 			Valid:  true,
 		},
-		Price:     800000,
-		Status:    "published",
-		CreatedAt: time.Now(),
-		UpdatedAt: time.Now(),
+		Price:  price,
+		Status: model.AdPublished.String(),
+		CreatedAt: pgtype.Timestamptz{
+			Time:  createdAt,
+			Valid: true,
+		},
+		UpdatedAt: pgtype.Timestamptz{
+			Time:  updatedAt,
+			Valid: true,
+		},
 	}
+
+	expected := model.RestoreAd(
+		id,
+		sellerID,
+		raw.Title,
+		&description,
+		price,
+		model.AdPublished,
+		nil,
+		createdAt,
+		&updatedAt,
+	)
 
 	ad := mapper.MapSQLCToAd(raw)
 
 	require.NotNil(t, ad)
-	require.NotNil(t, ad.Description())
+	assert.True(t, reflect.DeepEqual(expected, ad))
+}
 
-	assert.Equal(t, raw.ID, ad.ID())
-	assert.Equal(t, raw.SellerID, ad.SellerID())
-	assert.Equal(t, raw.Title, ad.Title())
-	assert.Equal(t, raw.Description.String, *ad.Description())
-	assert.Equal(t, string(raw.Status), string(ad.Status()))
-	assert.Equal(t, raw.Price, ad.Price())
-	assert.Equal(t, raw.CreatedAt, ad.CreatedAt())
-	assert.Equal(t, raw.UpdatedAt, ad.UpdatedAt())
+func TestMapSQLCToAd_NilDescriptionAndUpdatedAt(t *testing.T) {
+	id := uuid.New()
+	sellerID := uuid.New()
+	title := gofakeit.ProductName()
+	price := int64(gofakeit.Price(1000, 1000000))
+	createdAt := gofakeit.Date()
+
+	raw := sqlc.Ad{
+		ID:          pgtype.UUID{Bytes: id, Valid: true},
+		SellerID:    pgtype.UUID{Bytes: sellerID, Valid: true},
+		Title:       title,
+		Description: pgtype.Text{Valid: false},
+		Price:       price,
+		Status:      model.AdOnModeration.String(),
+		CreatedAt: pgtype.Timestamptz{
+			Time:  createdAt,
+			Valid: true,
+		},
+		UpdatedAt: pgtype.Timestamptz{Valid: false},
+	}
+
+	expected := model.RestoreAd(
+		id,
+		sellerID,
+		title,
+		nil,
+		price,
+		model.AdOnModeration,
+		nil,
+		createdAt,
+		nil,
+	)
+
+	ad := mapper.MapSQLCToAd(raw)
+
+	require.NotNil(t, ad)
+	assert.True(t, reflect.DeepEqual(expected, ad))
 }
 
 func TestMapAdToSQLCCreate(t *testing.T) {
-	testDesc := "was built in 1983"
+	testDesc := gofakeit.Bio()
+	testPrice := int64(gofakeit.Price(1000, 1000000))
 
-	ad, _ := model.NewAd(
+	ad, err := model.NewAd(
 		uuid.New(),
-		"Sell penthouse",
+		gofakeit.ProductName(),
 		&testDesc,
-		780000,
+		testPrice,
 		nil,
 	)
+	require.NoError(t, err)
+
+	expected := sqlc.CreateAdParams{
+		ID: pgtype.UUID{
+			Bytes: ad.ID(),
+			Valid: true,
+		},
+		SellerID: pgtype.UUID{
+			Bytes: ad.SellerID(),
+			Valid: true,
+		},
+		Title: ad.Title(),
+		Description: pgtype.Text{
+			String: testDesc,
+			Valid:  true,
+		},
+		Price:  ad.Price(),
+		Status: string(ad.Status()),
+		CreatedAt: pgtype.Timestamptz{
+			Time:  ad.CreatedAt(),
+			Valid: true,
+		},
+		UpdatedAt: pgtype.Timestamptz{},
+	}
 
 	mapped := mapper.MapAdToSQLCCreate(ad)
 
-	require.NotNil(t, mapped)
-	require.True(t, mapped.Description.Valid)
-
-	assert.Equal(t, ad.ID(), mapped.ID)
-	assert.Equal(t, ad.SellerID(), mapped.SellerID)
-	assert.Equal(t, ad.Title(), mapped.Title)
-	assert.Equal(t, testDesc, mapped.Description.String)
-	assert.Equal(t, ad.Price(), mapped.Price)
-	assert.Equal(t, string(ad.Status()), string(mapped.Status))
-	assert.Equal(t, ad.CreatedAt(), mapped.CreatedAt)
-	assert.Equal(t, ad.UpdatedAt(), mapped.UpdatedAt)
+	assert.True(t, reflect.DeepEqual(expected, mapped))
 }
 
 func TestMapAdToSQLCUpdate(t *testing.T) {
-	testDesc := "was built in 1983"
+	testDesc := gofakeit.Bio()
+	testPrice := int64(gofakeit.Price(1000, 1000000))
 
-	ad, _ := model.NewAd(
+	ad, err := model.NewAd(
 		uuid.New(),
-		"Sell penthouse",
+		gofakeit.ProductName(),
 		&testDesc,
-		780000,
+		testPrice,
 		nil,
 	)
+	require.NoError(t, err)
+
+	expected := sqlc.UpdateAdParams{
+		ID: pgtype.UUID{
+			Bytes: ad.ID(),
+			Valid: true,
+		},
+		SellerID: pgtype.UUID{
+			Bytes: ad.SellerID(),
+			Valid: true,
+		},
+		Title: ad.Title(),
+		Description: pgtype.Text{
+			String: testDesc,
+			Valid:  true,
+		},
+		Price:  ad.Price(),
+		Status: string(ad.Status()),
+		CreatedAt: pgtype.Timestamptz{
+			Time:  ad.CreatedAt(),
+			Valid: true,
+		},
+		UpdatedAt: pgtype.Timestamptz{},
+	}
 
 	mapped := mapper.MapAdToSQLCUpdate(ad)
 
-	require.NotNil(t, mapped)
-	require.True(t, mapped.Description.Valid)
-
-	assert.Equal(t, ad.ID(), mapped.ID)
-	assert.Equal(t, ad.Title(), mapped.Title)
-	assert.Equal(t, testDesc, mapped.Description.String)
-	assert.Equal(t, ad.Price(), mapped.Price)
-	assert.Equal(t, ad.UpdatedAt(), mapped.UpdatedAt)
-}
-
-func TestMapAdToSQLCUpdateStatus(t *testing.T) {
-	ad, _ := model.NewAd(
-		uuid.New(),
-		"Sell penthouse",
-		nil,
-		780000,
-		nil,
-	)
-	_ = ad.Reject()
-
-	mapped := mapper.MapAdToSQLCUpdateStatus(ad)
-
-	require.NotNil(t, mapped)
-
-	assert.Equal(t, ad.ID(), mapped.ID)
-	assert.Equal(t, string(ad.Status()), string(mapped.Status))
+	assert.True(t, reflect.DeepEqual(expected, mapped))
 }
 
 func TestMapToSQLCList(t *testing.T) {
-	testLimit := 10
-	testOffset := 10
+	testLimit := gofakeit.Number(1, 100)
+	testOffset := gofakeit.Number(0, 100)
+
+	expected := sqlc.ListAdsParams{
+		Limit:  int32(testLimit),
+		Offset: int32(testOffset),
+	}
 
 	mapped := mapper.MapToSQLCList(testLimit, testOffset)
 
-	require.NotNil(t, mapped)
+	assert.True(t, reflect.DeepEqual(expected, mapped))
+}
 
-	assert.Equal(t, testLimit, int(mapped.Limit))
-	assert.Equal(t, testOffset, int(mapped.Offset))
+func TestMapToSQLCSellerList(t *testing.T) {
+	sellerID := uuid.New()
+	testLimit := gofakeit.Number(1, 100)
+	testOffset := gofakeit.Number(0, 100)
+
+	expected := sqlc.ListSellerAdsParams{
+		SellerID: pgtype.UUID{
+			Bytes: sellerID,
+			Valid: true,
+		},
+		Limit:  int32(testLimit),
+		Offset: int32(testOffset),
+	}
+
+	mapped := mapper.MapToSQLCSellerList(sellerID, testLimit, testOffset)
+
+	assert.True(t, reflect.DeepEqual(expected, mapped))
 }
 
 func TestMapSQLCToAdsList(t *testing.T) {
-	rawAds := []sqlc2.Ad{
+	rawAds := []sqlc.Ad{
 		{
-			ID:          uuid.New(),
-			SellerID:    uuid.New(),
-			Title:       "A new product",
-			Description: sql.NullString{},
-			Price:       10000,
-			Status:      sqlc.AdStatusDeleted,
-			CreatedAt:   time.Time{},
-			UpdatedAt:   time.Time{},
+			ID:          pgtype.UUID{Bytes: uuid.New(), Valid: true},
+			SellerID:    pgtype.UUID{Bytes: uuid.New(), Valid: true},
+			Title:       gofakeit.ProductName(),
+			Description: pgtype.Text{},
+			Price:       int64(gofakeit.Price(1000, 1000000)),
+			Status:      "deleted",
+			CreatedAt:   pgtype.Timestamptz{Time: gofakeit.Date(), Valid: true},
+			UpdatedAt:   pgtype.Timestamptz{},
 		},
 		{
-			ID:          uuid.New(),
-			SellerID:    uuid.New(),
-			Title:       "A new product",
-			Description: sql.NullString{},
-			Price:       10000,
-			Status:      sqlc.AdStatusRejected,
-			CreatedAt:   time.Time{},
-			UpdatedAt:   time.Time{},
+			ID:          pgtype.UUID{Bytes: uuid.New(), Valid: true},
+			SellerID:    pgtype.UUID{Bytes: uuid.New(), Valid: true},
+			Title:       gofakeit.ProductName(),
+			Description: pgtype.Text{},
+			Price:       int64(gofakeit.Price(1000, 1000000)),
+			Status:      "rejected",
+			CreatedAt:   pgtype.Timestamptz{Time: gofakeit.Date(), Valid: true},
+			UpdatedAt:   pgtype.Timestamptz{},
 		},
+	}
+
+	expected := make([]*model.Ad, 0, len(rawAds))
+	for _, raw := range rawAds {
+		expected = append(expected, model.RestoreAd(
+			raw.ID.Bytes,
+			raw.SellerID.Bytes,
+			raw.Title,
+			nil,
+			raw.Price,
+			model.AdStatus(raw.Status),
+			nil,
+			raw.CreatedAt.Time,
+			nil,
+		))
 	}
 
 	mapped := mapper.MapSQLCToAdsList(rawAds)
 
-	require.NotNil(t, mapped)
-	require.NotEmpty(t, mapped)
 	require.Len(t, mapped, len(rawAds))
-
-	for i := 0; i < len(rawAds); i++ {
-		require.NotNil(t, mapped[i])
-		assert.Equal(t, rawAds[i].ID, mapped[i].ID())
-		assert.Equal(t, rawAds[i].Title, mapped[i].Title())
-		// ...
-		assert.Equal(t, rawAds[i].UpdatedAt, mapped[i].UpdatedAt())
-	}
+	assert.True(t, reflect.DeepEqual(expected, mapped))
 }

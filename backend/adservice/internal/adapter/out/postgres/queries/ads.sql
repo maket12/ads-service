@@ -28,15 +28,13 @@ WHERE id = $1;
 -- name: UpdateAd :exec
 UPDATE ads
 SET
-    title = $2,
-    description = $3,
-    price = $4,
-    updated_at = $5
-WHERE id = $1;
-
--- name: UpdateAdStatus :exec
-UPDATE ads
-SET status = $2
+    seller_id = $2,
+    title = $3,
+    description = $4,
+    price = $5,
+    status = $6,
+    created_at = $7,
+    updated_at = $8
 WHERE id = $1;
 
 -- name: DeleteAd :exec
