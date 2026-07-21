@@ -11,3 +11,6 @@ CREATE TABLE IF NOT EXISTS ads (
     created_at timestamptz NOT NULL DEFAULT now(),
     updated_at timestamptz NOT NULL DEFAULT now()
 );
+
+CREATE INDEX IF NOT EXISTS idx_ads_seller_id ON ads(seller_id);
+CREATE INDEX IF NOT EXISTS idx_ads_status ON ads(status);
