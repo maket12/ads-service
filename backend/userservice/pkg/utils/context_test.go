@@ -5,6 +5,7 @@ import (
 	"testing"
 
 	"github.com/google/uuid"
+	"github.com/maket12/ads-service/userservice/pkg/utils"
 	"github.com/stretchr/testify/assert"
 	"google.golang.org/grpc/metadata"
 )
@@ -55,7 +56,7 @@ func TestExtractAccountID(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			uid, err := ExtractAccountID(tt.ctx)
+			uid, err := utils.ExtractAccountID(tt.ctx)
 
 			if !tt.wantErr {
 				assert.NoError(t, err)
@@ -106,7 +107,7 @@ func TestExtractAccountRole(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			uid, err := ExtractAccountRole(tt.ctx)
+			uid, err := utils.ExtractAccountRole(tt.ctx)
 
 			if !tt.wantErr {
 				assert.NoError(t, err)
