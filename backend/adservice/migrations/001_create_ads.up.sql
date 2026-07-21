@@ -9,7 +9,7 @@ CREATE TABLE IF NOT EXISTS ads (
           ('published', 'on_moderation', 'rejected', 'deleted')
         ) DEFAULT 'on_moderation',
     created_at timestamptz NOT NULL DEFAULT now(),
-    updated_at timestamptz NOT NULL DEFAULT now()
+    updated_at timestamptz
 );
 
 CREATE INDEX IF NOT EXISTS idx_ads_seller_id ON ads(seller_id);

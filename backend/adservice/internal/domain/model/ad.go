@@ -5,6 +5,7 @@ import (
 	"time"
 
 	pkgerrs "github.com/maket12/ads-service/adservice/pkg/errs"
+	"github.com/maket12/ads-service/adservice/pkg/utils"
 
 	"github.com/google/uuid"
 )
@@ -41,7 +42,7 @@ type Ad struct {
 	status      AdStatus
 	images      []string
 	createdAt   time.Time
-	updatedAt   time.Time
+	updatedAt   *time.Time
 }
 
 func NewAd(
@@ -94,7 +95,7 @@ func NewAd(
 		status:      AdOnModeration,
 		images:      imagesCopy,
 		createdAt:   now,
-		updatedAt:   now,
+		updatedAt:   nil,
 	}, nil
 }
 
@@ -106,7 +107,7 @@ func RestoreAd(
 	status AdStatus,
 	images []string,
 	createdAt time.Time,
-	updatedAt time.Time,
+	updatedAt *time.Time,
 ) *Ad {
 	var imagesCopy []string
 	if images != nil {
@@ -142,8 +143,8 @@ func (ad *Ad) Images() []string {
 	copy(cp, ad.images)
 	return cp
 }
-func (ad *Ad) CreatedAt() time.Time { return ad.createdAt }
-func (ad *Ad) UpdatedAt() time.Time { return ad.updatedAt }
+func (ad *Ad) CreatedAt() time.Time  { return ad.createdAt }
+func (ad *Ad) UpdatedAt() *time.Time { return ad.updatedAt }
 
 // ================ Business Logic ================
 
@@ -164,7 +165,7 @@ func (ad *Ad) Publish() error {
 	}
 
 	ad.status = AdPublished
-	ad.updatedAt = time.Now()
+	ad.updatedAt = utils.VPtr(time.Now())
 
 	return nil
 }
@@ -175,7 +176,7 @@ func (ad *Ad) Reject() error {
 	}
 
 	ad.status = AdRejected
-	ad.updatedAt = time.Now()
+	ad.updatedAt = utils.VPtr(time.Now())
 
 	return nil
 }
@@ -186,7 +187,7 @@ func (ad *Ad) Delete() error {
 	}
 
 	ad.status = AdDeleted
-	ad.updatedAt = time.Now()
+	ad.updatedAt = utils.VPtr(time.Now())
 
 	return nil
 }
@@ -216,7 +217,7 @@ func (ad *Ad) Update(title, description *string, price *int64, images []string) 
 		copy(ad.images, images)
 	}
 
-	ad.updatedAt = time.Now()
+	ad.updatedAt = utils.VPtr(time.Now())
 
 	return nil
 }

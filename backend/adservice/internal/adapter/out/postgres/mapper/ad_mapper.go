@@ -4,13 +4,12 @@ import (
 	"database/sql"
 
 	"github.com/maket12/ads-service/adservice/internal/adapter/out/postgres/sqlc"
-	sqlc2 "github.com/maket12/ads-service/adservice/internal/adapter/out/postgres/sqlc"
 	"github.com/maket12/ads-service/adservice/internal/domain/model"
 
 	"github.com/google/uuid"
 )
 
-func MapSQLCToAd(rawAd sqlc2.Ad) *model.Ad {
+func MapSQLCToAd(rawAd sqlc.Ad) *model.Ad {
 	var description *string
 	if rawAd.Description.Valid {
 		description = &rawAd.Description.String
@@ -22,14 +21,14 @@ func MapSQLCToAd(rawAd sqlc2.Ad) *model.Ad {
 		rawAd.Title,
 		description,
 		rawAd.Price,
-		rawAd.Status,
+		model.AdStatus(rawAd.Status),
 		nil,
-		rawAd.CreatedAt,
+		rawAd.CreatedAt.Time,
 		rawAd.UpdatedAt,
 	)
 }
 
-func MapAdToSQLCCreate(ad *model.Ad) sqlc2.CreateAdParams {
+func MapAdToSQLCCreate(ad *model.Ad) sqlc.CreateAdParams {
 	var description sql.NullString
 	if ad.Description() != nil {
 		description = sql.NullString{
@@ -38,7 +37,7 @@ func MapAdToSQLCCreate(ad *model.Ad) sqlc2.CreateAdParams {
 		}
 	}
 
-	return sqlc2.CreateAdParams{
+	return sqlc.CreateAdParams{
 		ID:          ad.ID(),
 		SellerID:    ad.SellerID(),
 		Title:       ad.Title(),
@@ -50,7 +49,7 @@ func MapAdToSQLCCreate(ad *model.Ad) sqlc2.CreateAdParams {
 	}
 }
 
-func MapAdToSQLCUpdate(ad *model.Ad) sqlc2.UpdateAdParams {
+func MapAdToSQLCUpdate(ad *model.Ad) sqlc.UpdateAdParams {
 	var description sql.NullString
 	if ad.Description() != nil {
 		description = sql.NullString{
@@ -59,7 +58,7 @@ func MapAdToSQLCUpdate(ad *model.Ad) sqlc2.UpdateAdParams {
 		}
 	}
 
-	return sqlc2.UpdateAdParams{
+	return sqlc.UpdateAdParams{
 		ID:          ad.ID(),
 		Title:       ad.Title(),
 		Description: description,
@@ -68,21 +67,21 @@ func MapAdToSQLCUpdate(ad *model.Ad) sqlc2.UpdateAdParams {
 	}
 }
 
-func MapAdToSQLCUpdateStatus(ad *model.Ad) sqlc2.UpdateAdStatusParams {
-	return sqlc2.UpdateAdStatusParams{
+func MapAdToSQLCUpdateStatus(ad *model.Ad) sqlc.UpdateAdStatusParams {
+	return sqlc.UpdateAdStatusParams{
 		ID:     ad.ID(),
 		Status: sqlc.AdStatus(ad.Status()),
 	}
 }
 
-func MapToSQLCList(limit, offset int) sqlc2.ListAdsParams {
-	return sqlc2.ListAdsParams{
+func MapToSQLCList(limit, offset int) sqlc.ListAdsParams {
+	return sqlc.ListAdsParams{
 		Limit:  int32(limit),
 		Offset: int32(offset),
 	}
 }
 
-func MapSQLCToAdsList(rawAds []sqlc2.Ad) []*model.Ad {
+func MapSQLCToAdsList(rawAds []sqlc.Ad) []*model.Ad {
 	ads := make([]*model.Ad, 0, len(rawAds))
 	for _, rawAd := range rawAds {
 		ad := MapSQLCToAd(rawAd)
@@ -91,8 +90,8 @@ func MapSQLCToAdsList(rawAds []sqlc2.Ad) []*model.Ad {
 	return ads
 }
 
-func MapToSQLCSellerList(sellerID uuid.UUID, limit, offset int) sqlc2.ListSellerAdsParams {
-	return sqlc2.ListSellerAdsParams{
+func MapToSQLCSellerList(sellerID uuid.UUID, limit, offset int) sqlc.ListSellerAdsParams {
+	return sqlc.ListSellerAdsParams{
 		SellerID: sellerID,
 		Limit:    int32(limit),
 		Offset:   int32(offset),
