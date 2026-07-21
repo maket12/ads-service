@@ -1,96 +1,31 @@
+///go:build integration
+
 package postgres_test
 
 import (
 	"context"
-	"errors"
 	"testing"
-	"time"
 
+	trmpgx "github.com/avito-tech/go-transaction-manager/drivers/pgxv5/v2"
+	_ "github.com/golang-migrate/migrate/v4/database/postgres"
+	"github.com/google/uuid"
 	adapterpostgres "github.com/maket12/ads-service/adservice/internal/adapter/out/postgres"
 	"github.com/maket12/ads-service/adservice/internal/domain/model"
-	"github.com/maket12/ads-service/adservice/migrations"
 	pkgerrs "github.com/maket12/ads-service/adservice/pkg/errs"
-	pkgpostgres "github.com/maket12/ads-service/adservice/pkg/postgres"
-
-	"github.com/golang-migrate/migrate/v4"
-	_ "github.com/golang-migrate/migrate/v4/database/postgres"
-	"github.com/golang-migrate/migrate/v4/source/iofs"
-	"github.com/google/uuid"
 	"github.com/stretchr/testify/suite"
 )
 
 type AdRepoSuite struct {
-	suite.Suite
-	dbClient *pkgpostgres.Client
-	repo     *adapterpostgres.AdRepository
-	ctx      context.Context
-	migrate  *migrate.Migrate
-	testAd   *model.Ad
+	BaseRepoSuite
+	repo   *adapterpostgres.AdRepository
+	testAd *model.Ad
 }
 
-func TestAdRepoSuite(t *testing.T) {
-	if testing.Short() {
-		t.Skip("Skipping integration tests in short mode")
-	}
-	suite.Run(t, new(AdRepoSuite))
-}
-
-func (s *AdRepoSuite) setupDatabase() {
-	const targetVersion = 1
-
-	dbConfig := pkgpostgres.NewConfig(
-		"localhost", 5432,
-		"test", "test", "testdb",
-		"disable", 25, 25, time.Minute*5,
-	)
-	dsn := "postgres://test:test@localhost:5432/testdb?sslmode=disable"
-
-	dbClient, err := pkgpostgres.NewClient(dbConfig)
-	s.Require().NoError(err)
-	s.dbClient = dbClient
-
-	sourceDriver, err := iofs.New(migrations.FS, ".")
-	s.Require().NoError(err, "failed to create iofs driver")
-
-	m, err := migrate.NewWithSourceInstance(
-		"iofs",
-		sourceDriver,
-		dsn,
-	)
-	s.Require().NoError(err, "failed to create migration instance")
-
-	s.migrate = m
-
-	err = m.Migrate(targetVersion)
-
-	// If migration is correct - setup has done
-	if err == nil || errors.Is(err, migrate.ErrNoChange) {
-		return
-	}
-
-	// Except dirty db as a normal scenario
-	var dirtyErr migrate.ErrDirty
-	if !errors.As(err, &dirtyErr) {
-		s.FailNowf("failed to migrate up", "unexpected error: %v", err)
-	}
-
-	// ================ Restore dirty database ================
-	_ = m.Force(dirtyErr.Version)
-
-	err = m.Down()
-	if err != nil && !errors.Is(err, migrate.ErrNoChange) {
-		s.Require().NoError(err, "failed to migrate down during recovery")
-	}
-
-	err = m.Migrate(targetVersion)
-	if err != nil && !errors.Is(err, migrate.ErrNoChange) {
-		s.Require().NoError(err, "failed to migrate up after recovery")
-	}
-}
+func TestAdRepoSuite(t *testing.T) { suite.Run(t, new(AdRepoSuite)) }
 
 func (s *AdRepoSuite) SetupSuite() {
-	s.setupDatabase()
-	s.repo = adapterpostgres.NewAdRepository(s.dbClient)
+	s.SetupBase(1)
+	s.repo = adapterpostgres.NewAdRepository(s.dbClient, trmpgx.DefaultCtxGetter)
 	s.ctx = context.Background()
 	s.testAd, _ = model.NewAd(
 		uuid.New(),
@@ -101,18 +36,8 @@ func (s *AdRepoSuite) SetupSuite() {
 	)
 }
 
-func (s *AdRepoSuite) TearDownSuite() {
-	if s.migrate != nil {
-		if err := s.migrate.Down(); err != nil && !errors.Is(err, migrate.ErrNoChange) {
-			s.Require().NoError(err, "failed to migrate down")
-		}
-	}
-	err := s.dbClient.Close()
-	s.Require().NoError(err, "failed to close db connection")
-}
-
 func (s *AdRepoSuite) SetupTest() {
-	_, err := s.dbClient.DB.Exec("TRUNCATE TABLE ads CASCADE")
+	err := s.pgContainer.TruncateTables(s.ctx, "ads")
 	s.Require().NoError(err)
 }
 

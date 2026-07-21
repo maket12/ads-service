@@ -65,7 +65,7 @@ func TestNewAd(t *testing.T) {
 			sellerID:    testSelID,
 			title:       testTitle,
 			description: utils.VPtr(""),
-			expect:      pkgerrs.ErrValueIsRequired,
+			expect:      pkgerrs.ErrValueIsInvalid,
 		},
 		{
 			name:        "invalid description",

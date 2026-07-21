@@ -17,12 +17,12 @@ func MapSQLCToAd(rawAd sqlc2.Ad) *model.Ad {
 	}
 
 	return model.RestoreAd(
-		rawAd.ID,
-		rawAd.SellerID,
+		rawAd.ID.Bytes,
+		rawAd.SellerID.Bytes,
 		rawAd.Title,
 		description,
 		rawAd.Price,
-		model.AdStatus(rawAd.Status),
+		rawAd.Status,
 		nil,
 		rawAd.CreatedAt,
 		rawAd.UpdatedAt,

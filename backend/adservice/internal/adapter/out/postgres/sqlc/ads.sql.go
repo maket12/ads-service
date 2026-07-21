@@ -32,7 +32,7 @@ type CreateAdParams struct {
 	Title       string
 	Description pgtype.Text
 	Price       int64
-	Status      interface{}
+	Status      string
 	CreatedAt   pgtype.Timestamptz
 	UpdatedAt   pgtype.Timestamptz
 }
@@ -238,7 +238,7 @@ WHERE id = $1
 
 type UpdateAdStatusParams struct {
 	ID     pgtype.UUID
-	Status interface{}
+	Status string
 }
 
 func (q *Queries) UpdateAdStatus(ctx context.Context, db DBTX, arg UpdateAdStatusParams) error {

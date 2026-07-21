@@ -5,6 +5,7 @@ package mocks
 import (
 	context "context"
 
+	port "github.com/maket12/ads-service/adservice/internal/domain/port"
 	mock "github.com/stretchr/testify/mock"
 
 	uuid "github.com/google/uuid"
@@ -71,23 +72,23 @@ func (_c *MockMediaRepository_Delete_Call) RunAndReturn(run func(context.Context
 }
 
 // Get provides a mock function with given fields: ctx, adID
-func (_m *MockMediaRepository) Get(ctx context.Context, adID uuid.UUID) ([]string, error) {
+func (_m *MockMediaRepository) Get(ctx context.Context, adID uuid.UUID) ([]port.ImageRef, error) {
 	ret := _m.Called(ctx, adID)
 
 	if len(ret) == 0 {
 		panic("no return value specified for Get")
 	}
 
-	var r0 []string
+	var r0 []port.ImageRef
 	var r1 error
-	if rf, ok := ret.Get(0).(func(context.Context, uuid.UUID) ([]string, error)); ok {
+	if rf, ok := ret.Get(0).(func(context.Context, uuid.UUID) ([]port.ImageRef, error)); ok {
 		return rf(ctx, adID)
 	}
-	if rf, ok := ret.Get(0).(func(context.Context, uuid.UUID) []string); ok {
+	if rf, ok := ret.Get(0).(func(context.Context, uuid.UUID) []port.ImageRef); ok {
 		r0 = rf(ctx, adID)
 	} else {
 		if ret.Get(0) != nil {
-			r0 = ret.Get(0).([]string)
+			r0 = ret.Get(0).([]port.ImageRef)
 		}
 	}
 
@@ -119,18 +120,18 @@ func (_c *MockMediaRepository_Get_Call) Run(run func(ctx context.Context, adID u
 	return _c
 }
 
-func (_c *MockMediaRepository_Get_Call) Return(_a0 []string, _a1 error) *MockMediaRepository_Get_Call {
+func (_c *MockMediaRepository_Get_Call) Return(_a0 []port.ImageRef, _a1 error) *MockMediaRepository_Get_Call {
 	_c.Call.Return(_a0, _a1)
 	return _c
 }
 
-func (_c *MockMediaRepository_Get_Call) RunAndReturn(run func(context.Context, uuid.UUID) ([]string, error)) *MockMediaRepository_Get_Call {
+func (_c *MockMediaRepository_Get_Call) RunAndReturn(run func(context.Context, uuid.UUID) ([]port.ImageRef, error)) *MockMediaRepository_Get_Call {
 	_c.Call.Return(run)
 	return _c
 }
 
 // Save provides a mock function with given fields: ctx, adID, images
-func (_m *MockMediaRepository) Save(ctx context.Context, adID uuid.UUID, images []string) error {
+func (_m *MockMediaRepository) Save(ctx context.Context, adID uuid.UUID, images []port.ImageInput) error {
 	ret := _m.Called(ctx, adID, images)
 
 	if len(ret) == 0 {
@@ -138,7 +139,7 @@ func (_m *MockMediaRepository) Save(ctx context.Context, adID uuid.UUID, images 
 	}
 
 	var r0 error
-	if rf, ok := ret.Get(0).(func(context.Context, uuid.UUID, []string) error); ok {
+	if rf, ok := ret.Get(0).(func(context.Context, uuid.UUID, []port.ImageInput) error); ok {
 		r0 = rf(ctx, adID, images)
 	} else {
 		r0 = ret.Error(0)
@@ -155,14 +156,14 @@ type MockMediaRepository_Save_Call struct {
 // Save is a helper method to define mock.On call
 //   - ctx context.Context
 //   - adID uuid.UUID
-//   - images []string
+//   - images []port.ImageInput
 func (_e *MockMediaRepository_Expecter) Save(ctx interface{}, adID interface{}, images interface{}) *MockMediaRepository_Save_Call {
 	return &MockMediaRepository_Save_Call{Call: _e.mock.On("Save", ctx, adID, images)}
 }
 
-func (_c *MockMediaRepository_Save_Call) Run(run func(ctx context.Context, adID uuid.UUID, images []string)) *MockMediaRepository_Save_Call {
+func (_c *MockMediaRepository_Save_Call) Run(run func(ctx context.Context, adID uuid.UUID, images []port.ImageInput)) *MockMediaRepository_Save_Call {
 	_c.Call.Run(func(args mock.Arguments) {
-		run(args[0].(context.Context), args[1].(uuid.UUID), args[2].([]string))
+		run(args[0].(context.Context), args[1].(uuid.UUID), args[2].([]port.ImageInput))
 	})
 	return _c
 }
@@ -172,7 +173,7 @@ func (_c *MockMediaRepository_Save_Call) Return(_a0 error) *MockMediaRepository_
 	return _c
 }
 
-func (_c *MockMediaRepository_Save_Call) RunAndReturn(run func(context.Context, uuid.UUID, []string) error) *MockMediaRepository_Save_Call {
+func (_c *MockMediaRepository_Save_Call) RunAndReturn(run func(context.Context, uuid.UUID, []port.ImageInput) error) *MockMediaRepository_Save_Call {
 	_c.Call.Return(run)
 	return _c
 }
