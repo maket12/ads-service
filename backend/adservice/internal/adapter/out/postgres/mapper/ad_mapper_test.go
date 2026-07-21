@@ -5,10 +5,10 @@ import (
 	"testing"
 	"time"
 
+	"github.com/maket12/ads-service/adservice/internal/adapter/out/postgres/mapper"
 	"github.com/maket12/ads-service/adservice/internal/adapter/out/postgres/sqlc"
-	"github.com/maket12/ads-service/backend/adservice/internal/adapter/out/postgres/mapper"
-	sqlc2 "github.com/maket12/ads-service/backend/adservice/internal/adapter/out/postgres/sqlc"
-	"github.com/maket12/ads-service/backend/adservice/internal/domain/model"
+	sqlc2 "github.com/maket12/ads-service/adservice/internal/adapter/out/postgres/sqlc"
+	"github.com/maket12/ads-service/adservice/internal/domain/model"
 
 	"github.com/google/uuid"
 	"github.com/stretchr/testify/assert"

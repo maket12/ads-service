@@ -4,8 +4,8 @@ import (
 	"database/sql"
 
 	"github.com/maket12/ads-service/adservice/internal/adapter/out/postgres/sqlc"
-	sqlc2 "github.com/maket12/ads-service/backend/adservice/internal/adapter/out/postgres/sqlc"
-	"github.com/maket12/ads-service/backend/adservice/internal/domain/model"
+	sqlc2 "github.com/maket12/ads-service/adservice/internal/adapter/out/postgres/sqlc"
+	"github.com/maket12/ads-service/adservice/internal/domain/model"
 
 	"github.com/google/uuid"
 )
@@ -17,12 +17,12 @@ func MapSQLCToAd(rawAd sqlc2.Ad) *model.Ad {
 	}
 
 	return model.RestoreAd(
-		rawAd.ID,
-		rawAd.SellerID,
+		rawAd.ID.Bytes,
+		rawAd.SellerID.Bytes,
 		rawAd.Title,
 		description,
 		rawAd.Price,
-		model.AdStatus(rawAd.Status),
+		rawAd.Status,
 		nil,
 		rawAd.CreatedAt,
 		rawAd.UpdatedAt,

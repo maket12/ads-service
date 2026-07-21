@@ -4,9 +4,9 @@ import (
 	"context"
 	"log/slog"
 
-	usecase2 "github.com/maket12/ads-service/backend/adservice/internal/app/usecase"
-	"github.com/maket12/ads-service/pkg/generated/ad_v1"
-	"github.com/maket12/ads-service/pkg/utils"
+	"github.com/maket12/ads-service/adservice/internal/app/usecase"
+	"github.com/maket12/ads-service/adservice/pkg/generated/ad_v1"
+	"github.com/maket12/ads-service/adservice/pkg/utils"
 
 	"github.com/google/uuid"
 	"google.golang.org/grpc/status"
@@ -15,24 +15,24 @@ import (
 type AdHandler struct {
 	ad_v1.UnimplementedAdServiceServer
 	log            *slog.Logger
-	createAdUC     *usecase2.CreateAdUC
-	getAdUC        *usecase2.GetAdUC
-	updateAdUC     *usecase2.UpdateAdUC
-	publishAdUC    *usecase2.PublishAdUC
-	rejectAdUC     *usecase2.RejectAdUC
-	deleteAdUC     *usecase2.DeleteAdUC
-	deleteAllAdsUC *usecase2.DeleteAllAdsUC
+	createAdUC     *usecase.CreateAdUC
+	getAdUC        *usecase.GetAdUC
+	updateAdUC     *usecase.UpdateAdUC
+	publishAdUC    *usecase.PublishAdUC
+	rejectAdUC     *usecase.RejectAdUC
+	deleteAdUC     *usecase.DeleteAdUC
+	deleteAllAdsUC *usecase.DeleteAllAdsUC
 }
 
 func NewAdHandler(
 	log *slog.Logger,
-	createAdUC *usecase2.CreateAdUC,
-	getAdUC *usecase2.GetAdUC,
-	updateAdUC *usecase2.UpdateAdUC,
-	publishAdUC *usecase2.PublishAdUC,
-	rejectAdUC *usecase2.RejectAdUC,
-	deleteAdUC *usecase2.DeleteAdUC,
-	deleteAllAdsUC *usecase2.DeleteAllAdsUC,
+	createAdUC *usecase.CreateAdUC,
+	getAdUC *usecase.GetAdUC,
+	updateAdUC *usecase.UpdateAdUC,
+	publishAdUC *usecase.PublishAdUC,
+	rejectAdUC *usecase.RejectAdUC,
+	deleteAdUC *usecase.DeleteAdUC,
+	deleteAllAdsUC *usecase.DeleteAllAdsUC,
 ) *AdHandler {
 	return &AdHandler{
 		log:            log,

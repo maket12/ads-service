@@ -5,9 +5,9 @@ import (
 	"testing"
 	"time"
 
-	"github.com/maket12/ads-service/backend/adservice/internal/domain/model"
-	pkgerrs "github.com/maket12/ads-service/pkg/errs"
-	"github.com/maket12/ads-service/pkg/utils"
+	"github.com/maket12/ads-service/adservice/internal/domain/model"
+	pkgerrs "github.com/maket12/ads-service/adservice/pkg/errs"
+	"github.com/maket12/ads-service/adservice/pkg/utils"
 
 	"github.com/google/uuid"
 	"github.com/stretchr/testify/assert"
@@ -65,7 +65,7 @@ func TestNewAd(t *testing.T) {
 			sellerID:    testSelID,
 			title:       testTitle,
 			description: utils.VPtr(""),
-			expect:      pkgerrs.ErrValueIsRequired,
+			expect:      pkgerrs.ErrValueIsInvalid,
 		},
 		{
 			name:        "invalid description",

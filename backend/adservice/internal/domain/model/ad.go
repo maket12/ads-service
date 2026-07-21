@@ -4,7 +4,7 @@ import (
 	"errors"
 	"time"
 
-	pkgerrs "github.com/maket12/ads-service/pkg/errs"
+	pkgerrs "github.com/maket12/ads-service/adservice/pkg/errs"
 
 	"github.com/google/uuid"
 )
@@ -26,6 +26,7 @@ const (
 
 const (
 	minTitleLen       = 5
+	maxTitleLen       = 128
 	maxDescriptionLen = 2048
 )
 
@@ -53,16 +54,17 @@ func NewAd(
 	if sellerID == uuid.Nil {
 		return nil, pkgerrs.NewValueInvalidError("seller_id")
 	}
-	if title == "" {
+
+	titleLen := len(title)
+	if titleLen == 0 {
 		return nil, pkgerrs.NewValueRequiredError("title")
 	}
-	if len(title) < minTitleLen {
+	if titleLen < minTitleLen || titleLen > maxTitleLen {
 		return nil, pkgerrs.NewValueInvalidError("title")
 	}
+
 	if description != nil {
-		if len(*description) == 0 {
-			return nil, pkgerrs.NewValueRequiredError("description")
-		} else if len(*description) > maxDescriptionLen {
+		if len(*description) == 0 || len(*description) > maxDescriptionLen {
 			return nil, pkgerrs.NewValueInvalidError("description")
 		}
 	}
@@ -142,6 +144,8 @@ func (ad *Ad) Images() []string {
 }
 func (ad *Ad) CreatedAt() time.Time { return ad.createdAt }
 func (ad *Ad) UpdatedAt() time.Time { return ad.updatedAt }
+
+// ================ Business Logic ================
 
 func (ad *Ad) IsPublished() bool    { return ad.status == AdPublished }
 func (ad *Ad) IsOnModeration() bool { return ad.status == AdOnModeration }
