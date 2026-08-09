@@ -59,18 +59,18 @@ func NewMediaRepository(mediaRepoCfg *MediaRepositoryConfig) *MediaRepository {
 }
 
 // Save method will update if record already exists and add otherwise
-func (r *MediaRepository) Save(ctx context.Context, adID uuid.UUID, images []port.ImageInput) error {
+func (r *MediaRepository) Save(ctx context.Context, adID uuid.UUID, images []string) error {
 	now := time.Now()
 
 	imgMetas := make([]ImageMeta, len(images))
-	for i, img := range images {
+	for i, url := range images {
 		imgMetas[i] = ImageMeta{
-			ID:         img.ID,
-			URL:        img.URL,
-			Width:      img.Width,
-			Height:     img.Height,
-			SizeBytes:  img.SizeBytes,
-			Format:     img.Format,
+			ID:         uuid.New().String(),
+			URL:        url,
+			Width:      0,
+			Height:     0,
+			SizeBytes:  0,
+			Format:     "",
 			UploadedAt: now,
 		}
 	}

@@ -8,9 +8,7 @@ import (
 	"github.com/maket12/ads-service/adservice/internal/domain/port"
 )
 
-type DeleteAllAdsUC struct {
-	ad port.AdRepository
-}
+type DeleteAllAdsUC struct{ ad port.AdRepository }
 
 func NewDeleteAllAdsUC(ad port.AdRepository) *DeleteAllAdsUC {
 	return &DeleteAllAdsUC{ad: ad}

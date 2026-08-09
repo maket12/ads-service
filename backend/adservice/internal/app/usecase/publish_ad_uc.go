@@ -5,14 +5,12 @@ import (
 	"errors"
 
 	"github.com/maket12/ads-service/adservice/internal/app/dto"
-	"github.com/maket12/ads-service/adservice/internal/app/errs"
+	ucerrs "github.com/maket12/ads-service/adservice/internal/app/errs"
 	"github.com/maket12/ads-service/adservice/internal/domain/port"
 	pkgerrs "github.com/maket12/ads-service/adservice/pkg/errs"
 )
 
-type PublishAdUC struct {
-	ad port.AdRepository
-}
+type PublishAdUC struct{ ad port.AdRepository }
 
 func NewPublishAdUC(ad port.AdRepository) *PublishAdUC {
 	return &PublishAdUC{ad: ad}
@@ -23,29 +21,29 @@ func (uc *PublishAdUC) Execute(ctx context.Context, in dto.PublishAdInput) (dto.
 	ad, err := uc.ad.Get(ctx, in.AdID)
 	if err != nil {
 		if errors.Is(err, pkgerrs.ErrObjectNotFound) {
-			return dto.PublishAdOutput{Success: false}, errs.ErrInvalidAdID
+			return dto.PublishAdOutput{Success: false}, ucerrs.ErrAdNotFound
 		}
-		return dto.PublishAdOutput{Success: false}, errs.Wrap(
-			errs.ErrGetAdDB, err,
+		return dto.PublishAdOutput{Success: false}, ucerrs.Wrap(
+			ucerrs.ErrGetAdDB, err,
 		)
 	}
 
 	// Check if current user can publish this ad
 	if ad.SellerID() != in.SellerID {
-		return dto.PublishAdOutput{Success: false}, errs.ErrAccessDenied
+		return dto.PublishAdOutput{Success: false}, ucerrs.ErrAccessDenied
 	}
 
 	// Publish
 	err = ad.Publish()
 	if err != nil {
-		return dto.PublishAdOutput{Success: false}, errs.ErrCannotPublish
+		return dto.PublishAdOutput{Success: false}, ucerrs.ErrCannotPublish
 	}
 
 	// Update in db
-	err = uc.ad.UpdateStatus(ctx, ad)
+	err = uc.ad.Update(ctx, ad)
 	if err != nil {
-		return dto.PublishAdOutput{Success: false}, errs.Wrap(
-			errs.ErrUpdateAdStatusDB, err,
+		return dto.PublishAdOutput{Success: false}, ucerrs.Wrap(
+			ucerrs.ErrUpdateAdStatusDB, err,
 		)
 	}
 

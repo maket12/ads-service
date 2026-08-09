@@ -20,5 +20,5 @@ type GetAdOutput struct {
 	Status      string
 	Images      []string
 	CreatedAt   time.Time
-	UpdatedAt   time.Time
+	UpdatedAt   *time.Time
 }

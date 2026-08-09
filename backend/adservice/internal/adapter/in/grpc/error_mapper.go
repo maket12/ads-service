@@ -37,7 +37,7 @@ func gRPCError(err error) *pkgerrs.OutErr {
 	case errors.Is(err, errs.ErrAccessDenied):
 		return pkgerrs.NewOutError(codes.PermissionDenied, err.Error(), nil)
 
-	case errors.Is(err, errs.ErrInvalidAdID):
+	case errors.Is(err, errs.ErrAdNotFound):
 		return pkgerrs.NewOutError(codes.NotFound, err.Error(), nil)
 
 	case errors.Is(err, errs.ErrCannotPublish),

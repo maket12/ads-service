@@ -11,7 +11,6 @@ var (
 */
 var (
 	ErrInvalidInput  = errors.New("one or several specified parameters are invalid")
-	ErrInvalidAdID   = errors.New("ad id is invalid or ad with this id not found")
 	ErrCannotPublish = errors.New("ad has been already published or not available")
 	ErrCannotReject  = errors.New("ad has been already published or not available")
 	ErrCannotDelete  = errors.New("ad has been already deleted or rejected")
@@ -36,4 +35,6 @@ var (
 	ErrUpdateAdStatusDB = errors.New("failed to update ad status using db")
 	ErrDeleteAdDB       = errors.New("failed to delete ad using db")
 	ErrDeleteAllAdsDB   = errors.New("failed to all ads using db")
+
+	ErrAdNotFound = errors.New("ad not found")
 )
