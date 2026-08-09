@@ -4,7 +4,7 @@ import (
 	"context"
 
 	"github.com/maket12/ads-service/adservice/internal/app/dto"
-	"github.com/maket12/ads-service/adservice/internal/app/errs"
+	ucerrs "github.com/maket12/ads-service/adservice/internal/app/errs"
 	"github.com/maket12/ads-service/adservice/internal/domain/port"
 )
 
@@ -17,8 +17,8 @@ func NewDeleteAllAdsUC(ad port.AdRepository) *DeleteAllAdsUC {
 func (uc *DeleteAllAdsUC) Execute(ctx context.Context, in dto.DeleteAllAdsInput) (dto.DeleteAllAdsOutput, error) {
 	// Delete all ads
 	if err := uc.ad.DeleteAll(ctx, in.SellerID); err != nil {
-		return dto.DeleteAllAdsOutput{Success: false}, errs.Wrap(
-			errs.ErrDeleteAllAdsDB, err,
+		return dto.DeleteAllAdsOutput{Success: false}, ucerrs.Wrap(
+			ucerrs.ErrDeleteAllAdsDB, err,
 		)
 	}
 

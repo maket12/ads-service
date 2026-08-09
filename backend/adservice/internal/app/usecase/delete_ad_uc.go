@@ -49,12 +49,12 @@ func (uc *DeleteAdUC) Execute(ctx context.Context, in dto.DeleteAdInput) (dto.De
 	// Scenario №1: Delete status from database (if not published yet)
 	if ad.IsOnModeration() {
 		if err = uc.trManager.Do(ctx, func(txCtx context.Context) error {
-			delErr := uc.ad.Delete(ctx, ad.ID())
+			delErr := uc.ad.Delete(txCtx, ad.ID())
 			if delErr != nil {
 				return ucerrs.Wrap(ucerrs.ErrDeleteAdDB, delErr)
 			}
 
-			delErr = uc.media.Delete(ctx, ad.ID())
+			delErr = uc.media.Delete(txCtx, ad.ID())
 			if err != nil {
 				return ucerrs.Wrap(ucerrs.ErrDeleteImagesDB, err)
 			}
