@@ -6,16 +6,16 @@ import (
 
 	"github.com/maket12/ads-service/adservice/internal/app/dto"
 	"github.com/maket12/ads-service/adservice/internal/app/errs"
-	port2 "github.com/maket12/ads-service/adservice/internal/domain/port"
+	"github.com/maket12/ads-service/adservice/internal/domain/port"
 	pkgerrs "github.com/maket12/ads-service/adservice/pkg/errs"
 )
 
 type DeleteAdUC struct {
-	ad    port2.AdRepository
-	media port2.MediaRepository
+	ad    port.AdRepository
+	media port.MediaRepository
 }
 
-func NewDeleteAdUC(ad port2.AdRepository, media port2.MediaRepository) *DeleteAdUC {
+func NewDeleteAdUC(ad port.AdRepository, media port.MediaRepository) *DeleteAdUC {
 	return &DeleteAdUC{ad: ad, media: media}
 }
 

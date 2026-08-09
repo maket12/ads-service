@@ -6,16 +6,16 @@ import (
 	"github.com/maket12/ads-service/adservice/internal/app/dto"
 	"github.com/maket12/ads-service/adservice/internal/app/errs"
 	"github.com/maket12/ads-service/adservice/internal/domain/model"
-	port2 "github.com/maket12/ads-service/adservice/internal/domain/port"
+	"github.com/maket12/ads-service/adservice/internal/domain/port"
 )
 
 type CreateAdUC struct {
-	ad    port2.AdRepository
-	media port2.MediaRepository
+	ad    port.AdRepository
+	media port.MediaRepository
 }
 
 func NewCreateAdUC(
-	ad port2.AdRepository, media port2.MediaRepository,
+	ad port.AdRepository, media port.MediaRepository,
 ) *CreateAdUC {
 	return &CreateAdUC{
 		ad:    ad,
@@ -36,14 +36,14 @@ func (uc *CreateAdUC) Execute(ctx context.Context, in dto.CreateAdInput) (dto.Cr
 	}
 
 	// Save into database
-	if err := uc.ad.Create(ctx, ad); err != nil {
+	if err = uc.ad.Create(ctx, ad); err != nil {
 		return dto.CreateAdOutput{}, errs.Wrap(
 			errs.ErrCreateAdDB, err,
 		)
 	}
 
 	// Save images into database
-	if err := uc.media.Save(ctx, ad.ID(), ad.Images()); err != nil {
+	if err = uc.media.Save(ctx, ad.ID(), ad.Images()); err != nil {
 		return dto.CreateAdOutput{}, errs.Wrap(errs.ErrSaveImagesDB, err)
 	}
 

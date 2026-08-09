@@ -51,6 +51,16 @@ func (q *Queries) CreateAd(ctx context.Context, db DBTX, arg CreateAdParams) err
 	return err
 }
 
+const deleteAd = `-- name: DeleteAd :exec
+DELETE FROM ads
+WHERE id = $1
+`
+
+func (q *Queries) DeleteAd(ctx context.Context, db DBTX, id pgtype.UUID) error {
+	_, err := db.Exec(ctx, deleteAd, id)
+	return err
+}
+
 const deleteAllAds = `-- name: DeleteAllAds :exec
 DELETE FROM ads
 WHERE seller_id = $1
