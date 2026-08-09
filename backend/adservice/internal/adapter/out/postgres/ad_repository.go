@@ -53,15 +53,6 @@ func (r *AdRepository) Update(ctx context.Context, ad *model.Ad) error {
 	return r.q.UpdateAd(ctx, r.db(ctx), params)
 }
 
-func (r *AdRepository) Delete(ctx context.Context, id uuid.UUID) error {
-	return r.q.DeleteAd(ctx, r.db(ctx),
-		pgtype.UUID{
-			Bytes: id,
-			Valid: true,
-		},
-	)
-}
-
 func (r *AdRepository) DeleteAll(ctx context.Context, sellerID uuid.UUID) error {
 	return r.q.DeleteAllAds(ctx, r.db(ctx),
 		pgtype.UUID{

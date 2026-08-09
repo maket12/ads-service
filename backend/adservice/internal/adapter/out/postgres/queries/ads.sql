@@ -37,10 +37,6 @@ SET
     updated_at = $8
 WHERE id = $1;
 
--- name: DeleteAd :exec
-DELETE FROM ads
-WHERE id = $1;
-
 -- name: DeleteAllAds :exec
 DELETE FROM ads
 WHERE seller_id = $1;

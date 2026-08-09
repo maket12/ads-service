@@ -90,21 +90,6 @@ func (s *AdRepoSuite) TestUpdate() {
 	s.Require().Exactly(testPrice, ad.Price())
 }
 
-func (s *AdRepoSuite) TestDelete() {
-	// Create an ad in advance
-	_ = s.repo.Create(s.ctx, s.testAd)
-
-	// Then delete
-	err := s.repo.Delete(s.ctx, s.testAd.ID())
-	s.Require().NoError(err)
-
-	// Ensure delete was successful
-	_, err = s.repo.Get(s.ctx, s.testAd.ID())
-
-	s.Require().Error(err)
-	s.Require().ErrorIs(err, pkgerrs.ErrObjectNotFound)
-}
-
 func (s *AdRepoSuite) TestDeleteAllAds() {
 	// Create ads in advance with same seller id
 	anotherAd, _ := model.NewAd(

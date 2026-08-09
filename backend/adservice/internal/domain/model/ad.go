@@ -86,8 +86,6 @@ func NewAd(
 		copy(imagesCopy, images)
 	}
 
-	now := time.Now()
-
 	return &Ad{
 		id:          uuid.New(),
 		sellerID:    sellerID,
@@ -96,7 +94,7 @@ func NewAd(
 		price:       price,
 		status:      AdOnModeration,
 		images:      imagesCopy,
-		createdAt:   now,
+		createdAt:   time.Now(),
 		updatedAt:   nil,
 	}, nil
 }
@@ -187,10 +185,7 @@ func (ad *Ad) Delete() error {
 	if !ad.CanBeDeleted() {
 		return ErrAdCantBeDeleted
 	}
-
 	ad.status = AdDeleted
-	ad.updatedAt = utils.VPtr(time.Now())
-
 	return nil
 }
 
