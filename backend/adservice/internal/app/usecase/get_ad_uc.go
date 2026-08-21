@@ -6,6 +6,7 @@ import (
 
 	"github.com/maket12/ads-service/adservice/internal/app/dto"
 	ucerrs "github.com/maket12/ads-service/adservice/internal/app/errs"
+	"github.com/maket12/ads-service/adservice/internal/app/mapper"
 	"github.com/maket12/ads-service/adservice/internal/domain/port"
 	pkgerrs "github.com/maket12/ads-service/adservice/pkg/errs"
 )
@@ -56,15 +57,5 @@ func (uc *GetAdUC) Execute(ctx context.Context, in dto.GetAdInput) (dto.GetAdOut
 	}
 
 	// Response
-	return dto.GetAdOutput{
-		AdID:        ad.ID(),
-		SellerID:    ad.SellerID(),
-		Title:       ad.Title(),
-		Description: ad.Description(),
-		Price:       ad.Price(),
-		Status:      ad.Status().String(),
-		Images:      ad.Images(),
-		CreatedAt:   ad.CreatedAt(),
-		UpdatedAt:   ad.UpdatedAt(),
-	}, nil
+	return mapper.MapDomainToGetAdOut(ad), nil
 }

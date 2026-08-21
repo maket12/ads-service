@@ -61,8 +61,7 @@ func (uc *UpdateAdUC) Execute(ctx context.Context, in dto.UpdateAdInput) (dto.Up
 			return ucerrs.Wrap(ucerrs.ErrUpdateAdDB, updErr)
 		}
 
-		updErr = uc.media.Save(txCtx, ad.ID(), ad.Images())
-		if err != nil {
+		if updErr = uc.media.Save(txCtx, ad.ID(), ad.Images()); updErr != nil {
 			return ucerrs.Wrap(ucerrs.ErrSaveImagesDB, updErr)
 		}
 
