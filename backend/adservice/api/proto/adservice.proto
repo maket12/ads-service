@@ -14,6 +14,7 @@ service AdService {
   rpc RejectAd(RejectAdRequest) returns (RejectAdResponse);
   rpc DeleteAd(DeleteAdRequest) returns (DeleteAdResponse);
   rpc DeleteAllAds(DeleteAllAdsRequest) returns (DeleteAllAdsResponse);
+  rpc ListAds(ListAdsRequest) returns (ListAdsResponse);
 }
 
 message CreateAdRequest {
@@ -31,7 +32,7 @@ message GetAdRequest {
   string ad_id = 1;
 }
 
-message GetAdResponse {
+message Ad {
   string ad_id = 1;
   string seller_id = 2;
   string title = 3;
@@ -40,7 +41,11 @@ message GetAdResponse {
   string status = 6;
   repeated string images = 7;
   google.protobuf.Timestamp created_at = 8;
-  google.protobuf.Timestamp updated_at = 9;
+  optional google.protobuf.Timestamp updated_at = 9;
+}
+
+message GetAdResponse {
+  Ad ad = 1;
 }
 
 message UpdateAdRequest {
@@ -85,4 +90,13 @@ message DeleteAllAdsRequest {
 
 message DeleteAllAdsResponse {
   bool success = 1;
+}
+
+message ListAdsRequest {
+  int32 limit = 1;
+  int32 offset = 2;
+}
+
+message ListAdsResponse {
+  repeated Ad ads = 1;
 }
