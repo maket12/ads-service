@@ -6,8 +6,6 @@ import (
 	"github.com/jackc/pgx/v5/pgtype"
 	"github.com/maket12/ads-service/adservice/internal/adapter/out/postgres/sqlc"
 	"github.com/maket12/ads-service/adservice/internal/domain/model"
-
-	"github.com/google/uuid"
 )
 
 func MapSQLCToAd(rawAd sqlc.Ad) *model.Ad {
@@ -133,15 +131,4 @@ func MapSQLCToAdsList(rawAds []sqlc.Ad) []*model.Ad {
 		ads = append(ads, ad)
 	}
 	return ads
-}
-
-func MapToSQLCSellerList(sellerID uuid.UUID, limit, offset int) sqlc.ListSellerAdsParams {
-	return sqlc.ListSellerAdsParams{
-		SellerID: pgtype.UUID{
-			Bytes: sellerID,
-			Valid: true,
-		},
-		Limit:  int32(limit),
-		Offset: int32(offset),
-	}
 }

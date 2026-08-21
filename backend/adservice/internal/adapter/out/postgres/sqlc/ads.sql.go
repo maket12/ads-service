@@ -162,18 +162,10 @@ SELECT
     updated_at
 FROM ads
 WHERE seller_id = $1
-LIMIT $2
-OFFSET $3
 `
 
-type ListSellerAdsParams struct {
-	SellerID pgtype.UUID
-	Limit    int32
-	Offset   int32
-}
-
-func (q *Queries) ListSellerAds(ctx context.Context, db DBTX, arg ListSellerAdsParams) ([]Ad, error) {
-	rows, err := db.Query(ctx, listSellerAds, arg.SellerID, arg.Limit, arg.Offset)
+func (q *Queries) ListSellerAds(ctx context.Context, db DBTX, sellerID pgtype.UUID) ([]Ad, error) {
+	rows, err := db.Query(ctx, listSellerAds, sellerID)
 	if err != nil {
 		return nil, err
 	}

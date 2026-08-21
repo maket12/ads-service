@@ -15,4 +15,5 @@ type AdRepository interface {
 	Delete(ctx context.Context, id uuid.UUID) error
 	DeleteAll(ctx context.Context, sellerID uuid.UUID) error
 	ListAds(ctx context.Context, limit, offset int) ([]*model.Ad, error)
+	ListSellerAds(ctx context.Context, sellerID uuid.UUID) ([]*model.Ad, error)
 }

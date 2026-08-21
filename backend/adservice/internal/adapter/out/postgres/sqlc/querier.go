@@ -16,7 +16,7 @@ type Querier interface {
 	DeleteAllAds(ctx context.Context, db DBTX, sellerID pgtype.UUID) error
 	GetAd(ctx context.Context, db DBTX, id pgtype.UUID) (Ad, error)
 	ListAds(ctx context.Context, db DBTX, arg ListAdsParams) ([]Ad, error)
-	ListSellerAds(ctx context.Context, db DBTX, arg ListSellerAdsParams) ([]Ad, error)
+	ListSellerAds(ctx context.Context, db DBTX, sellerID pgtype.UUID) ([]Ad, error)
 	UpdateAd(ctx context.Context, db DBTX, arg UpdateAdParams) error
 }
 

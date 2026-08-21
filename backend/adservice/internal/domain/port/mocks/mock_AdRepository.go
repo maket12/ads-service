@@ -284,6 +284,65 @@ func (_c *MockAdRepository_ListAds_Call) RunAndReturn(run func(context.Context, 
 	return _c
 }
 
+// ListSellerAds provides a mock function with given fields: ctx, sellerID
+func (_m *MockAdRepository) ListSellerAds(ctx context.Context, sellerID uuid.UUID) ([]*model.Ad, error) {
+	ret := _m.Called(ctx, sellerID)
+
+	if len(ret) == 0 {
+		panic("no return value specified for ListSellerAds")
+	}
+
+	var r0 []*model.Ad
+	var r1 error
+	if rf, ok := ret.Get(0).(func(context.Context, uuid.UUID) ([]*model.Ad, error)); ok {
+		return rf(ctx, sellerID)
+	}
+	if rf, ok := ret.Get(0).(func(context.Context, uuid.UUID) []*model.Ad); ok {
+		r0 = rf(ctx, sellerID)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).([]*model.Ad)
+		}
+	}
+
+	if rf, ok := ret.Get(1).(func(context.Context, uuid.UUID) error); ok {
+		r1 = rf(ctx, sellerID)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
+// MockAdRepository_ListSellerAds_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'ListSellerAds'
+type MockAdRepository_ListSellerAds_Call struct {
+	*mock.Call
+}
+
+// ListSellerAds is a helper method to define mock.On call
+//   - ctx context.Context
+//   - sellerID uuid.UUID
+func (_e *MockAdRepository_Expecter) ListSellerAds(ctx interface{}, sellerID interface{}) *MockAdRepository_ListSellerAds_Call {
+	return &MockAdRepository_ListSellerAds_Call{Call: _e.mock.On("ListSellerAds", ctx, sellerID)}
+}
+
+func (_c *MockAdRepository_ListSellerAds_Call) Run(run func(ctx context.Context, sellerID uuid.UUID)) *MockAdRepository_ListSellerAds_Call {
+	_c.Call.Run(func(args mock.Arguments) {
+		run(args[0].(context.Context), args[1].(uuid.UUID))
+	})
+	return _c
+}
+
+func (_c *MockAdRepository_ListSellerAds_Call) Return(_a0 []*model.Ad, _a1 error) *MockAdRepository_ListSellerAds_Call {
+	_c.Call.Return(_a0, _a1)
+	return _c
+}
+
+func (_c *MockAdRepository_ListSellerAds_Call) RunAndReturn(run func(context.Context, uuid.UUID) ([]*model.Ad, error)) *MockAdRepository_ListSellerAds_Call {
+	_c.Call.Return(run)
+	return _c
+}
+
 // Update provides a mock function with given fields: ctx, ad
 func (_m *MockAdRepository) Update(ctx context.Context, ad *model.Ad) error {
 	ret := _m.Called(ctx, ad)
@@ -327,53 +386,6 @@ func (_c *MockAdRepository_Update_Call) Return(_a0 error) *MockAdRepository_Upda
 }
 
 func (_c *MockAdRepository_Update_Call) RunAndReturn(run func(context.Context, *model.Ad) error) *MockAdRepository_Update_Call {
-	_c.Call.Return(run)
-	return _c
-}
-
-// UpdateStatus provides a mock function with given fields: ctx, ad
-func (_m *MockAdRepository) UpdateStatus(ctx context.Context, ad *model.Ad) error {
-	ret := _m.Called(ctx, ad)
-
-	if len(ret) == 0 {
-		panic("no return value specified for UpdateStatus")
-	}
-
-	var r0 error
-	if rf, ok := ret.Get(0).(func(context.Context, *model.Ad) error); ok {
-		r0 = rf(ctx, ad)
-	} else {
-		r0 = ret.Error(0)
-	}
-
-	return r0
-}
-
-// MockAdRepository_UpdateStatus_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'UpdateStatus'
-type MockAdRepository_UpdateStatus_Call struct {
-	*mock.Call
-}
-
-// UpdateStatus is a helper method to define mock.On call
-//   - ctx context.Context
-//   - ad *model.Ad
-func (_e *MockAdRepository_Expecter) UpdateStatus(ctx interface{}, ad interface{}) *MockAdRepository_UpdateStatus_Call {
-	return &MockAdRepository_UpdateStatus_Call{Call: _e.mock.On("UpdateStatus", ctx, ad)}
-}
-
-func (_c *MockAdRepository_UpdateStatus_Call) Run(run func(ctx context.Context, ad *model.Ad)) *MockAdRepository_UpdateStatus_Call {
-	_c.Call.Run(func(args mock.Arguments) {
-		run(args[0].(context.Context), args[1].(*model.Ad))
-	})
-	return _c
-}
-
-func (_c *MockAdRepository_UpdateStatus_Call) Return(_a0 error) *MockAdRepository_UpdateStatus_Call {
-	_c.Call.Return(_a0)
-	return _c
-}
-
-func (_c *MockAdRepository_UpdateStatus_Call) RunAndReturn(run func(context.Context, *model.Ad) error) *MockAdRepository_UpdateStatus_Call {
 	_c.Call.Return(run)
 	return _c
 }

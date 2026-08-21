@@ -199,14 +199,7 @@ func (s *AdRepoSuite) TestListSellerAds() {
 	_ = s.repo.Create(s.ctx, anotherAd1)
 	_ = s.repo.Create(s.ctx, anotherAd2)
 
-	var (
-		testLimit  = 10
-		testOffset = 0
-	)
-
-	ads, err := s.repo.ListSellerAds(
-		s.ctx, testSellerID, testLimit, testOffset,
-	)
+	ads, err := s.repo.ListSellerAds(s.ctx, testSellerID)
 	s.Require().NoError(err)
 	s.Require().NotNil(ads)
 	s.Require().Len(ads, 2)

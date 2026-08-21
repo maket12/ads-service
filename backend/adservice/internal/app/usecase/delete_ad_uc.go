@@ -55,7 +55,7 @@ func (uc *DeleteAdUC) Execute(ctx context.Context, in dto.DeleteAdInput) (dto.De
 			}
 
 			delErr = uc.media.Delete(txCtx, ad.ID())
-			if err != nil {
+			if delErr != nil {
 				return ucerrs.Wrap(ucerrs.ErrDeleteImagesDB, err)
 			}
 

@@ -70,6 +70,4 @@ SELECT
     created_at,
     updated_at
 FROM ads
-WHERE seller_id = $1
-LIMIT $2
-OFFSET $3;
+WHERE seller_id = $1;

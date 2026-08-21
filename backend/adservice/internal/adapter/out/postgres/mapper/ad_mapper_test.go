@@ -196,25 +196,6 @@ func TestMapToSQLCList(t *testing.T) {
 	assert.True(t, reflect.DeepEqual(expected, mapped))
 }
 
-func TestMapToSQLCSellerList(t *testing.T) {
-	sellerID := uuid.New()
-	testLimit := gofakeit.Number(1, 100)
-	testOffset := gofakeit.Number(0, 100)
-
-	expected := sqlc.ListSellerAdsParams{
-		SellerID: pgtype.UUID{
-			Bytes: sellerID,
-			Valid: true,
-		},
-		Limit:  int32(testLimit),
-		Offset: int32(testOffset),
-	}
-
-	mapped := mapper.MapToSQLCSellerList(sellerID, testLimit, testOffset)
-
-	assert.True(t, reflect.DeepEqual(expected, mapped))
-}
-
 func TestMapSQLCToAdsList(t *testing.T) {
 	rawAds := []sqlc.Ad{
 		{
