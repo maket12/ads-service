@@ -177,7 +177,7 @@ services:
       - "${AD_GRPC_PORT}:50053"
     environment:
       - DB_HOST=ad-db
-      - DB_PORT=5433
+      - DB_PORT=5432
       - MONGO_HOST=ad-mongo
       - MONGO_PORT=27017
       - RABBIT_HOST=rabbitmq
