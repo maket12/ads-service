@@ -6,12 +6,7 @@ import (
 	"github.com/google/uuid"
 )
 
-type GetAdInput struct {
-	AdID     uuid.UUID
-	SellerID uuid.UUID
-}
-
-type GetAdOutput struct {
+type Ad struct {
 	AdID        uuid.UUID
 	SellerID    uuid.UUID
 	Title       string
@@ -20,5 +15,5 @@ type GetAdOutput struct {
 	Status      string
 	Images      []string
 	CreatedAt   time.Time
-	UpdatedAt   time.Time
+	UpdatedAt   *time.Time
 }

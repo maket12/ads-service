@@ -4,7 +4,8 @@ import (
 	"errors"
 	"time"
 
-	pkgerrs "github.com/maket12/ads-service/pkg/errs"
+	pkgerrs "github.com/maket12/ads-service/adservice/pkg/errs"
+	"github.com/maket12/ads-service/adservice/pkg/utils"
 
 	"github.com/google/uuid"
 )
@@ -24,8 +25,11 @@ const (
 	AdDeleted      AdStatus = "deleted"
 )
 
+func (s AdStatus) String() string { return string(s) }
+
 const (
 	minTitleLen       = 5
+	maxTitleLen       = 128
 	maxDescriptionLen = 2048
 )
 
@@ -40,7 +44,7 @@ type Ad struct {
 	status      AdStatus
 	images      []string
 	createdAt   time.Time
-	updatedAt   time.Time
+	updatedAt   *time.Time
 }
 
 func NewAd(
@@ -53,16 +57,17 @@ func NewAd(
 	if sellerID == uuid.Nil {
 		return nil, pkgerrs.NewValueInvalidError("seller_id")
 	}
-	if title == "" {
+
+	titleLen := len(title)
+	if titleLen == 0 {
 		return nil, pkgerrs.NewValueRequiredError("title")
 	}
-	if len(title) < minTitleLen {
+	if titleLen < minTitleLen || titleLen > maxTitleLen {
 		return nil, pkgerrs.NewValueInvalidError("title")
 	}
+
 	if description != nil {
-		if len(*description) == 0 {
-			return nil, pkgerrs.NewValueRequiredError("description")
-		} else if len(*description) > maxDescriptionLen {
+		if len(*description) == 0 || len(*description) > maxDescriptionLen {
 			return nil, pkgerrs.NewValueInvalidError("description")
 		}
 	}
@@ -81,8 +86,6 @@ func NewAd(
 		copy(imagesCopy, images)
 	}
 
-	now := time.Now()
-
 	return &Ad{
 		id:          uuid.New(),
 		sellerID:    sellerID,
@@ -91,8 +94,8 @@ func NewAd(
 		price:       price,
 		status:      AdOnModeration,
 		images:      imagesCopy,
-		createdAt:   now,
-		updatedAt:   now,
+		createdAt:   time.Now(),
+		updatedAt:   nil,
 	}, nil
 }
 
@@ -104,7 +107,7 @@ func RestoreAd(
 	status AdStatus,
 	images []string,
 	createdAt time.Time,
-	updatedAt time.Time,
+	updatedAt *time.Time,
 ) *Ad {
 	var imagesCopy []string
 	if images != nil {
@@ -140,8 +143,10 @@ func (ad *Ad) Images() []string {
 	copy(cp, ad.images)
 	return cp
 }
-func (ad *Ad) CreatedAt() time.Time { return ad.createdAt }
-func (ad *Ad) UpdatedAt() time.Time { return ad.updatedAt }
+func (ad *Ad) CreatedAt() time.Time  { return ad.createdAt }
+func (ad *Ad) UpdatedAt() *time.Time { return ad.updatedAt }
+
+// ================ Business Logic ================
 
 func (ad *Ad) IsPublished() bool    { return ad.status == AdPublished }
 func (ad *Ad) IsOnModeration() bool { return ad.status == AdOnModeration }
@@ -160,7 +165,7 @@ func (ad *Ad) Publish() error {
 	}
 
 	ad.status = AdPublished
-	ad.updatedAt = time.Now()
+	ad.updatedAt = utils.VPtr(time.Now())
 
 	return nil
 }
@@ -171,7 +176,7 @@ func (ad *Ad) Reject() error {
 	}
 
 	ad.status = AdRejected
-	ad.updatedAt = time.Now()
+	ad.updatedAt = utils.VPtr(time.Now())
 
 	return nil
 }
@@ -180,10 +185,7 @@ func (ad *Ad) Delete() error {
 	if !ad.CanBeDeleted() {
 		return ErrAdCantBeDeleted
 	}
-
 	ad.status = AdDeleted
-	ad.updatedAt = time.Now()
-
 	return nil
 }
 
@@ -212,7 +214,7 @@ func (ad *Ad) Update(title, description *string, price *int64, images []string) 
 		copy(ad.images, images)
 	}
 
-	ad.updatedAt = time.Now()
+	ad.updatedAt = utils.VPtr(time.Now())
 
 	return nil
 }

@@ -4,9 +4,10 @@ import (
 	"context"
 	"log/slog"
 
-	usecase2 "github.com/maket12/ads-service/backend/adservice/internal/app/usecase"
-	"github.com/maket12/ads-service/pkg/generated/ad_v1"
-	"github.com/maket12/ads-service/pkg/utils"
+	"github.com/maket12/ads-service/adservice/internal/app/usecase"
+	"github.com/maket12/ads-service/adservice/pkg/generated/ad_v1"
+	"github.com/maket12/ads-service/adservice/pkg/utils"
+	"google.golang.org/grpc/codes"
 
 	"github.com/google/uuid"
 	"google.golang.org/grpc/status"
@@ -14,35 +15,38 @@ import (
 
 type AdHandler struct {
 	ad_v1.UnimplementedAdServiceServer
-	log            *slog.Logger
-	createAdUC     *usecase2.CreateAdUC
-	getAdUC        *usecase2.GetAdUC
-	updateAdUC     *usecase2.UpdateAdUC
-	publishAdUC    *usecase2.PublishAdUC
-	rejectAdUC     *usecase2.RejectAdUC
-	deleteAdUC     *usecase2.DeleteAdUC
-	deleteAllAdsUC *usecase2.DeleteAllAdsUC
+	log             *slog.Logger
+	createAdUC      *usecase.CreateAdUC
+	getAdUC         *usecase.GetAdUC
+	updateAdUC      *usecase.UpdateAdUC
+	publishAdUC     *usecase.PublishAdUC
+	rejectAdUC      *usecase.RejectAdUC
+	deleteAdUC      *usecase.DeleteAdUC
+	deleteAllAdsUC  *usecase.DeleteAllAdsUC
+	listSellerAdsUC *usecase.ListSellerAdsUC
 }
 
 func NewAdHandler(
 	log *slog.Logger,
-	createAdUC *usecase2.CreateAdUC,
-	getAdUC *usecase2.GetAdUC,
-	updateAdUC *usecase2.UpdateAdUC,
-	publishAdUC *usecase2.PublishAdUC,
-	rejectAdUC *usecase2.RejectAdUC,
-	deleteAdUC *usecase2.DeleteAdUC,
-	deleteAllAdsUC *usecase2.DeleteAllAdsUC,
+	createAdUC *usecase.CreateAdUC,
+	getAdUC *usecase.GetAdUC,
+	updateAdUC *usecase.UpdateAdUC,
+	publishAdUC *usecase.PublishAdUC,
+	rejectAdUC *usecase.RejectAdUC,
+	deleteAdUC *usecase.DeleteAdUC,
+	deleteAllAdsUC *usecase.DeleteAllAdsUC,
+	listSellerAdsUC *usecase.ListSellerAdsUC,
 ) *AdHandler {
 	return &AdHandler{
-		log:            log,
-		createAdUC:     createAdUC,
-		getAdUC:        getAdUC,
-		updateAdUC:     updateAdUC,
-		publishAdUC:    publishAdUC,
-		rejectAdUC:     rejectAdUC,
-		deleteAdUC:     deleteAdUC,
-		deleteAllAdsUC: deleteAllAdsUC,
+		log:             log,
+		createAdUC:      createAdUC,
+		getAdUC:         getAdUC,
+		updateAdUC:      updateAdUC,
+		publishAdUC:     publishAdUC,
+		rejectAdUC:      rejectAdUC,
+		deleteAdUC:      deleteAdUC,
+		deleteAllAdsUC:  deleteAllAdsUC,
+		listSellerAdsUC: listSellerAdsUC,
 	}
 }
 
@@ -63,16 +67,16 @@ func (h *AdHandler) CreateAd(ctx context.Context, req *ad_v1.CreateAdRequest) (*
 	}
 
 	ucResp, err := h.createAdUC.Execute(ctx, MapCreateAdPbToDTO(req, accountID))
-
 	if err != nil {
-		outErr := gRPCError(err)
-		h.log.ErrorContext(ctx, "failed to create ad",
-			slog.Int("code", int(outErr.Code)),
-			slog.String("public_msg", outErr.Message),
-			slog.Any("reason", outErr.Reason),
-		)
-		return nil, status.Error(outErr.Code, outErr.Message)
+		code, msg := h.handleError(ctx, err, "failed to create ad")
+		return nil, status.Error(code, msg)
 	}
+
+	h.log.InfoContext(ctx, "created ad",
+		slog.String("title", req.GetTitle()),
+		slog.String("description", req.GetDescription()),
+		slog.Int("price", int(req.GetPrice())),
+	)
 
 	return MapCreateAdDTOToPb(ucResp), nil
 }
@@ -84,15 +88,9 @@ func (h *AdHandler) GetAd(ctx context.Context, req *ad_v1.GetAdRequest) (*ad_v1.
 	}
 
 	ucResp, err := h.getAdUC.Execute(ctx, MapGetAdPbToDTO(req, accountID))
-
 	if err != nil {
-		outErr := gRPCError(err)
-		h.log.ErrorContext(ctx, "failed to get ad",
-			slog.Int("code", int(outErr.Code)),
-			slog.String("public_msg", outErr.Message),
-			slog.Any("reason", outErr.Reason),
-		)
-		return nil, status.Error(outErr.Code, outErr.Message)
+		code, msg := h.handleError(ctx, err, "failed to get ad")
+		return nil, status.Error(code, msg)
 	}
 
 	return MapGetAdDTOToPb(ucResp), nil
@@ -107,14 +105,16 @@ func (h *AdHandler) UpdateAd(ctx context.Context, req *ad_v1.UpdateAdRequest) (*
 	ucResp, err := h.updateAdUC.Execute(ctx, MapUpdateAdPbToDTO(req, accountID))
 
 	if err != nil {
-		outErr := gRPCError(err)
-		h.log.ErrorContext(ctx, "failed to update ad",
-			slog.Int("code", int(outErr.Code)),
-			slog.String("public_msg", outErr.Message),
-			slog.Any("reason", outErr.Reason),
-		)
-		return nil, status.Error(outErr.Code, outErr.Message)
+		code, msg := h.handleError(ctx, err, "failed to update ad")
+		return nil, status.Error(code, msg)
 	}
+
+	h.log.InfoContext(ctx, "updated ad",
+		slog.String("id", req.GetAdId()),
+		slog.String("description", req.GetDescription()),
+		slog.String("title", req.GetTitle()),
+		slog.Int("price", int(req.GetPrice())),
+	)
 
 	return MapUpdateAdDTOToPb(ucResp), nil
 }
@@ -126,16 +126,14 @@ func (h *AdHandler) PublishAd(ctx context.Context, req *ad_v1.PublishAdRequest) 
 	}
 
 	ucResp, err := h.publishAdUC.Execute(ctx, MapPublishAdPbToDTO(req, accountID))
-
 	if err != nil {
-		outErr := gRPCError(err)
-		h.log.ErrorContext(ctx, "failed to publish ad",
-			slog.Int("code", int(outErr.Code)),
-			slog.String("public_msg", outErr.Message),
-			slog.Any("reason", outErr.Reason),
-		)
-		return nil, status.Error(outErr.Code, outErr.Message)
+		code, msg := h.handleError(ctx, err, "failed to publish ad")
+		return nil, status.Error(code, msg)
 	}
+
+	slog.InfoContext(ctx, "published ad",
+		slog.String("id", req.GetAdId()),
+	)
 
 	return MapPublishAdDTOToPb(ucResp), nil
 }
@@ -147,16 +145,14 @@ func (h *AdHandler) RejectAd(ctx context.Context, req *ad_v1.RejectAdRequest) (*
 	}
 
 	ucResp, err := h.rejectAdUC.Execute(ctx, MapRejectAdPbToDTO(req, accountID))
-
 	if err != nil {
-		outErr := gRPCError(err)
-		h.log.ErrorContext(ctx, "failed to reject ad",
-			slog.Int("code", int(outErr.Code)),
-			slog.String("public_msg", outErr.Message),
-			slog.Any("reason", outErr.Reason),
-		)
-		return nil, status.Error(outErr.Code, outErr.Message)
+		code, msg := h.handleError(ctx, err, "failed to reject ad")
+		return nil, status.Error(code, msg)
 	}
+
+	slog.InfoContext(ctx, "rejected ad",
+		slog.String("id", req.GetAdId()),
+	)
 
 	return MapRejectAdDTOToPb(ucResp), nil
 }
@@ -168,33 +164,54 @@ func (h *AdHandler) DeleteAd(ctx context.Context, req *ad_v1.DeleteAdRequest) (*
 	}
 
 	ucResp, err := h.deleteAdUC.Execute(ctx, MapDeleteAdPbToDTO(req, accountID))
-
 	if err != nil {
-		outErr := gRPCError(err)
-		h.log.ErrorContext(ctx, "failed to delete ad",
-			slog.Int("code", int(outErr.Code)),
-			slog.String("public_msg", outErr.Message),
-			slog.Any("reason", outErr.Reason),
-		)
-		return nil, status.Error(outErr.Code, outErr.Message)
+		code, msg := h.handleError(ctx, err, "failed to delete ad")
+		return nil, status.Error(code, msg)
 	}
+
+	slog.InfoContext(ctx, "deleted ad",
+		slog.String("id", req.GetAdId()),
+	)
 
 	return MapDeleteAdDTOToPb(ucResp), nil
 }
 
 func (h *AdHandler) DeleteAllAds(ctx context.Context, req *ad_v1.DeleteAllAdsRequest) (*ad_v1.DeleteAllAdsResponse, error) {
 	ucResp, err := h.deleteAllAdsUC.Execute(ctx, MapDeleteAllAdsPbToDTO(req))
-
 	if err != nil {
-		outErr := gRPCError(err)
-		h.log.ErrorContext(ctx, "failed to delete all ads",
-			slog.String("seller_id", req.GetSellerId()),
-			slog.Int("code", int(outErr.Code)),
-			slog.String("public_msg", outErr.Message),
-			slog.Any("reason", outErr.Reason),
-		)
-		return nil, status.Error(outErr.Code, outErr.Message)
+		code, msg := h.handleError(ctx, err, "failed to delete all ads")
+		return nil, status.Error(code, msg)
 	}
 
+	slog.InfoContext(ctx, "deleted all ads")
+
 	return MapDeleteAllAdsDTOToPb(ucResp), nil
+}
+
+func (h *AdHandler) ListAds(ctx context.Context, req *ad_v1.ListAdsRequest) (*ad_v1.ListAdsResponse, error) {
+	accountID, gRPCErr := h.extractID(ctx)
+	if gRPCErr != nil {
+		return nil, gRPCErr
+	}
+
+	ucResp, err := h.listSellerAdsUC.Execute(ctx, MapListAdsPbToDTO(req, accountID))
+	if err != nil {
+		code, msg := h.handleError(ctx, err, "failed to get a list of ads")
+		return nil, status.Error(code, msg)
+	}
+
+	return MapListAdsDTOToPb(ucResp), nil
+}
+
+func (h *AdHandler) handleError(
+	ctx context.Context, err error,
+	logMsg string,
+) (codes.Code, string) {
+	outErr := gRPCError(err)
+	h.log.LogAttrs(ctx, outErr.Level, logMsg,
+		slog.Int("code", int(outErr.Code)),
+		slog.String("public_msg", outErr.Message),
+		slog.Any("reason", outErr.Reason),
+	)
+	return outErr.Code, outErr.Message
 }

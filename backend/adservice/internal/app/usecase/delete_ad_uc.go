@@ -4,19 +4,29 @@ import (
 	"context"
 	"errors"
 
-	"github.com/maket12/ads-service/backend/adservice/internal/app/dto"
-	"github.com/maket12/ads-service/backend/adservice/internal/app/errs"
-	port2 "github.com/maket12/ads-service/backend/adservice/internal/domain/port"
-	pkgerrs "github.com/maket12/ads-service/pkg/errs"
+	"github.com/avito-tech/go-transaction-manager/trm/v2"
+	"github.com/maket12/ads-service/adservice/internal/app/dto"
+	ucerrs "github.com/maket12/ads-service/adservice/internal/app/errs"
+	"github.com/maket12/ads-service/adservice/internal/domain/port"
+	pkgerrs "github.com/maket12/ads-service/adservice/pkg/errs"
 )
 
 type DeleteAdUC struct {
-	ad    port2.AdRepository
-	media port2.MediaRepository
+	trManager trm.Manager
+	ad        port.AdRepository
+	media     port.MediaRepository
 }
 
-func NewDeleteAdUC(ad port2.AdRepository, media port2.MediaRepository) *DeleteAdUC {
-	return &DeleteAdUC{ad: ad, media: media}
+func NewDeleteAdUC(
+	trManager trm.Manager,
+	ad port.AdRepository,
+	media port.MediaRepository,
+) *DeleteAdUC {
+	return &DeleteAdUC{
+		trManager: trManager,
+		ad:        ad,
+		media:     media,
+	}
 }
 
 func (uc *DeleteAdUC) Execute(ctx context.Context, in dto.DeleteAdInput) (dto.DeleteAdOutput, error) {
@@ -24,44 +34,59 @@ func (uc *DeleteAdUC) Execute(ctx context.Context, in dto.DeleteAdInput) (dto.De
 	ad, err := uc.ad.Get(ctx, in.AdID)
 	if err != nil {
 		if errors.Is(err, pkgerrs.ErrObjectNotFound) {
-			return dto.DeleteAdOutput{Success: false}, errs.ErrInvalidAdID
+			return dto.DeleteAdOutput{Success: false}, ucerrs.ErrAdNotFound
 		}
-		return dto.DeleteAdOutput{Success: false}, errs.Wrap(
-			errs.ErrGetAdDB, err,
+		return dto.DeleteAdOutput{Success: false}, ucerrs.Wrap(
+			ucerrs.ErrGetAdDB, err,
 		)
 	}
 
 	// Check if current user can delete this ad
 	if ad.SellerID() != in.SellerID {
-		return dto.DeleteAdOutput{Success: false}, errs.ErrAccessDenied
+		return dto.DeleteAdOutput{Success: false}, ucerrs.ErrAccessDenied
+	}
+
+	// Check if the ad has been already deleted
+	if ad.IsDeleted() {
+		return dto.DeleteAdOutput{Success: false}, ucerrs.ErrCannotDelete
 	}
 
 	// Scenario №1: Delete status from database (if not published yet)
 	if ad.IsOnModeration() {
-		err = uc.ad.Delete(ctx, ad.ID())
-		if err != nil {
-			return dto.DeleteAdOutput{Success: false}, errs.Wrap(
-				errs.ErrDeleteAdDB, err,
-			)
-		}
+		if err = uc.trManager.Do(ctx, func(txCtx context.Context) error {
+			delErr := ad.Delete()
+			if delErr != nil {
+				return ucerrs.ErrCannotDelete
+			}
 
-		err = uc.media.Delete(ctx, ad.ID())
-		if err != nil {
-			return dto.DeleteAdOutput{Success: false}, errs.Wrap(
-				errs.ErrDeleteImagesDB, err,
-			)
+			if delErr = uc.ad.Delete(txCtx, ad.ID()); delErr != nil {
+				return ucerrs.Wrap(ucerrs.ErrDeleteAdDB, delErr)
+			}
+
+			if delErr = uc.media.Delete(txCtx, ad.ID()); delErr != nil {
+				return ucerrs.Wrap(ucerrs.ErrDeleteImagesDB, delErr)
+			}
+
+			return nil
+		}); err != nil {
+			return dto.DeleteAdOutput{Success: false}, err
 		}
 	} else {
 		// Scenario №2: Update status (deleted)
 		err = ad.Delete()
 		if err != nil {
-			return dto.DeleteAdOutput{Success: false}, errs.ErrCannotDelete
+			return dto.DeleteAdOutput{Success: false}, ucerrs.ErrCannotDelete
 		}
 
-		err = uc.ad.UpdateStatus(ctx, ad)
-		if err != nil {
-			return dto.DeleteAdOutput{Success: false}, errs.Wrap(
-				errs.ErrUpdateAdStatusDB, err,
+		if err = uc.ad.Update(ctx, ad); err != nil {
+			return dto.DeleteAdOutput{Success: false}, ucerrs.Wrap(
+				ucerrs.ErrUpdateAdDB, err,
+			)
+		}
+
+		if err = uc.media.Delete(ctx, ad.ID()); err != nil {
+			return dto.DeleteAdOutput{Success: false}, ucerrs.Wrap(
+				ucerrs.ErrDeleteImagesDB, err,
 			)
 		}
 	}

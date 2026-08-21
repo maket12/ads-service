@@ -5,9 +5,9 @@ import (
 	"testing"
 	"time"
 
-	"github.com/maket12/ads-service/backend/adservice/internal/domain/model"
-	pkgerrs "github.com/maket12/ads-service/pkg/errs"
-	"github.com/maket12/ads-service/pkg/utils"
+	"github.com/maket12/ads-service/adservice/internal/domain/model"
+	pkgerrs "github.com/maket12/ads-service/adservice/pkg/errs"
+	"github.com/maket12/ads-service/adservice/pkg/utils"
 
 	"github.com/google/uuid"
 	"github.com/stretchr/testify/assert"
@@ -65,7 +65,7 @@ func TestNewAd(t *testing.T) {
 			sellerID:    testSelID,
 			title:       testTitle,
 			description: utils.VPtr(""),
-			expect:      pkgerrs.ErrValueIsRequired,
+			expect:      pkgerrs.ErrValueIsInvalid,
 		},
 		{
 			name:        "invalid description",
@@ -106,8 +106,10 @@ func TestNewAd(t *testing.T) {
 				assert.Equal(t, tt.sellerID, ad.SellerID())
 				assert.Equal(t, tt.title, ad.Title())
 				assert.Equal(t, tt.price, ad.Price())
+				assert.Equal(t, ad.Status(), model.AdOnModeration)
 				assert.Equal(t, tt.images, ad.Images())
-				assert.Equal(t, ad.CreatedAt(), ad.UpdatedAt())
+				assert.NotNil(t, ad.CreatedAt())
+				assert.Nil(t, ad.UpdatedAt())
 			} else {
 				require.Error(t, err)
 				assert.ErrorIs(t, err, tt.expect)
@@ -121,7 +123,7 @@ func TestAd_Publish(t *testing.T) {
 	testAd := model.RestoreAd(
 		uuid.New(), uuid.New(), "Sell a car", nil,
 		int64(100000), model.AdOnModeration, nil,
-		time.Now(), time.Now(),
+		time.Now(), utils.VPtr(time.Now()),
 	)
 
 	// Publish for the first time - correct
@@ -139,7 +141,7 @@ func TestAd_Reject(t *testing.T) {
 	testAd := model.RestoreAd(
 		uuid.New(), uuid.New(), "Sell a car", nil,
 		int64(100000), model.AdOnModeration, nil,
-		time.Now(), time.Now(),
+		time.Now(), utils.VPtr(time.Now()),
 	)
 
 	// Reject for the first time - correct
@@ -157,7 +159,7 @@ func TestAd_Delete(t *testing.T) {
 	testAd := model.RestoreAd(
 		uuid.New(), uuid.New(), "Sell a car", nil,
 		int64(100000), model.AdPublished, nil,
-		time.Now(), time.Now(),
+		time.Now(), utils.VPtr(time.Now()),
 	)
 
 	// Delete for the first time - correct

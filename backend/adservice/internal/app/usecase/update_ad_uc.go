@@ -4,23 +4,28 @@ import (
 	"context"
 	"errors"
 
-	"github.com/maket12/ads-service/backend/adservice/internal/app/dto"
-	"github.com/maket12/ads-service/backend/adservice/internal/app/errs"
-	port2 "github.com/maket12/ads-service/backend/adservice/internal/domain/port"
-	pkgerrs "github.com/maket12/ads-service/pkg/errs"
+	"github.com/avito-tech/go-transaction-manager/trm/v2"
+	"github.com/maket12/ads-service/adservice/internal/app/dto"
+	ucerrs "github.com/maket12/ads-service/adservice/internal/app/errs"
+	"github.com/maket12/ads-service/adservice/internal/domain/port"
+	pkgerrs "github.com/maket12/ads-service/adservice/pkg/errs"
 )
 
 type UpdateAdUC struct {
-	ad    port2.AdRepository
-	media port2.MediaRepository
+	trManager trm.Manager
+	ad        port.AdRepository
+	media     port.MediaRepository
 }
 
 func NewUpdateAdUC(
-	ad port2.AdRepository, media port2.MediaRepository,
+	trManager trm.Manager,
+	ad port.AdRepository,
+	media port.MediaRepository,
 ) *UpdateAdUC {
 	return &UpdateAdUC{
-		ad:    ad,
-		media: media,
+		trManager: trManager,
+		ad:        ad,
+		media:     media,
 	}
 }
 
@@ -29,40 +34,40 @@ func (uc *UpdateAdUC) Execute(ctx context.Context, in dto.UpdateAdInput) (dto.Up
 	ad, err := uc.ad.Get(ctx, in.AdID)
 	if err != nil {
 		if errors.Is(err, pkgerrs.ErrObjectNotFound) {
-			return dto.UpdateAdOutput{Success: false}, errs.ErrInvalidAdID
+			return dto.UpdateAdOutput{Success: false}, ucerrs.ErrAdNotFound
 		}
-		return dto.UpdateAdOutput{Success: false}, errs.Wrap(
-			errs.ErrGetAdDB, err,
+		return dto.UpdateAdOutput{Success: false}, ucerrs.Wrap(
+			ucerrs.ErrGetAdDB, err,
 		)
 	}
 
 	// Check if current user can update this ad
 	if ad.SellerID() != in.SellerID {
-		return dto.UpdateAdOutput{Success: false}, errs.ErrAccessDenied
+		return dto.UpdateAdOutput{Success: false}, ucerrs.ErrAccessDenied
 	}
 
-	// Update
+	// Update ad
 	err = ad.Update(in.Title, in.Description, in.Price, in.Images)
 	if err != nil {
-		return dto.UpdateAdOutput{Success: false}, errs.Wrap(
-			errs.ErrInvalidInput, err,
+		return dto.UpdateAdOutput{Success: false}, ucerrs.Wrap(
+			ucerrs.ErrInvalidInput, err,
 		)
 	}
 
-	// Update in db
-	err = uc.ad.Update(ctx, ad)
-	if err != nil {
-		return dto.UpdateAdOutput{Success: false}, errs.Wrap(
-			errs.ErrUpdateAdDB, err,
-		)
-	}
+	// Update in databases
+	if err = uc.trManager.Do(ctx, func(txCtx context.Context) error {
+		updErr := uc.ad.Update(txCtx, ad)
+		if updErr != nil {
+			return ucerrs.Wrap(ucerrs.ErrUpdateAdDB, updErr)
+		}
 
-	// Update images in db
-	err = uc.media.Save(ctx, ad.ID(), ad.Images())
-	if err != nil {
-		return dto.UpdateAdOutput{Success: false}, errs.Wrap(
-			errs.ErrSaveImagesDB, err,
-		)
+		if updErr = uc.media.Save(txCtx, ad.ID(), ad.Images()); updErr != nil {
+			return ucerrs.Wrap(ucerrs.ErrSaveImagesDB, updErr)
+		}
+
+		return nil
+	}); err != nil {
+		return dto.UpdateAdOutput{Success: false}, err
 	}
 
 	// Response
