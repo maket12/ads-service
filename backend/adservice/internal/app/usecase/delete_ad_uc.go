@@ -46,17 +46,25 @@ func (uc *DeleteAdUC) Execute(ctx context.Context, in dto.DeleteAdInput) (dto.De
 		return dto.DeleteAdOutput{Success: false}, ucerrs.ErrAccessDenied
 	}
 
+	// Check if the ad has been already deleted
+	if ad.IsDeleted() {
+		return dto.DeleteAdOutput{Success: false}, ucerrs.ErrCannotDelete
+	}
+
 	// Scenario №1: Delete status from database (if not published yet)
 	if ad.IsOnModeration() {
 		if err = uc.trManager.Do(ctx, func(txCtx context.Context) error {
-			delErr := uc.ad.Delete(txCtx, ad.ID())
+			delErr := ad.Delete()
 			if delErr != nil {
+				return ucerrs.ErrCannotDelete
+			}
+
+			if delErr = uc.ad.Delete(txCtx, ad.ID()); delErr != nil {
 				return ucerrs.Wrap(ucerrs.ErrDeleteAdDB, delErr)
 			}
 
-			delErr = uc.media.Delete(txCtx, ad.ID())
-			if delErr != nil {
-				return ucerrs.Wrap(ucerrs.ErrDeleteImagesDB, err)
+			if delErr = uc.media.Delete(txCtx, ad.ID()); delErr != nil {
+				return ucerrs.Wrap(ucerrs.ErrDeleteImagesDB, delErr)
 			}
 
 			return nil
@@ -70,10 +78,15 @@ func (uc *DeleteAdUC) Execute(ctx context.Context, in dto.DeleteAdInput) (dto.De
 			return dto.DeleteAdOutput{Success: false}, ucerrs.ErrCannotDelete
 		}
 
-		err = uc.ad.Update(ctx, ad)
-		if err != nil {
+		if err = uc.ad.Update(ctx, ad); err != nil {
 			return dto.DeleteAdOutput{Success: false}, ucerrs.Wrap(
-				ucerrs.ErrUpdateAdStatusDB, err,
+				ucerrs.ErrUpdateAdDB, err,
+			)
+		}
+
+		if err = uc.media.Delete(ctx, ad.ID()); err != nil {
+			return dto.DeleteAdOutput{Success: false}, ucerrs.Wrap(
+				ucerrs.ErrDeleteImagesDB, err,
 			)
 		}
 	}

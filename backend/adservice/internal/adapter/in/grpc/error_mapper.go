@@ -20,7 +20,6 @@ func gRPCError(err error) *pkgerrs.OutErr {
 			errors.Is(w.Public, ucerrs.ErrCreateAdDB),
 			errors.Is(w.Public, ucerrs.ErrGetAdDB),
 			errors.Is(w.Public, ucerrs.ErrUpdateAdDB),
-			errors.Is(w.Public, ucerrs.ErrUpdateAdStatusDB),
 			errors.Is(w.Public, ucerrs.ErrDeleteAdDB),
 			errors.Is(w.Public, ucerrs.ErrDeleteAllAdsDB),
 			errors.Is(w.Public, ucerrs.ErrListAdsDB),

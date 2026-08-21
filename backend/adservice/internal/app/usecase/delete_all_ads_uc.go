@@ -38,14 +38,32 @@ func (uc *DeleteAllAdsUC) Execute(ctx context.Context, in dto.DeleteAllAdsInput)
 	// Delete all ads and their medias (if the ad hasn't been published yet)
 	if err := uc.trManager.Do(ctx, func(txCtx context.Context) error {
 		for _, ad := range ads {
-			delErr := ad.Delete()
-			if delErr != nil {
-				return ucerrs.Wrap(ucerrs.ErrInvalidInput, delErr)
+			// Scenario №1: Delete status from database (if not published yet)
+			if ad.IsOnModeration() {
+				delErr := ad.Delete()
+				if delErr != nil {
+					return ucerrs.ErrCannotDelete
+				}
+
+				if delErr = uc.ad.Delete(txCtx, ad.ID()); delErr != nil {
+					return ucerrs.Wrap(ucerrs.ErrDeleteAdDB, delErr)
+				}
+
+				if delErr = uc.media.Delete(txCtx, ad.ID()); delErr != nil {
+					return ucerrs.Wrap(ucerrs.ErrDeleteImagesDB, delErr)
+				}
+			} else {
+				// Scenario №2: Update status (deleted)
+				if delErr := ad.Delete(); delErr != nil {
+					return ucerrs.ErrCannotDelete
+				}
+				if updErr := uc.ad.Update(txCtx, ad); updErr != nil {
+					return ucerrs.Wrap(ucerrs.ErrUpdateAdDB, updErr)
+				}
 			}
 		}
-		if delErr := uc.ad.DeleteAll(ctx, in.SellerID); err != nil {
-			return ucerrs.Wrap(ucerrs.ErrDeleteAllAdsDB, err)
-		}
+
+		return nil
 	}); err != nil {
 		return dto.DeleteAllAdsOutput{Success: false}, err
 	}

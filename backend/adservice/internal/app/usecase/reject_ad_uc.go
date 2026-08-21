@@ -43,7 +43,7 @@ func (uc *RejectAdUC) Execute(ctx context.Context, in dto.RejectAdInput) (dto.Re
 	err = uc.ad.Update(ctx, ad)
 	if err != nil {
 		return dto.RejectAdOutput{Success: false}, ucerrs.Wrap(
-			ucerrs.ErrUpdateAdStatusDB, err,
+			ucerrs.ErrUpdateAdDB, err,
 		)
 	}
 

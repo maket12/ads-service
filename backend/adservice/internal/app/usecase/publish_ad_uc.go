@@ -43,7 +43,7 @@ func (uc *PublishAdUC) Execute(ctx context.Context, in dto.PublishAdInput) (dto.
 	err = uc.ad.Update(ctx, ad)
 	if err != nil {
 		return dto.PublishAdOutput{Success: false}, ucerrs.Wrap(
-			ucerrs.ErrUpdateAdStatusDB, err,
+			ucerrs.ErrUpdateAdDB, err,
 		)
 	}
 
