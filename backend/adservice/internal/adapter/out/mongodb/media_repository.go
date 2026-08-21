@@ -5,7 +5,6 @@ import (
 	"errors"
 	"time"
 
-	"github.com/maket12/ads-service/adservice/internal/domain/port"
 	pkgmongo "github.com/maket12/ads-service/adservice/pkg/mongodb"
 
 	"github.com/google/uuid"
@@ -93,24 +92,19 @@ func (r *MediaRepository) Save(ctx context.Context, adID uuid.UUID, images []str
 }
 
 // Get method returns images if they are in database, otherwise an empty list
-func (r *MediaRepository) Get(ctx context.Context, adID uuid.UUID) ([]port.ImageRef, error) {
+func (r *MediaRepository) Get(ctx context.Context, adID uuid.UUID) ([]string, error) {
 	var doc MediaDocument
 	err := r.collection.FindOne(ctx, bson.M{"ad_id": adID.String()}).Decode(&doc)
 	if err != nil {
 		if errors.Is(err, mongo.ErrNoDocuments) {
-			return []port.ImageRef{}, nil
+			return []string{}, nil
 		}
 		return nil, err
 	}
 
-	refs := make([]port.ImageRef, len(doc.Images))
+	refs := make([]string, len(doc.Images))
 	for i, img := range doc.Images {
-		refs[i] = port.ImageRef{
-			ID:     img.ID,
-			URL:    img.URL,
-			Width:  img.Width,
-			Height: img.Height,
-		}
+		refs[i] = img.ID
 	}
 	return refs, nil
 }

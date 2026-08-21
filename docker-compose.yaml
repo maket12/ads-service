@@ -83,113 +83,120 @@ services:
       auth-db:
           condition: service_healthy
 
-#  user-db:
-#    image: postgres:15-alpine
-#    container_name: user-db
-#    environment:
-#      - POSTGRES_USER=${USER_DB_USER}
-#      - POSTGRES_PASSWORD=${USER_DB_PASSWORD}
-#      - POSTGRES_DB=${USER_DB_NAME}
-#    ports:
-#      - "${USER_DB_PORT}:5432"
-#    healthcheck:
-#      test: [ "CMD-SHELL", "pg_isready -U ${USER_DB_USER} -d ${USER_DB_NAME}" ]
-#      interval: 10s
-#      timeout: 5s
-#      retries: 5
-#    volumes:
-#      - user_db_data:/var/lib/postgresql/data
-#
-#  user-service:
-#    build: ./backend/userservice
-#    container_name: user-service
-#    depends_on:
-#      user-db:
-#        condition: service_healthy
-#      rabbitmq:
-#        condition: service_healthy
-#    environment:
-#      - PG_HOST=user-db
-#      - PG_PORT=5432
-#      - RABBIT_HOST=rabbitmq
-#    env_file:
-#      - ./backend/userservice/.env
-#
-#  user-migrations:
-#    image: migrate/migrate:latest
-#    container_name: user-migrations
-#    volumes:
-#      - ./backend/userservice/migrations:/migrations
-#    command:
-#      - -path=/migrations/
-#      - -database=postgres://${USER_DB_USER}:${USER_DB_PASSWORD}@user-db:5432/${USER_DB_NAME}?sslmode=disable
-#      - up
-#    depends_on:
-#      user-db:
-#        condition: service_healthy
-#
-#  ad-db:
-#    image: postgres:15-alpine
-#    container_name: ad-db
-#    environment:
-#      - POSTGRES_USER=${AD_DB_USER}
-#      - POSTGRES_PASSWORD=${AD_DB_PASSWORD}
-#      - POSTGRES_DB=${AD_DB_NAME}
-#    ports:
-#      - "${AD_DB_PORT}:5432"
-#    healthcheck:
-#      test: [ "CMD-SHELL", "pg_isready -U ${AD_DB_USER} -d ${AD_DB_NAME}" ]
-#      interval: 10s
-#      timeout: 5s
-#      retries: 5
-#    volumes:
-#      - ad_db_data:/var/lib/postgresql/data
-#
-#  ad-mongo:
-#    image: mongo:8.2.3-noble
-#    container_name: ad-mongo
-#    environment:
-#      - MONGO_INITDB_ROOT_USERNAME=${AD_MONGO_USER}
-#      - MONGO_INITDB_ROOT_PASSWORD=${AD_MONGO_PASSWORD}
-#    ports:
-#      - "${AD_MONGO_PORT:-27017}:27017"
-#    healthcheck:
-#      test: [ "CMD", "mongosh", "--eval", "db.adminCommand('ping')" ]
-#      interval: 10s
-#      timeout: 5s
-#      retries: 5
-#    volumes:
-#      - ad_mongo_data:/data/db
-#
-#  ad-service:
-#    build: ./backend/adservice
-#    container_name: ad-service
-#    depends_on:
-#      ad-db:
-#        condition: service_healthy
-#      ad-mongo:
-#        condition: service_healthy
-#    environment:
-#      - PG_HOST=ad-db
-#      - PG_PORT=5432
-#      - MONGO_HOST=ad-mongo
-#      - MONGO_PORT=27017
-#    env_file:
-#      - ./backend/adservice/.env
-#
-#  ad-migrations:
-#    image: migrate/migrate:latest
-#    container_name: ad-migrations
-#    volumes:
-#      - ./backend/adservice/migrations:/migrations
-#    command:
-#      - -path=/migrations/
-#      - -database=postgres://${AD_DB_USER}:${AD_DB_PASSWORD}@ad-db:5432/${AD_DB_NAME}?sslmode=disable
-#      - up
-#    depends_on:
-#      ad-db:
-#        condition: service_healthy
-#
+  user-db:
+    image: postgres:15-alpine
+    container_name: user-db
+    environment:
+      - POSTGRES_USER=${USER_DB_USER}
+      - POSTGRES_PASSWORD=${USER_DB_PASSWORD}
+      - POSTGRES_DB=${USER_DB_NAME}
+    ports:
+      - "${USER_DB_PORT}:5432"
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready -U ${USER_DB_USER} -d ${USER_DB_NAME}" ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    volumes:
+      - user_db_data:/var/lib/postgresql/data
+
+  user-service:
+    build: ./backend/userservice
+    container_name: user-service
+    depends_on:
+      user-db:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
+    ports:
+      - "${USER_GRPC_PORT}:50052"
+    environment:
+      - DB_HOST=user-db
+      - DB_PORT=5432
+      - RABBIT_HOST=rabbitmq
+    env_file:
+      - ./backend/userservice/.env
+
+  user-migrations:
+    image: migrate/migrate:latest
+    container_name: user-migrations
+    volumes:
+      - ./backend/userservice/migrations:/migrations
+    command:
+      - -path=/migrations/
+      - -database=postgres://${USER_DB_USER}:${USER_DB_PASSWORD}@user-db:5432/${USER_DB_NAME}?sslmode=disable
+      - up
+    depends_on:
+      user-db:
+        condition: service_healthy
+
+  ad-db:
+    image: postgres:15-alpine
+    container_name: ad-db
+    environment:
+      - POSTGRES_USER=${AD_DB_USER}
+      - POSTGRES_PASSWORD=${AD_DB_PASSWORD}
+      - POSTGRES_DB=${AD_DB_NAME}
+    ports:
+      - "${AD_DB_PORT}:5432"
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready -U ${AD_DB_USER} -d ${AD_DB_NAME}" ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    volumes:
+      - ad_db_data:/var/lib/postgresql/data
+
+  ad-mongo:
+    image: mongo:8.2.3-noble
+    container_name: ad-mongo
+    environment:
+      - MONGO_INITDB_ROOT_USERNAME=${AD_MONGO_USER}
+      - MONGO_INITDB_ROOT_PASSWORD=${AD_MONGO_PASSWORD}
+    ports:
+      - "${AD_MONGO_PORT:-27017}:27017"
+    healthcheck:
+      test: [ "CMD", "mongosh", "--eval", "db.adminCommand('ping')" ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    volumes:
+      - ad_mongo_data:/data/db
+
+  ad-service:
+    build: ./backend/adservice
+    container_name: ad-service
+    depends_on:
+      ad-db:
+        condition: service_healthy
+      ad-mongo:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
+    ports:
+      - "${AD_GRPC_PORT}:50053"
+    environment:
+      - DB_HOST=ad-db
+      - DB_PORT=5433
+      - MONGO_HOST=ad-mongo
+      - MONGO_PORT=27017
+      - RABBIT_HOST=rabbitmq
+    env_file:
+      - ./backend/adservice/.env
+
+  ad-migrations:
+    image: migrate/migrate:latest
+    container_name: ad-migrations
+    volumes:
+      - ./backend/adservice/migrations:/migrations
+    command:
+      - -path=/migrations/
+      - -database=postgres://${AD_DB_USER}:${AD_DB_PASSWORD}@ad-db:5432/${AD_DB_NAME}?sslmode=disable
+      - up
+    depends_on:
+      ad-db:
+        condition: service_healthy
+
 #  gateway:
 #    build:
 #      context: .

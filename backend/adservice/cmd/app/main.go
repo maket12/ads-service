@@ -10,11 +10,13 @@ import (
 	"os/signal"
 	"syscall"
 
+	trmpgx "github.com/avito-tech/go-transaction-manager/drivers/pgxv5/v2"
+	"github.com/avito-tech/go-transaction-manager/trm/v2/manager"
 	"github.com/maket12/ads-service/adservice/cmd/app/config"
 	adaptergrpc "github.com/maket12/ads-service/adservice/internal/adapter/in/grpc"
 	adaptermongo "github.com/maket12/ads-service/adservice/internal/adapter/out/mongodb"
 	adapterpg "github.com/maket12/ads-service/adservice/internal/adapter/out/postgres"
-	usecase2 "github.com/maket12/ads-service/adservice/internal/app/usecase"
+	"github.com/maket12/ads-service/adservice/internal/app/usecase"
 	"github.com/maket12/ads-service/adservice/pkg/generated/ad_v1"
 	pkgmongodb "github.com/maket12/ads-service/adservice/pkg/mongodb"
 	pkgpostgres "github.com/maket12/ads-service/adservice/pkg/postgres"
@@ -45,14 +47,15 @@ func newLogger(level string) *slog.Logger {
 	}))
 }
 
-func newPostgresClient(cfg *config.Config) (*pkgpostgres.Client, error) {
+func newPostgresClient(ctx context.Context, cfg *config.Config) (*pkgpostgres.Client, error) {
 	pgConfig := pkgpostgres.NewConfig(
-		cfg.PgHost, cfg.PgPort, cfg.PgUser, cfg.PgPassword,
-		cfg.PgDBName, cfg.PgSSLMode, cfg.PgOpenConn,
-		cfg.PgIdleConn, cfg.PgConnLifeTime,
+		cfg.DbHost, cfg.DbPort, cfg.DbUser, cfg.DbPassword,
+		cfg.DbName, cfg.DbSSLMode, cfg.DbMaxConn,
+		cfg.DbMinConn, cfg.DbMaxConnLifeTime,
+		cfg.DbMaxConnIdleTime,
 	)
 
-	pgClient, err := pkgpostgres.NewClient(pgConfig)
+	pgClient, err := pkgpostgres.NewClient(ctx, pgConfig)
 	if err != nil {
 		return nil, err
 	}
@@ -63,14 +66,10 @@ func newPostgresClient(cfg *config.Config) (*pkgpostgres.Client, error) {
 func closePostgresClient(
 	ctx context.Context,
 	logger *slog.Logger,
-	pgClient *pkgpostgres.Client,
+	client *pkgpostgres.Client,
 ) {
 	logger.InfoContext(ctx, "closing postgres connection...")
-	if err := pgClient.Close(); err != nil {
-		logger.ErrorContext(ctx, "failed to close postgres",
-			slog.Any("error", err),
-		)
-	}
+	client.Close()
 }
 
 func newMongoClient(ctx context.Context, cfg *config.Config) (*pkgmongodb.Client, error) {
@@ -102,7 +101,7 @@ func closeMongoClient(
 
 func runServer(ctx context.Context, cfg *config.Config, logger *slog.Logger) error {
 	// Postgres client
-	pgClient, err := newPostgresClient(cfg)
+	pgClient, err := newPostgresClient(ctx, cfg)
 	if err != nil {
 		return fmt.Errorf("failed to init postgres client: %w", err)
 	}
@@ -125,18 +124,22 @@ func runServer(ctx context.Context, cfg *config.Config, logger *slog.Logger) err
 		cfg.MongoCollectionName,
 	)
 
+	// Transaction manager
+	trManager := manager.Must(trmpgx.NewDefaultFactory(pgClient.Pool))
+
 	// Repositories
-	adRepo := adapterpg.NewAdRepository(pgClient)
+	adRepo := adapterpg.NewAdRepository(pgClient, trmpgx.DefaultCtxGetter)
 	mediaRepo := adaptermongo.NewMediaRepository(mediaRepoCfg)
 
 	// Use-cases
-	createAdUC := usecase2.NewCreateAdUC(adRepo, mediaRepo)
-	getAdUC := usecase2.NewGetAdUC(adRepo, mediaRepo)
-	updateAdUC := usecase2.NewUpdateAdUC(adRepo, mediaRepo)
-	publishAdUC := usecase2.NewPublishAdUC(adRepo)
-	rejectAdUC := usecase2.NewRejectAdUC(adRepo)
-	deleteAdUC := usecase2.NewDeleteAdUC(adRepo, mediaRepo)
-	deleteAllAdsUC := usecase2.NewDeleteAllAdsUC(adRepo)
+	createAdUC := usecase.NewCreateAdUC(trManager, adRepo, mediaRepo)
+	getAdUC := usecase.NewGetAdUC(adRepo, mediaRepo)
+	updateAdUC := usecase.NewUpdateAdUC(trManager, adRepo, mediaRepo)
+	publishAdUC := usecase.NewPublishAdUC(adRepo)
+	rejectAdUC := usecase.NewRejectAdUC(adRepo)
+	deleteAdUC := usecase.NewDeleteAdUC(trManager, adRepo, mediaRepo)
+	deleteAllAdsUC := usecase.NewDeleteAllAdsUC(trManager, adRepo, mediaRepo)
+	listSellerAdsUC := usecase.NewListSellerAdsUC(adRepo)
 
 	// Handler
 	adHandler := adaptergrpc.NewAdHandler(
@@ -148,6 +151,7 @@ func runServer(ctx context.Context, cfg *config.Config, logger *slog.Logger) err
 		rejectAdUC,
 		deleteAdUC,
 		deleteAllAdsUC,
+		listSellerAdsUC,
 	)
 
 	// gRPC server
