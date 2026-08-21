@@ -70,6 +70,15 @@ func (h *UserHandler) UpdateProfile(ctx context.Context, req *user_v1.UpdateProf
 		return nil, status.Error(code, msg)
 	}
 
+	h.log.InfoContext(ctx, "updated profile",
+		slog.String("account_id", accountID.String()),
+		slog.String("first_name", req.GetFirstName()),
+		slog.String("last_name", req.GetLastName()),
+		slog.String("phone", req.GetPhone()),
+		slog.String("avatar_url", req.GetAvatarUrl()),
+		slog.String("bio", req.GetBio()),
+	)
+
 	return MapUpdateProfileDTOToPb(ucResp), nil
 }
 
