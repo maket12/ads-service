@@ -15,15 +15,15 @@ import (
 
 type AdHandler struct {
 	ad_v1.UnimplementedAdServiceServer
-	log            *slog.Logger
-	createAdUC     *usecase.CreateAdUC
-	getAdUC        *usecase.GetAdUC
-	updateAdUC     *usecase.UpdateAdUC
-	publishAdUC    *usecase.PublishAdUC
-	rejectAdUC     *usecase.RejectAdUC
-	deleteAdUC     *usecase.DeleteAdUC
-	deleteAllAdsUC *usecase.DeleteAllAdsUC
-	listAdsUC      *usecase.ListAdsUC
+	log             *slog.Logger
+	createAdUC      *usecase.CreateAdUC
+	getAdUC         *usecase.GetAdUC
+	updateAdUC      *usecase.UpdateAdUC
+	publishAdUC     *usecase.PublishAdUC
+	rejectAdUC      *usecase.RejectAdUC
+	deleteAdUC      *usecase.DeleteAdUC
+	deleteAllAdsUC  *usecase.DeleteAllAdsUC
+	listSellerAdsUC *usecase.ListSellerAdsUC
 }
 
 func NewAdHandler(
@@ -35,18 +35,18 @@ func NewAdHandler(
 	rejectAdUC *usecase.RejectAdUC,
 	deleteAdUC *usecase.DeleteAdUC,
 	deleteAllAdsUC *usecase.DeleteAllAdsUC,
-	listAdsUC *usecase.ListAdsUC,
+	listSellerAdsUC *usecase.ListSellerAdsUC,
 ) *AdHandler {
 	return &AdHandler{
-		log:            log,
-		createAdUC:     createAdUC,
-		getAdUC:        getAdUC,
-		updateAdUC:     updateAdUC,
-		publishAdUC:    publishAdUC,
-		rejectAdUC:     rejectAdUC,
-		deleteAdUC:     deleteAdUC,
-		deleteAllAdsUC: deleteAllAdsUC,
-		listAdsUC:      listAdsUC,
+		log:             log,
+		createAdUC:      createAdUC,
+		getAdUC:         getAdUC,
+		updateAdUC:      updateAdUC,
+		publishAdUC:     publishAdUC,
+		rejectAdUC:      rejectAdUC,
+		deleteAdUC:      deleteAdUC,
+		deleteAllAdsUC:  deleteAllAdsUC,
+		listSellerAdsUC: listSellerAdsUC,
 	}
 }
 
@@ -189,11 +189,17 @@ func (h *AdHandler) DeleteAllAds(ctx context.Context, req *ad_v1.DeleteAllAdsReq
 }
 
 func (h *AdHandler) ListAds(ctx context.Context, req *ad_v1.ListAdsRequest) (*ad_v1.ListAdsResponse, error) {
-	ucResp, err := h.listAdsUC.Execute(ctx, MapListAdsPbToDTO(req))
+	accountID, gRPCErr := h.extractID(ctx)
+	if gRPCErr != nil {
+		return nil, gRPCErr
+	}
+
+	ucResp, err := h.listSellerAdsUC.Execute(ctx, MapListAdsPbToDTO(req, accountID))
 	if err != nil {
 		code, msg := h.handleError(ctx, err, "failed to get a list of ads")
 		return nil, status.Error(code, msg)
 	}
+
 	return MapListAdsDTOToPb(ucResp), nil
 }
 
