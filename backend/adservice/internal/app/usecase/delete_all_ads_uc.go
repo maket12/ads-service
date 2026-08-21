@@ -35,8 +35,6 @@ func (uc *DeleteAllAdsUC) Execute(ctx context.Context, in dto.DeleteAllAdsInput)
 		)
 	}
 
-	uc.media.
-
 	// Delete all ads and their medias (if the ad hasn't been published yet)
 	if err := uc.trManager.Do(ctx, func(txCtx context.Context) error {
 		for _, ad := range ads {
