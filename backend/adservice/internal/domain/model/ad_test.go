@@ -5,6 +5,7 @@ import (
 	"testing"
 	"time"
 
+	"github.com/brianvoe/gofakeit/v7"
 	"github.com/maket12/ads-service/adservice/internal/domain/model"
 	pkgerrs "github.com/maket12/ads-service/adservice/pkg/errs"
 	"github.com/maket12/ads-service/adservice/pkg/utils"
@@ -174,6 +175,36 @@ func TestAd_Delete(t *testing.T) {
 }
 
 func TestAd_Update(t *testing.T) {
+	ad, _ := model.NewAd(
+		uuid.New(), gofakeit.ProductName(),
+		nil, 100, nil,
+	)
+
+	// First case - ad is on moderation and can be updated
+	err := ad.Update(nil, utils.VPtr(gofakeit.ProductDescription()), nil, nil)
+	assert.NoError(t, err)
+
+	// Second case - ad is published and can be updated
+	_ = ad.Publish()
+	err = ad.Update(nil, nil, utils.VPtr(int64(200)), nil)
+	assert.NoError(t, err)
+
+	// Third case - ad is deleted and can't be updated
+	_ = ad.Delete()
+	err = ad.Update(utils.VPtr(gofakeit.ProductName()), nil, nil, nil)
+	assert.Error(t, err)
+
+	// Fourth case - ad is rejected and can't be updated
+	rejectedAd := model.RestoreAd(
+		uuid.New(), uuid.New(), gofakeit.ProductName(), nil,
+		int64(100000), model.AdRejected, nil,
+		time.Now(), utils.VPtr(time.Now()),
+	)
+	err = rejectedAd.Update(utils.VPtr(gofakeit.ProductName()), nil, nil, nil)
+	assert.Error(t, err)
+}
+
+func TestAd_Update_Validation(t *testing.T) {
 	type testCase struct {
 		name        string
 		title       *string

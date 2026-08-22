@@ -14,6 +14,7 @@ var (
 	ErrAdCantBePublished = errors.New("ad cannot be published")
 	ErrAdCantBeRejected  = errors.New("ad cannot be rejected")
 	ErrAdCantBeDeleted   = errors.New("ad cannot be deleted")
+	ErrAdCantBeUpdated   = errors.New("ad cannot be updated")
 )
 
 type AdStatus string
@@ -156,6 +157,7 @@ func (ad *Ad) IsDeleted() bool      { return ad.status == AdDeleted }
 func (ad *Ad) CanBePublished() bool { return ad.IsOnModeration() }
 func (ad *Ad) CanBeRejected() bool  { return ad.IsOnModeration() }
 func (ad *Ad) CanBeDeleted() bool   { return ad.IsOnModeration() || ad.IsPublished() }
+func (ad *Ad) CanBeUpdated() bool   { return ad.IsOnModeration() || ad.IsPublished() }
 
 // ================ Mutation ================
 
@@ -190,6 +192,10 @@ func (ad *Ad) Delete() error {
 }
 
 func (ad *Ad) Update(title, description *string, price *int64, images []string) error {
+	if !ad.CanBeUpdated() {
+		return ErrAdCantBeUpdated
+	}
+
 	if title != nil && len(*title) < minTitleLen {
 		return pkgerrs.NewValueInvalidError("title")
 	}
