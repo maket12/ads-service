@@ -51,13 +51,13 @@ type TestConfig struct {
 	DbMaxConnIdleTime time.Duration `env:"TEST_DB_MAX_CONNECTION_IDLETIME" envDefault:"5m"`
 
 	// Mongo
-	MongoHost     string `env:"TEST_MONGO_HOST,required"`
+	MongoHost     string `env:"TEST_MONGO_HOST" envDefault:"localhost"`
 	MongoPort     int    `env:"TEST_MONGO_PORT" envDefault:"27017"`
-	MongoUser     string `env:"TEST_MONGO_USER,required"`
-	MongoPassword string `env:"TEST_MONGO_PASSWORD,required"`
-	MongoDBName   string `env:"TEST_MONGO_DB_NAME,required"`
+	MongoUser     string `env:"TEST_MONGO_USER" envDefault:"user"`
+	MongoPassword string `env:"TEST_MONGO_PASSWORD" envDefault:"pass"`
+	MongoDBName   string `env:"TEST_MONGO_DB_NAME" envDefault:"test-db"`
 
-	MongoCollectionName string `env:"TEST_MONGO_COLLECTION_NAME,required"`
+	MongoCollectionName string `env:"TEST_MONGO_COLLECTION_NAME" envDefault:"test-img"`
 
 	// Service
 	GRPCPort    int    `env:"TEST_GRPC_PORT" envDefault:"50053"`

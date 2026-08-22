@@ -4,7 +4,6 @@ package e2e
 
 import (
 	"context"
-	"fmt"
 	"log/slog"
 	"net"
 	"os"
@@ -127,7 +126,6 @@ func setupE2E(t *testing.T) *testApp {
 			deleteAllAdsUC,
 			listSellerAdsUC,
 		)
-		fmt.Println("handler")
 
 		// --- in-memory gRPC server via bufconn ---
 		lis := bufconn.Listen(bufSize)
@@ -148,8 +146,6 @@ func setupE2E(t *testing.T) *testApp {
 			grpc.WithTransportCredentials(insecure.NewCredentials()),
 		)
 		require.NoError(t, err)
-
-		fmt.Println("app instance")
 
 		appInstance = &testApp{
 			client:    ad_v1.NewAdServiceClient(conn),
@@ -175,5 +171,8 @@ func setupE2E(t *testing.T) *testApp {
 
 func (a *testApp) cleanData(t *testing.T, ctx context.Context) {
 	err := a.pg.TruncateTables(ctx)
-	require.NoError(t, err, "failed to truncate tables")
+	require.NoError(t, err, "failed to truncate pg tables")
+
+	err = a.mongoC.ClearCollections(ctx)
+	require.NoError(t, err, "failed to clear mongo collections")
 }

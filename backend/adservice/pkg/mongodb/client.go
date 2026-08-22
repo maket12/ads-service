@@ -53,7 +53,7 @@ func NewClient(ctx context.Context, mongoCfg *Config) (*Client, error) {
 		return nil, fmt.Errorf("failed to connect to mongodb: %w", err)
 	}
 
-	pingCtx, cancel := context.WithTimeout(ctx, 5*time.Second)
+	pingCtx, cancel := context.WithTimeout(ctx, 15*time.Second)
 	defer cancel()
 
 	if err := client.Ping(pingCtx, readpref.Primary()); err != nil {
