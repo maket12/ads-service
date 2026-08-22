@@ -11,32 +11,32 @@ import (
 )
 
 type Config struct {
-	DBHost     string
-	DBPort     int
-	DBUser     string
-	DBPassword string
-	DBName     string
+	Host     string
+	Port     int
+	User     string
+	Password string
+	DBName   string
 }
 
 func NewConfig(
-	dbHost string,
-	dbPort int,
-	dbUser string,
-	dbPassword string,
+	host string,
+	port int,
+	user string,
+	password string,
 	dbName string,
 ) *Config {
 	return &Config{
-		DBHost:     dbHost,
-		DBPort:     dbPort,
-		DBUser:     dbUser,
-		DBPassword: dbPassword,
-		DBName:     dbName,
+		Host:     host,
+		Port:     port,
+		User:     user,
+		Password: password,
+		DBName:   dbName,
 	}
 }
 
 func (c *Config) uri() string {
 	return fmt.Sprintf("mongodb://%s:%s@%s:%d",
-		c.DBUser, c.DBPassword, c.DBHost, c.DBPort,
+		c.User, c.Password, c.Host, c.Port,
 	)
 }
 

@@ -108,13 +108,15 @@ func setupE2E(t *testing.T) *testApp {
 		createProfileUC := usecase.NewCreateProfileUC(profileRepo)
 		getProfileUC := usecase.NewGetProfileUC(profileRepo)
 		updateProfileUC := usecase.NewUpdateProfileUC(profileRepo, phoneValidator)
+		deleteProfileUC := usecase.NewDeleteProfileUC(profileRepo)
 
 		// rabbitmq subscriber, wired the same way as in main.go
 		subConfig := adapterrabbitmq.NewSubscriberConfig(
 			cfg.ExchangeName, cfg.QueueName, cfg.RoutingKey,
 		)
 		subscriber := adapterrabbitmq.NewAccountSubscriber(
-			subConfig, logger, rabbitClient, createProfileUC,
+			subConfig, logger, rabbitClient,
+			createProfileUC, deleteProfileUC,
 		)
 		go func() {
 			_ = subscriber.Start(ctx)

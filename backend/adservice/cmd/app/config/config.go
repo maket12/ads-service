@@ -36,6 +36,35 @@ type Config struct {
 	Environment string `env:"AD_ENVIRONMENT" envDefault:"development"`
 }
 
+type TestConfig struct {
+	// Database
+	DbHost     string `env:"TEST_DB_HOST" envDefault:"localhost"`
+	DbPort     int    `env:"TEST_DB_PORT" envDefault:"5432"`
+	DbUser     string `env:"TEST_DB_USER" envDefault:"user"`
+	DbPassword string `env:"TEST_DB_PASSWORD" envDefault:"pass"`
+	DbName     string `env:"TEST_DB_NAME" envDefault:"user-db"`
+	DbSSLMode  string `env:"TEST_DB_SSL_MODE" envDefault:"prefer"`
+
+	DbMaxConn         int           `env:"TEST_DB_MAX_CONNECTIONS" envDefault:"30"`
+	DbMinConn         int           `env:"TEST_DB_MIN_CONNECTIONS" envDefault:"10"`
+	DbMaxConnLifeTime time.Duration `env:"TEST_DB_MAX_CONNECTION_LIFETIME" envDefault:"10m"`
+	DbMaxConnIdleTime time.Duration `env:"TEST_DB_MAX_CONNECTION_IDLETIME" envDefault:"5m"`
+
+	// Mongo
+	MongoHost     string `env:"TEST_MONGO_HOST,required"`
+	MongoPort     int    `env:"TEST_MONGO_PORT" envDefault:"27017"`
+	MongoUser     string `env:"TEST_MONGO_USER,required"`
+	MongoPassword string `env:"TEST_MONGO_PASSWORD,required"`
+	MongoDBName   string `env:"TEST_MONGO_DB_NAME,required"`
+
+	MongoCollectionName string `env:"TEST_MONGO_COLLECTION_NAME,required"`
+
+	// Service
+	GRPCPort    int    `env:"TEST_GRPC_PORT" envDefault:"50053"`
+	LogLevel    string `env:"TEST_LOG_LEVEL" envDefault:"DEBUG"`
+	Environment string `env:"TEST_ENVIRONMENT" envDefault:"test"`
+}
+
 func Load() (*Config, error) {
 	cfg := &Config{}
 	if err := env.Parse(cfg); err != nil {
@@ -49,5 +78,13 @@ func Load() (*Config, error) {
 	fmt.Printf("   Mongo Host: %s\n", cfg.MongoHost)
 	fmt.Printf("   gRPC Port: %d\n", cfg.GRPCPort)
 
+	return cfg, nil
+}
+
+func LoadTest() (*TestConfig, error) {
+	cfg := &TestConfig{}
+	if err := env.Parse(cfg); err != nil {
+		return nil, fmt.Errorf("failed to load test config: %v", err)
+	}
 	return cfg, nil
 }
