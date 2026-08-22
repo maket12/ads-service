@@ -15,24 +15,24 @@ import (
 	"google.golang.org/grpc/status"
 )
 
-func TestPublishAd_Success(t *testing.T) {
+func TestRejectAd_Success(t *testing.T) {
 	app := setupE2E(t)
 
 	adID, sellerID := app.createAd(t, nil, nil)
 	ctx := utils.PackAccountIDForGRPC(context.Background(), sellerID)
 
-	resp, err := app.client.PublishAd(ctx, &ad_v1.PublishAdRequest{AdId: adID})
+	resp, err := app.client.RejectAd(ctx, &ad_v1.RejectAdRequest{AdId: adID})
 
 	require.NoError(t, err)
 	require.True(t, resp.GetSuccess())
 }
 
-func TestPublishAd_BadCases(t *testing.T) {
+func TestRejectAd_BadCases(t *testing.T) {
 	app := setupE2E(t)
 
 	adID, sellerID := app.createAd(t, nil, nil)
-	publishedAdID, _ := app.createAd(t, &sellerID, nil)
-	app.publishAd(t, publishedAdID, sellerID)
+	rejectedAdID, _ := app.createAd(t, &sellerID, nil)
+	app.rejectAd(t, rejectedAdID, sellerID)
 
 	type testCase struct {
 		name          string
@@ -58,9 +58,9 @@ func TestPublishAd_BadCases(t *testing.T) {
 			expectedError: "no permission to access this data",
 		},
 		{
-			name:          "Failed Precondition - Ad Has Been Published",
+			name:          "Failed Precondition - Ad Has Been Rejected",
 			sellerID:      sellerID,
-			adID:          publishedAdID,
+			adID:          rejectedAdID,
 			expectedCode:  codes.FailedPrecondition,
 			expectedError: "ad has been already published or not available",
 		},
@@ -77,7 +77,7 @@ func TestPublishAd_BadCases(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			ctx := utils.PackAccountIDForGRPC(context.Background(), tt.sellerID)
 
-			resp, err := app.client.PublishAd(ctx, &ad_v1.PublishAdRequest{
+			resp, err := app.client.RejectAd(ctx, &ad_v1.RejectAdRequest{
 				AdId: tt.adID,
 			})
 

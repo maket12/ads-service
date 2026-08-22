@@ -223,3 +223,14 @@ func (a *testApp) publishAd(t *testing.T, adID, sellerID string) {
 	require.NoError(t, err)
 	require.True(t, resp.GetSuccess())
 }
+
+// Helper for e2e tests.
+// Reject ad by calling “RejectAd“ grpc method.
+//
+// Make sure the ad is available and the owner has specified “seller id“.
+func (a *testApp) rejectAd(t *testing.T, adID, sellerID string) {
+	ctx := utils.PackAccountIDForGRPC(context.Background(), sellerID)
+	resp, err := a.client.RejectAd(ctx, &ad_v1.RejectAdRequest{AdId: adID})
+	require.NoError(t, err)
+	require.True(t, resp.GetSuccess())
+}
