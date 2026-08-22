@@ -31,10 +31,10 @@ func MapDomainToListSellerAdsOut(ads []*model.Ad) dto.ListSellerAdsOutput {
 	return dto.ListSellerAdsOutput{Ads: mapped}
 }
 
-func MapDomainToListAdsOut(ads []*model.Ad) dto.ListAdsOutput {
+func MapDomainToListAdsOut(ads []*model.Ad) dto.ListAllAdsOutput {
 	mapped := make([]dto.Ad, len(ads))
 	for i := range mapped {
 		mapped[i] = mapDomainToAdDTO(ads[i])
 	}
-	return dto.ListAdsOutput{Ads: mapped}
+	return dto.ListAllAdsOutput{Ads: mapped}
 }

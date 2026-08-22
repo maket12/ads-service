@@ -27,6 +27,7 @@ const (
 	AdService_DeleteAd_FullMethodName     = "/ad.AdService/DeleteAd"
 	AdService_DeleteAllAds_FullMethodName = "/ad.AdService/DeleteAllAds"
 	AdService_ListAds_FullMethodName      = "/ad.AdService/ListAds"
+	AdService_ListAllAds_FullMethodName   = "/ad.AdService/ListAllAds"
 )
 
 // AdServiceClient is the client API for AdService service.
@@ -41,6 +42,7 @@ type AdServiceClient interface {
 	DeleteAd(ctx context.Context, in *DeleteAdRequest, opts ...grpc.CallOption) (*DeleteAdResponse, error)
 	DeleteAllAds(ctx context.Context, in *DeleteAllAdsRequest, opts ...grpc.CallOption) (*DeleteAllAdsResponse, error)
 	ListAds(ctx context.Context, in *ListAdsRequest, opts ...grpc.CallOption) (*ListAdsResponse, error)
+	ListAllAds(ctx context.Context, in *ListAllAdsRequest, opts ...grpc.CallOption) (*ListAllAdsResponse, error)
 }
 
 type adServiceClient struct {
@@ -131,6 +133,16 @@ func (c *adServiceClient) ListAds(ctx context.Context, in *ListAdsRequest, opts 
 	return out, nil
 }
 
+func (c *adServiceClient) ListAllAds(ctx context.Context, in *ListAllAdsRequest, opts ...grpc.CallOption) (*ListAllAdsResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(ListAllAdsResponse)
+	err := c.cc.Invoke(ctx, AdService_ListAllAds_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // AdServiceServer is the server API for AdService service.
 // All implementations must embed UnimplementedAdServiceServer
 // for forward compatibility.
@@ -143,6 +155,7 @@ type AdServiceServer interface {
 	DeleteAd(context.Context, *DeleteAdRequest) (*DeleteAdResponse, error)
 	DeleteAllAds(context.Context, *DeleteAllAdsRequest) (*DeleteAllAdsResponse, error)
 	ListAds(context.Context, *ListAdsRequest) (*ListAdsResponse, error)
+	ListAllAds(context.Context, *ListAllAdsRequest) (*ListAllAdsResponse, error)
 	mustEmbedUnimplementedAdServiceServer()
 }
 
@@ -176,6 +189,9 @@ func (UnimplementedAdServiceServer) DeleteAllAds(context.Context, *DeleteAllAdsR
 }
 func (UnimplementedAdServiceServer) ListAds(context.Context, *ListAdsRequest) (*ListAdsResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method ListAds not implemented")
+}
+func (UnimplementedAdServiceServer) ListAllAds(context.Context, *ListAllAdsRequest) (*ListAllAdsResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method ListAllAds not implemented")
 }
 func (UnimplementedAdServiceServer) mustEmbedUnimplementedAdServiceServer() {}
 func (UnimplementedAdServiceServer) testEmbeddedByValue()                   {}
@@ -342,6 +358,24 @@ func _AdService_ListAds_Handler(srv interface{}, ctx context.Context, dec func(i
 	return interceptor(ctx, in, info, handler)
 }
 
+func _AdService_ListAllAds_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(ListAllAdsRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(AdServiceServer).ListAllAds(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: AdService_ListAllAds_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(AdServiceServer).ListAllAds(ctx, req.(*ListAllAdsRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // AdService_ServiceDesc is the grpc.ServiceDesc for AdService service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -380,6 +414,10 @@ var AdService_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "ListAds",
 			Handler:    _AdService_ListAds_Handler,
+		},
+		{
+			MethodName: "ListAllAds",
+			Handler:    _AdService_ListAllAds_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

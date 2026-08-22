@@ -24,6 +24,7 @@ type AdHandler struct {
 	deleteAdUC      *usecase.DeleteAdUC
 	deleteAllAdsUC  *usecase.DeleteAllAdsUC
 	listSellerAdsUC *usecase.ListSellerAdsUC
+	listAllAdsUC    *usecase.ListAllAdsUC
 }
 
 func NewAdHandler(
@@ -36,6 +37,7 @@ func NewAdHandler(
 	deleteAdUC *usecase.DeleteAdUC,
 	deleteAllAdsUC *usecase.DeleteAllAdsUC,
 	listSellerAdsUC *usecase.ListSellerAdsUC,
+	listAllAdsUC *usecase.ListAllAdsUC,
 ) *AdHandler {
 	return &AdHandler{
 		log:             log,
@@ -47,6 +49,7 @@ func NewAdHandler(
 		deleteAdUC:      deleteAdUC,
 		deleteAllAdsUC:  deleteAllAdsUC,
 		listSellerAdsUC: listSellerAdsUC,
+		listAllAdsUC:    listAllAdsUC,
 	}
 }
 
@@ -58,6 +61,16 @@ func (h *AdHandler) extractID(ctx context.Context) (uuid.UUID, error) {
 		return uuid.Nil, status.Error(outErr.Code, outErr.Message)
 	}
 	return accountID, nil
+}
+
+// Extracts account role from context and returns gRPC error if fails
+func (h *AdHandler) extractRole(ctx context.Context) (string, error) {
+	role, err := utils.ExtractAccountRole(ctx)
+	if err != nil {
+		outErr := gRPCError(err)
+		return "", status.Error(outErr.Code, outErr.Message)
+	}
+	return role, nil
 }
 
 func (h *AdHandler) CreateAd(ctx context.Context, req *ad_v1.CreateAdRequest) (*ad_v1.CreateAdResponse, error) {
@@ -201,6 +214,34 @@ func (h *AdHandler) ListAds(ctx context.Context, req *ad_v1.ListAdsRequest) (*ad
 	}
 
 	return MapListAdsDTOToPb(ucResp), nil
+}
+
+func (h *AdHandler) ListAllAds(ctx context.Context, req *ad_v1.ListAllAdsRequest) (*ad_v1.ListAllAdsResponse, error) {
+	accountID, gRPCErr := h.extractID(ctx)
+	if gRPCErr != nil {
+		return nil, gRPCErr
+	}
+
+	role, gRPCErr := h.extractRole(ctx)
+	if gRPCErr != nil {
+		return nil, gRPCErr
+	}
+
+	if role != "admin" {
+		h.log.WarnContext(ctx, "access denied for non-admin user",
+			slog.String("account_id", accountID.String()),
+			slog.String("role", role),
+		)
+		return nil, status.Error(codes.PermissionDenied, "access denied: admin role required")
+	}
+
+	ucResp, err := h.listAllAdsUC.Execute(ctx, MapListAllAdsPbToDTO(req))
+	if err != nil {
+		code, msg := h.handleError(ctx, err, "failed to get a list of ads for admin")
+		return nil, status.Error(code, msg)
+	}
+
+	return MapListAllAdsDTOToPb(ucResp), nil
 }
 
 func (h *AdHandler) handleError(

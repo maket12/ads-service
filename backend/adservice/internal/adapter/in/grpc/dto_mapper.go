@@ -126,3 +126,19 @@ func MapListAdsDTOToPb(out dto.ListSellerAdsOutput) *ad_v1.ListAdsResponse {
 
 	return &ad_v1.ListAdsResponse{Ads: mapped}
 }
+
+func MapListAllAdsPbToDTO(req *ad_v1.ListAllAdsRequest) dto.ListAllAdsInput {
+	return dto.ListAllAdsInput{
+		Limit:  int(req.GetLimit()),
+		Offset: int(req.GetOffset()),
+	}
+}
+
+func MapListAllAdsDTOToPb(out dto.ListAllAdsOutput) *ad_v1.ListAllAdsResponse {
+	mapped := make([]*ad_v1.Ad, len(out.Ads))
+	for i := range mapped {
+		mapped[i] = mapAdDTOToPB(out.Ads[i])
+	}
+
+	return &ad_v1.ListAllAdsResponse{Ads: mapped}
+}

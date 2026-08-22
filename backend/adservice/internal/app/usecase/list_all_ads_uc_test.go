@@ -16,10 +16,10 @@ import (
 	"github.com/stretchr/testify/mock"
 )
 
-func TestListAdsUC_Execute(t *testing.T) {
+func TestListAllAdsUC_Execute(t *testing.T) {
 	type testCase struct {
 		name          string
-		input         dto.ListAdsInput
+		input         dto.ListAllAdsInput
 		mockBehaviour func(a *mocks.MockAdRepository)
 		expectErr     error
 	}
@@ -30,7 +30,7 @@ func TestListAdsUC_Execute(t *testing.T) {
 	var tests = []testCase{
 		{
 			name:  "Success",
-			input: dto.ListAdsInput{Limit: limit, Offset: offset},
+			input: dto.ListAllAdsInput{Limit: limit, Offset: offset},
 			mockBehaviour: func(a *mocks.MockAdRepository) {
 				ad, _ := model.NewAd(sellerID, "title", nil, 100, nil)
 				a.EXPECT().
@@ -41,7 +41,7 @@ func TestListAdsUC_Execute(t *testing.T) {
 		},
 		{
 			name:  "Failure - db error",
-			input: dto.ListAdsInput{Limit: limit, Offset: offset},
+			input: dto.ListAllAdsInput{Limit: limit, Offset: offset},
 			mockBehaviour: func(a *mocks.MockAdRepository) {
 				a.EXPECT().
 					ListAds(mock.Anything, limit, offset).
@@ -56,7 +56,7 @@ func TestListAdsUC_Execute(t *testing.T) {
 			adRepo := mocks.NewMockAdRepository(t)
 			tt.mockBehaviour(adRepo)
 
-			uc := usecase.NewListAdsUC(adRepo)
+			uc := usecase.NewListAllAdsUC(adRepo)
 
 			_, err := uc.Execute(context.Background(), tt.input)
 

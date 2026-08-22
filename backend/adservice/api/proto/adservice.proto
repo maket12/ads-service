@@ -15,6 +15,7 @@ service AdService {
   rpc DeleteAd(DeleteAdRequest) returns (DeleteAdResponse);
   rpc DeleteAllAds(DeleteAllAdsRequest) returns (DeleteAllAdsResponse);
   rpc ListAds(ListAdsRequest) returns (ListAdsResponse);
+  rpc ListAllAds(ListAllAdsRequest) returns (ListAllAdsResponse);
 }
 
 message CreateAdRequest {
@@ -95,5 +96,14 @@ message DeleteAllAdsResponse {
 message ListAdsRequest {}
 
 message ListAdsResponse {
+  repeated Ad ads = 1;
+}
+
+message ListAllAdsRequest {
+  int32 limit = 1;
+  int32 offset = 2;
+}
+
+message ListAllAdsResponse {
   repeated Ad ads = 1;
 }

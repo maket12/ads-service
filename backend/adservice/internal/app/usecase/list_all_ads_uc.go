@@ -9,16 +9,16 @@ import (
 	"github.com/maket12/ads-service/adservice/internal/domain/port"
 )
 
-type ListAdsUC struct{ ad port.AdRepository }
+type ListAllAdsUC struct{ ad port.AdRepository }
 
-func NewListAdsUC(ad port.AdRepository) *ListAdsUC {
-	return &ListAdsUC{ad: ad}
+func NewListAllAdsUC(ad port.AdRepository) *ListAllAdsUC {
+	return &ListAllAdsUC{ad: ad}
 }
 
-func (uc *ListAdsUC) Execute(ctx context.Context, in dto.ListAdsInput) (dto.ListAdsOutput, error) {
+func (uc *ListAllAdsUC) Execute(ctx context.Context, in dto.ListAllAdsInput) (dto.ListAllAdsOutput, error) {
 	ads, err := uc.ad.ListAds(ctx, in.Limit, in.Offset)
 	if err != nil {
-		return dto.ListAdsOutput{}, ucerrs.Wrap(ucerrs.ErrListAdsDB, err)
+		return dto.ListAllAdsOutput{}, ucerrs.Wrap(ucerrs.ErrListAdsDB, err)
 	}
 	return mapper.MapDomainToListAdsOut(ads), nil
 }
