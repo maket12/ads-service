@@ -7,6 +7,7 @@ import (
 	"github.com/avito-tech/go-transaction-manager/trm/v2"
 	"github.com/maket12/ads-service/adservice/internal/app/dto"
 	ucerrs "github.com/maket12/ads-service/adservice/internal/app/errs"
+	"github.com/maket12/ads-service/adservice/internal/domain/model"
 	"github.com/maket12/ads-service/adservice/internal/domain/port"
 	pkgerrs "github.com/maket12/ads-service/adservice/pkg/errs"
 )
@@ -49,6 +50,9 @@ func (uc *UpdateAdUC) Execute(ctx context.Context, in dto.UpdateAdInput) (dto.Up
 	// Update ad
 	err = ad.Update(in.Title, in.Description, in.Price, in.Images)
 	if err != nil {
+		if errors.Is(err, model.ErrAdCantBeUpdated) {
+			return dto.UpdateAdOutput{}, ucerrs.ErrCannotUpdate
+		}
 		return dto.UpdateAdOutput{Success: false}, ucerrs.Wrap(
 			ucerrs.ErrInvalidInput, err,
 		)

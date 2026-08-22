@@ -14,6 +14,7 @@ var (
 	ErrCannotPublish = errors.New("ad has been already published or not available")
 	ErrCannotReject  = errors.New("ad has been already published or not available")
 	ErrCannotDelete  = errors.New("ad has been already deleted or rejected")
+	ErrCannotUpdate  = errors.New("ad cannot be updated")
 )
 
 /*
