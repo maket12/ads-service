@@ -234,3 +234,14 @@ func (a *testApp) rejectAd(t *testing.T, adID, sellerID string) {
 	require.NoError(t, err)
 	require.True(t, resp.GetSuccess())
 }
+
+// Helper for e2e tests.
+// Reject ad by calling “DeleteAd“ grpc method.
+//
+// Make sure the ad isn't deleted and the owner has specified “seller id“.
+func (a *testApp) deleteAd(t *testing.T, adID, sellerID string) {
+	ctx := utils.PackAccountIDForGRPC(context.Background(), sellerID)
+	resp, err := a.client.DeleteAd(ctx, &ad_v1.DeleteAdRequest{AdId: adID})
+	require.NoError(t, err)
+	require.True(t, resp.GetSuccess())
+}

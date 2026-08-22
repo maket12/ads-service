@@ -155,7 +155,7 @@ func (ad *Ad) IsDeleted() bool      { return ad.status == AdDeleted }
 
 func (ad *Ad) CanBePublished() bool { return ad.IsOnModeration() }
 func (ad *Ad) CanBeRejected() bool  { return ad.IsOnModeration() }
-func (ad *Ad) CanBeDeleted() bool   { return ad.IsPublished() }
+func (ad *Ad) CanBeDeleted() bool   { return ad.IsOnModeration() || ad.IsPublished() }
 
 // ================ Mutation ================
 
