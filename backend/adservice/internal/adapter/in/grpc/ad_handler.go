@@ -138,6 +138,19 @@ func (h *AdHandler) PublishAd(ctx context.Context, req *ad_v1.PublishAdRequest) 
 		return nil, gRPCErr
 	}
 
+	role, gRPCErr := h.extractRole(ctx)
+	if gRPCErr != nil {
+		return nil, gRPCErr
+	}
+
+	if role != "admin" {
+		h.log.WarnContext(ctx, "[publish-ad] access denied for non-admin user",
+			slog.String("account_id", accountID.String()),
+			slog.String("role", role),
+		)
+		return nil, status.Error(codes.PermissionDenied, "access denied: admin role required")
+	}
+
 	ucResp, err := h.publishAdUC.Execute(ctx, MapPublishAdPbToDTO(req, accountID))
 	if err != nil {
 		code, msg := h.handleError(ctx, err, "failed to publish ad")
@@ -155,6 +168,19 @@ func (h *AdHandler) RejectAd(ctx context.Context, req *ad_v1.RejectAdRequest) (*
 	accountID, gRPCErr := h.extractID(ctx)
 	if gRPCErr != nil {
 		return nil, gRPCErr
+	}
+
+	role, gRPCErr := h.extractRole(ctx)
+	if gRPCErr != nil {
+		return nil, gRPCErr
+	}
+
+	if role != "admin" {
+		h.log.WarnContext(ctx, "[reject-ad] access denied for non-admin user",
+			slog.String("account_id", accountID.String()),
+			slog.String("role", role),
+		)
+		return nil, status.Error(codes.PermissionDenied, "access denied: admin role required")
 	}
 
 	ucResp, err := h.rejectAdUC.Execute(ctx, MapRejectAdPbToDTO(req, accountID))
@@ -190,6 +216,24 @@ func (h *AdHandler) DeleteAd(ctx context.Context, req *ad_v1.DeleteAdRequest) (*
 }
 
 func (h *AdHandler) DeleteAllAds(ctx context.Context, req *ad_v1.DeleteAllAdsRequest) (*ad_v1.DeleteAllAdsResponse, error) {
+	accountID, gRPCErr := h.extractID(ctx)
+	if gRPCErr != nil {
+		return nil, gRPCErr
+	}
+
+	role, gRPCErr := h.extractRole(ctx)
+	if gRPCErr != nil {
+		return nil, gRPCErr
+	}
+
+	if role != "admin" {
+		h.log.WarnContext(ctx, "[delete-all-ads] access denied for non-admin user",
+			slog.String("account_id", accountID.String()),
+			slog.String("role", role),
+		)
+		return nil, status.Error(codes.PermissionDenied, "access denied: admin role required")
+	}
+
 	ucResp, err := h.deleteAllAdsUC.Execute(ctx, MapDeleteAllAdsPbToDTO(req))
 	if err != nil {
 		code, msg := h.handleError(ctx, err, "failed to delete all ads")
@@ -228,7 +272,7 @@ func (h *AdHandler) ListAllAds(ctx context.Context, req *ad_v1.ListAllAdsRequest
 	}
 
 	if role != "admin" {
-		h.log.WarnContext(ctx, "access denied for non-admin user",
+		h.log.WarnContext(ctx, "[list-all-ads] access denied for non-admin user",
 			slog.String("account_id", accountID.String()),
 			slog.String("role", role),
 		)
