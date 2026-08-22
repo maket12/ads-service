@@ -4,8 +4,10 @@ import (
 	"context"
 	"log/slog"
 
+	"github.com/google/uuid"
 	"github.com/maket12/ads-service/authservice/internal/app/usecase"
 	"github.com/maket12/ads-service/authservice/pkg/generated/auth_v1"
+	"github.com/maket12/ads-service/authservice/pkg/utils"
 	"google.golang.org/grpc/codes"
 
 	"google.golang.org/grpc/status"
@@ -46,6 +48,26 @@ func NewAuthHandler(
 		sendVerificationUC:    sendVerificationUC,
 		verifyEmailUC:         verifyEmailUC,
 	}
+}
+
+// Extracts account id from context and returns gRPC error if fails
+func (h *AuthHandler) extractID(ctx context.Context) (uuid.UUID, error) {
+	accountID, err := utils.ExtractAccountID(ctx)
+	if err != nil {
+		outErr := gRPCError(err)
+		return uuid.Nil, status.Error(outErr.Code, outErr.Message)
+	}
+	return accountID, nil
+}
+
+// Extracts account role from context and returns gRPC error if fails
+func (h *AuthHandler) extractRole(ctx context.Context) (string, error) {
+	role, err := utils.ExtractAccountRole(ctx)
+	if err != nil {
+		outErr := gRPCError(err)
+		return "", status.Error(outErr.Code, outErr.Message)
+	}
+	return role, nil
 }
 
 func (h *AuthHandler) Register(
@@ -132,6 +154,24 @@ func (h *AuthHandler) AssignRole(
 	ctx context.Context,
 	req *auth_v1.AssignRoleRequest,
 ) (*auth_v1.AssignRoleResponse, error) {
+	accountID, gRPCErr := h.extractID(ctx)
+	if gRPCErr != nil {
+		return nil, gRPCErr
+	}
+
+	role, gRPCErr := h.extractRole(ctx)
+	if gRPCErr != nil {
+		return nil, gRPCErr
+	}
+
+	if role != "admin" {
+		h.log.WarnContext(ctx, "[assign-role] access denied for non-admin user",
+			slog.String("account_id", accountID.String()),
+			slog.String("role", role),
+		)
+		return nil, status.Error(codes.PermissionDenied, "access denied: admin role required")
+	}
+
 	ucResp, err := h.assignRoleUC.Execute(ctx, MapAssignRolePbToDTO(req))
 
 	if err != nil {
@@ -139,7 +179,7 @@ func (h *AuthHandler) AssignRole(
 		return nil, status.Error(code, msg)
 	}
 
-	h.log.InfoContext(ctx, "successful role assigned",
+	h.log.InfoContext(ctx, "successful role assigning",
 		slog.String("account_id", req.GetAccountId()),
 		slog.String("role", req.GetRole()),
 	)
@@ -177,6 +217,13 @@ func (h *AuthHandler) VerifyEmail(
 	}
 
 	return MapVerifyEmailDTOToPb(ucResp), nil
+}
+
+func (h *AuthHandler) BlockAccount(
+	ctx context.Context,
+	req *auth_v1.BlockAccountRequest,
+) (*auth_v1.BlockAccountResponse, error) {
+
 }
 
 func (h *AuthHandler) handleError(

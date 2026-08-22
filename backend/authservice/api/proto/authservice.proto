@@ -13,6 +13,8 @@ service AuthService {
   rpc AssignRole (AssignRoleRequest) returns (AssignRoleResponse);
   rpc SendVerification (SendVerificationRequest) returns (SendVerificationResponse);
   rpc VerifyEmail (VerifyEmailRequest) returns (VerifyEmailResponse);
+  rpc BlockAccount (BlockAccountRequest) returns (BlockAccountResponse);
+  rpc DeleteAccount (DeleteAccountRequest) returns (DeleteAccountResponse);
 }
 
 message RegisterRequest {
@@ -87,4 +89,20 @@ message VerifyEmailRequest {
 
 message VerifyEmailResponse {
   bool verified = 1;
+}
+
+message BlockAccountRequest {
+  string account_id = 1;
+}
+
+message BlockAccountResponse {
+   bool blocked = 1;
+}
+
+message DeleteAccountRequest {
+  string account_id = 1;
+}
+
+message DeleteAccountResponse {
+  bool deleted = 1;
 }

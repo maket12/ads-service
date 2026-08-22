@@ -805,6 +805,182 @@ func (x *VerifyEmailResponse) GetVerified() bool {
 	return false
 }
 
+type BlockAccountRequest struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	AccountId     string                 `protobuf:"bytes,1,opt,name=account_id,json=accountId,proto3" json:"account_id,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *BlockAccountRequest) Reset() {
+	*x = BlockAccountRequest{}
+	mi := &file_authservice_proto_msgTypes[16]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *BlockAccountRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*BlockAccountRequest) ProtoMessage() {}
+
+func (x *BlockAccountRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_authservice_proto_msgTypes[16]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use BlockAccountRequest.ProtoReflect.Descriptor instead.
+func (*BlockAccountRequest) Descriptor() ([]byte, []int) {
+	return file_authservice_proto_rawDescGZIP(), []int{16}
+}
+
+func (x *BlockAccountRequest) GetAccountId() string {
+	if x != nil {
+		return x.AccountId
+	}
+	return ""
+}
+
+type BlockAccountResponse struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Blocked       bool                   `protobuf:"varint,1,opt,name=blocked,proto3" json:"blocked,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *BlockAccountResponse) Reset() {
+	*x = BlockAccountResponse{}
+	mi := &file_authservice_proto_msgTypes[17]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *BlockAccountResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*BlockAccountResponse) ProtoMessage() {}
+
+func (x *BlockAccountResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_authservice_proto_msgTypes[17]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use BlockAccountResponse.ProtoReflect.Descriptor instead.
+func (*BlockAccountResponse) Descriptor() ([]byte, []int) {
+	return file_authservice_proto_rawDescGZIP(), []int{17}
+}
+
+func (x *BlockAccountResponse) GetBlocked() bool {
+	if x != nil {
+		return x.Blocked
+	}
+	return false
+}
+
+type DeleteAccountRequest struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	AccountId     string                 `protobuf:"bytes,1,opt,name=account_id,json=accountId,proto3" json:"account_id,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *DeleteAccountRequest) Reset() {
+	*x = DeleteAccountRequest{}
+	mi := &file_authservice_proto_msgTypes[18]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *DeleteAccountRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*DeleteAccountRequest) ProtoMessage() {}
+
+func (x *DeleteAccountRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_authservice_proto_msgTypes[18]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use DeleteAccountRequest.ProtoReflect.Descriptor instead.
+func (*DeleteAccountRequest) Descriptor() ([]byte, []int) {
+	return file_authservice_proto_rawDescGZIP(), []int{18}
+}
+
+func (x *DeleteAccountRequest) GetAccountId() string {
+	if x != nil {
+		return x.AccountId
+	}
+	return ""
+}
+
+type DeleteAccountResponse struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Deleted       bool                   `protobuf:"varint,1,opt,name=deleted,proto3" json:"deleted,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *DeleteAccountResponse) Reset() {
+	*x = DeleteAccountResponse{}
+	mi := &file_authservice_proto_msgTypes[19]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *DeleteAccountResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*DeleteAccountResponse) ProtoMessage() {}
+
+func (x *DeleteAccountResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_authservice_proto_msgTypes[19]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use DeleteAccountResponse.ProtoReflect.Descriptor instead.
+func (*DeleteAccountResponse) Descriptor() ([]byte, []int) {
+	return file_authservice_proto_rawDescGZIP(), []int{19}
+}
+
+func (x *DeleteAccountResponse) GetDeleted() bool {
+	if x != nil {
+		return x.Deleted
+	}
+	return false
+}
+
 var File_authservice_proto protoreflect.FileDescriptor
 
 const file_authservice_proto_rawDesc = "" +
@@ -861,7 +1037,17 @@ const file_authservice_proto_rawDesc = "" +
 	"\x12VerifyEmailRequest\x12\x14\n" +
 	"\x05token\x18\x01 \x01(\tR\x05token\"1\n" +
 	"\x13VerifyEmailResponse\x12\x1a\n" +
-	"\bverified\x18\x01 \x01(\bR\bverified2\xb0\x04\n" +
+	"\bverified\x18\x01 \x01(\bR\bverified\"4\n" +
+	"\x13BlockAccountRequest\x12\x1d\n" +
+	"\n" +
+	"account_id\x18\x01 \x01(\tR\taccountId\"0\n" +
+	"\x14BlockAccountResponse\x12\x18\n" +
+	"\ablocked\x18\x01 \x01(\bR\ablocked\"5\n" +
+	"\x14DeleteAccountRequest\x12\x1d\n" +
+	"\n" +
+	"account_id\x18\x01 \x01(\tR\taccountId\"1\n" +
+	"\x15DeleteAccountResponse\x12\x18\n" +
+	"\adeleted\x18\x01 \x01(\bR\adeleted2\xc1\x05\n" +
 	"\vAuthService\x129\n" +
 	"\bRegister\x12\x15.auth.RegisterRequest\x1a\x16.auth.RegisterResponse\x120\n" +
 	"\x05Login\x12\x12.auth.LoginRequest\x1a\x13.auth.LoginResponse\x123\n" +
@@ -871,7 +1057,9 @@ const file_authservice_proto_rawDesc = "" +
 	"\n" +
 	"AssignRole\x12\x17.auth.AssignRoleRequest\x1a\x18.auth.AssignRoleResponse\x12Q\n" +
 	"\x10SendVerification\x12\x1d.auth.SendVerificationRequest\x1a\x1e.auth.SendVerificationResponse\x12B\n" +
-	"\vVerifyEmail\x12\x18.auth.VerifyEmailRequest\x1a\x19.auth.VerifyEmailResponseBJZHgithub.com/maket12/ads-service/authservice/pkg/generated/auth_v1;auth_v1b\x06proto3"
+	"\vVerifyEmail\x12\x18.auth.VerifyEmailRequest\x1a\x19.auth.VerifyEmailResponse\x12E\n" +
+	"\fBlockAccount\x12\x19.auth.BlockAccountRequest\x1a\x1a.auth.BlockAccountResponse\x12H\n" +
+	"\rDeleteAccount\x12\x1a.auth.DeleteAccountRequest\x1a\x1b.auth.DeleteAccountResponseBJZHgithub.com/maket12/ads-service/authservice/pkg/generated/auth_v1;auth_v1b\x06proto3"
 
 var (
 	file_authservice_proto_rawDescOnce sync.Once
@@ -885,7 +1073,7 @@ func file_authservice_proto_rawDescGZIP() []byte {
 	return file_authservice_proto_rawDescData
 }
 
-var file_authservice_proto_msgTypes = make([]protoimpl.MessageInfo, 16)
+var file_authservice_proto_msgTypes = make([]protoimpl.MessageInfo, 20)
 var file_authservice_proto_goTypes = []any{
 	(*RegisterRequest)(nil),             // 0: auth.RegisterRequest
 	(*RegisterResponse)(nil),            // 1: auth.RegisterResponse
@@ -903,6 +1091,10 @@ var file_authservice_proto_goTypes = []any{
 	(*SendVerificationResponse)(nil),    // 13: auth.SendVerificationResponse
 	(*VerifyEmailRequest)(nil),          // 14: auth.VerifyEmailRequest
 	(*VerifyEmailResponse)(nil),         // 15: auth.VerifyEmailResponse
+	(*BlockAccountRequest)(nil),         // 16: auth.BlockAccountRequest
+	(*BlockAccountResponse)(nil),        // 17: auth.BlockAccountResponse
+	(*DeleteAccountRequest)(nil),        // 18: auth.DeleteAccountRequest
+	(*DeleteAccountResponse)(nil),       // 19: auth.DeleteAccountResponse
 }
 var file_authservice_proto_depIdxs = []int32{
 	0,  // 0: auth.AuthService.Register:input_type -> auth.RegisterRequest
@@ -913,16 +1105,20 @@ var file_authservice_proto_depIdxs = []int32{
 	10, // 5: auth.AuthService.AssignRole:input_type -> auth.AssignRoleRequest
 	12, // 6: auth.AuthService.SendVerification:input_type -> auth.SendVerificationRequest
 	14, // 7: auth.AuthService.VerifyEmail:input_type -> auth.VerifyEmailRequest
-	1,  // 8: auth.AuthService.Register:output_type -> auth.RegisterResponse
-	3,  // 9: auth.AuthService.Login:output_type -> auth.LoginResponse
-	5,  // 10: auth.AuthService.Logout:output_type -> auth.LogoutResponse
-	7,  // 11: auth.AuthService.RefreshSession:output_type -> auth.RefreshSessionResponse
-	9,  // 12: auth.AuthService.ValidateAccessToken:output_type -> auth.ValidateAccessTokenResponse
-	11, // 13: auth.AuthService.AssignRole:output_type -> auth.AssignRoleResponse
-	13, // 14: auth.AuthService.SendVerification:output_type -> auth.SendVerificationResponse
-	15, // 15: auth.AuthService.VerifyEmail:output_type -> auth.VerifyEmailResponse
-	8,  // [8:16] is the sub-list for method output_type
-	0,  // [0:8] is the sub-list for method input_type
+	16, // 8: auth.AuthService.BlockAccount:input_type -> auth.BlockAccountRequest
+	18, // 9: auth.AuthService.DeleteAccount:input_type -> auth.DeleteAccountRequest
+	1,  // 10: auth.AuthService.Register:output_type -> auth.RegisterResponse
+	3,  // 11: auth.AuthService.Login:output_type -> auth.LoginResponse
+	5,  // 12: auth.AuthService.Logout:output_type -> auth.LogoutResponse
+	7,  // 13: auth.AuthService.RefreshSession:output_type -> auth.RefreshSessionResponse
+	9,  // 14: auth.AuthService.ValidateAccessToken:output_type -> auth.ValidateAccessTokenResponse
+	11, // 15: auth.AuthService.AssignRole:output_type -> auth.AssignRoleResponse
+	13, // 16: auth.AuthService.SendVerification:output_type -> auth.SendVerificationResponse
+	15, // 17: auth.AuthService.VerifyEmail:output_type -> auth.VerifyEmailResponse
+	17, // 18: auth.AuthService.BlockAccount:output_type -> auth.BlockAccountResponse
+	19, // 19: auth.AuthService.DeleteAccount:output_type -> auth.DeleteAccountResponse
+	10, // [10:20] is the sub-list for method output_type
+	0,  // [0:10] is the sub-list for method input_type
 	0,  // [0:0] is the sub-list for extension type_name
 	0,  // [0:0] is the sub-list for extension extendee
 	0,  // [0:0] is the sub-list for field type_name
@@ -941,7 +1137,7 @@ func file_authservice_proto_init() {
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: unsafe.Slice(unsafe.StringData(file_authservice_proto_rawDesc), len(file_authservice_proto_rawDesc)),
 			NumEnums:      0,
-			NumMessages:   16,
+			NumMessages:   20,
 			NumExtensions: 0,
 			NumServices:   1,
 		},
