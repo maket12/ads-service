@@ -104,7 +104,7 @@ func (r *MediaRepository) Get(ctx context.Context, adID uuid.UUID) ([]string, er
 
 	refs := make([]string, len(doc.Images))
 	for i, img := range doc.Images {
-		refs[i] = img.ID
+		refs[i] = img.URL
 	}
 	return refs, nil
 }

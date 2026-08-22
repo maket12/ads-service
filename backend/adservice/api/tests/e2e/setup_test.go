@@ -181,7 +181,7 @@ func (a *testApp) cleanData(t *testing.T, ctx context.Context) {
 }
 
 // Helper for e2e tests.
-// Creates a new ad via request to `CreateAd` method.
+// Creates a new ad via request to “CreateAd“ grpc method.
 //
 // If seller id or payload are not specified, then it uses random values instead.
 //
@@ -211,4 +211,15 @@ func (a *testApp) createAd(t *testing.T, sellerID *string, payload *ad_v1.Create
 	require.NotEmpty(t, resp.GetAdId())
 
 	return resp.GetAdId(), accID
+}
+
+// Helper for e2e tests.
+// Publish ad by calling “PublishAd“ grpc method.
+//
+// Make sure you created the ad before and the owner has specified “seller id“.
+func (a *testApp) publishAd(t *testing.T, adID, sellerID string) {
+	ctx := utils.PackAccountIDForGRPC(context.Background(), sellerID)
+	resp, err := a.client.PublishAd(ctx, &ad_v1.PublishAdRequest{AdId: adID})
+	require.NoError(t, err)
+	require.True(t, resp.GetSuccess())
 }
