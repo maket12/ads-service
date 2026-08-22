@@ -223,7 +223,14 @@ func (h *AuthHandler) BlockAccount(
 	ctx context.Context,
 	req *auth_v1.BlockAccountRequest,
 ) (*auth_v1.BlockAccountResponse, error) {
+	// TODO: Implement the method
+}
 
+func (h *AuthHandler) DeleteAccount(
+	ctx context.Context,
+	req *auth_v1.DeleteAccountRequest,
+) (*auth_v1.DeleteAccountResponse, error) {
+	// TODO: Implement the method
 }
 
 func (h *AuthHandler) handleError(
