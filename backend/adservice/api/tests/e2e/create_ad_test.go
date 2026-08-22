@@ -86,6 +86,16 @@ func TestCreateAd_BadCases(t *testing.T) {
 			expectedCode:  codes.InvalidArgument,
 			expectedError: "invalid input",
 		},
+		{
+			name:          "Unauthenticated - missing seller id",
+			sellerID:      "",
+			title:         gofakeit.ProductName(),
+			description:   utils.VPtr(gofakeit.ProductDescription()),
+			price:         10000,
+			images:        nil,
+			expectedCode:  codes.Unauthenticated,
+			expectedError: "you must be authenticated to make this request",
+		},
 	}
 
 	for _, tt := range tests {

@@ -1,16 +1,6 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-# Place this script directly in the microservice root, e.g.:
-#   authservice/generate.sh
-# Run it from the microservice root:
-#   ./generate.sh
-#
-# Expected structure:
-#   authservice/
-#     api/proto/*.proto
-#     pkg/generated/...   (generated code goes here, path taken from go_package minus module prefix)
-
 # Directory where the script itself is located == microservice root
 SERVICE_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 

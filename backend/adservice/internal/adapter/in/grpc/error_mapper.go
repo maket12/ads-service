@@ -45,6 +45,9 @@ func gRPCError(err error) *pkgerrs.OutErr {
 		errors.Is(err, ucerrs.ErrCannotReject),
 		errors.Is(err, ucerrs.ErrCannotDelete):
 		return pkgerrs.NewOutError(codes.FailedPrecondition, err.Error(), nil)
+
+	case errors.Is(err, pkgerrs.ErrNotAuthenticated):
+		return pkgerrs.NewOutError(codes.Unauthenticated, err.Error(), nil)
 	}
 
 	return pkgerrs.NewOutError(codes.Internal, "internal error", nil)

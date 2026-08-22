@@ -12,6 +12,9 @@ import (
 
 	trmpgx "github.com/avito-tech/go-transaction-manager/drivers/pgxv5/v2"
 	"github.com/avito-tech/go-transaction-manager/trm/v2/manager"
+	"github.com/brianvoe/gofakeit/v7"
+	"github.com/google/uuid"
+	"github.com/maket12/ads-service/adservice/pkg/utils"
 	"github.com/stretchr/testify/require"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"
@@ -175,4 +178,37 @@ func (a *testApp) cleanData(t *testing.T, ctx context.Context) {
 
 	err = a.mongoC.ClearCollections(ctx)
 	require.NoError(t, err, "failed to clear mongo collections")
+}
+
+// Helper for e2e tests.
+// Creates a new ad via request to `CreateAd` method.
+//
+// If seller id or payload are not specified, then it uses random values instead.
+//
+// Returns ad id and its seller id.
+func (a *testApp) createAd(t *testing.T, sellerID *string, payload *ad_v1.CreateAdRequest) (string, string) {
+	var accID = uuid.NewString()
+	if sellerID != nil {
+		accID = *sellerID
+	}
+
+	var req *ad_v1.CreateAdRequest
+	if payload != nil {
+		req = payload
+	} else {
+		req = &ad_v1.CreateAdRequest{
+			Title:       gofakeit.ProductName(),
+			Description: utils.VPtr(gofakeit.ProductDescription()),
+			Price:       int64(gofakeit.Price(10000, 50000)),
+			Images:      nil,
+		}
+	}
+
+	ctx := utils.PackAccountIDForGRPC(context.Background(), accID)
+
+	resp, err := a.client.CreateAd(ctx, req)
+	require.NoError(t, err)
+	require.NotEmpty(t, resp.GetAdId())
+
+	return resp.GetAdId(), accID
 }
