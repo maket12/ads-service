@@ -63,7 +63,7 @@ func TestUpdateAd_BadCases(t *testing.T) {
 			name:          "Invalid Argument - Description Is Too Long",
 			sellerID:      sellerID,
 			adID:          adID,
-			description:   utils.VPtr(strings.Repeat(gofakeit.ProductDescription(), 10)),
+			description:   utils.VPtr(strings.Repeat(gofakeit.ProductDescription(), 100)),
 			expectedCode:  codes.InvalidArgument,
 			expectedError: "invalid input",
 		},
