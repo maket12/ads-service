@@ -5,9 +5,9 @@ import (
 	"time"
 
 	"github.com/google/uuid"
-	"github.com/maket12/ads-service/adservice/internal/adapter/in/grpc"
-	"github.com/maket12/ads-service/adservice/internal/app/dto"
-	"github.com/maket12/ads-service/adservice/pkg/generated/ad_v1"
+	"github.com/maket12/ads-service/backend/adservice/internal/adapter/in/grpc"
+	"github.com/maket12/ads-service/backend/adservice/internal/app/dto"
+	"github.com/maket12/ads-service/backend/adservice/pkg/generated/ad_v1"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -36,13 +36,13 @@ func TestMapCreateAdDTOToPb(t *testing.T) {
 
 	result := grpc.MapCreateAdDTOToPb(out)
 
-	assert.Equal(t, adID.String(), result.AdId)
+	assert.Equal(t, adID.String(), result.Id)
 }
 
 func TestMapGetAdPbToDTO(t *testing.T) {
 	sellerID := uuid.New()
 	adID := uuid.New()
-	req := &ad_v1.GetAdRequest{AdId: adID.String()}
+	req := &ad_v1.GetAdRequest{Id: adID.String()}
 
 	result := grpc.MapGetAdPbToDTO(req, sellerID)
 
@@ -61,7 +61,7 @@ func TestMapGetAdDTOToPb(t *testing.T) {
 
 	result := grpc.MapGetAdDTOToPb(out)
 
-	assert.Equal(t, adID.String(), result.Ad.AdId)
+	assert.Equal(t, adID.String(), result.Ad.Id)
 	assert.Equal(t, "Wrapped Ad", result.Ad.Title)
 }
 
@@ -73,7 +73,7 @@ func TestMapUpdateAdPbToDTO(t *testing.T) {
 	var price int64 = 9999
 
 	req := &ad_v1.UpdateAdRequest{
-		AdId:        adID.String(),
+		Id:          adID.String(),
 		Title:       &title,
 		Description: &desc,
 		Price:       &price,
@@ -100,7 +100,7 @@ func TestMapUpdateAdDTOToPb(t *testing.T) {
 
 func TestMapPublishAdPbToDTO(t *testing.T) {
 	adID := uuid.New()
-	req := &ad_v1.PublishAdRequest{AdId: adID.String()}
+	req := &ad_v1.PublishAdRequest{Id: adID.String()}
 
 	result := grpc.MapPublishAdPbToDTO(req)
 
@@ -117,7 +117,7 @@ func TestMapPublishAdDTOToPb(t *testing.T) {
 
 func TestMapRejectAdPbToDTO(t *testing.T) {
 	adID := uuid.New()
-	req := &ad_v1.RejectAdRequest{AdId: adID.String()}
+	req := &ad_v1.RejectAdRequest{Id: adID.String()}
 
 	result := grpc.MapRejectAdPbToDTO(req)
 
@@ -135,7 +135,7 @@ func TestMapRejectAdDTOToPb(t *testing.T) {
 func TestMapDeleteAdPbToDTO(t *testing.T) {
 	sellerID := uuid.New()
 	adID := uuid.New()
-	req := &ad_v1.DeleteAdRequest{AdId: adID.String()}
+	req := &ad_v1.DeleteAdRequest{Id: adID.String()}
 
 	result := grpc.MapDeleteAdPbToDTO(req, sellerID)
 
@@ -191,6 +191,6 @@ func TestMapListAdsDTOToPb(t *testing.T) {
 	result := grpc.MapListAdsDTOToPb(out)
 
 	assert.Len(t, result.Ads, 1)
-	assert.Equal(t, adID.String(), result.Ads[0].AdId)
+	assert.Equal(t, adID.String(), result.Ads[0].Id)
 	assert.Equal(t, "Listed Ad", result.Ads[0].Title)
 }

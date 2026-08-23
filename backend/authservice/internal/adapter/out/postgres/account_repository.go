@@ -7,10 +7,10 @@ import (
 
 	trmpgx "github.com/avito-tech/go-transaction-manager/drivers/pgxv5/v2"
 	"github.com/jackc/pgx/v5/pgtype"
-	"github.com/maket12/ads-service/authservice/internal/adapter/out/postgres/mapper"
-	"github.com/maket12/ads-service/authservice/internal/domain/model"
-	pkgerrs "github.com/maket12/ads-service/authservice/pkg/errs"
-	pkgpostgres "github.com/maket12/ads-service/authservice/pkg/postgres"
+	"github.com/maket12/ads-service/backend/authservice/internal/adapter/out/postgres/mapper"
+	"github.com/maket12/ads-service/backend/authservice/internal/domain/model"
+	pkgerrs "github.com/maket12/ads-service/backend/authservice/pkg/errs"
+	pkgpostgres "github.com/maket12/ads-service/backend/authservice/pkg/postgres"
 
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5/pgconn"

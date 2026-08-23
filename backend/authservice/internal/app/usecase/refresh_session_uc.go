@@ -5,12 +5,12 @@ import (
 	"errors"
 	"time"
 
-	"github.com/maket12/ads-service/authservice/internal/app/dto"
-	ucerrs "github.com/maket12/ads-service/authservice/internal/app/errs"
-	"github.com/maket12/ads-service/authservice/internal/domain/model"
-	"github.com/maket12/ads-service/authservice/internal/domain/port"
-	pkgerrs "github.com/maket12/ads-service/authservice/pkg/errs"
-	"github.com/maket12/ads-service/authservice/pkg/utils"
+	"github.com/maket12/ads-service/backend/authservice/internal/app/dto"
+	ucerrs "github.com/maket12/ads-service/backend/authservice/internal/app/errs"
+	"github.com/maket12/ads-service/backend/authservice/internal/domain/model"
+	"github.com/maket12/ads-service/backend/authservice/internal/domain/port"
+	pkgerrs "github.com/maket12/ads-service/backend/authservice/pkg/errs"
+	"github.com/maket12/ads-service/backend/authservice/pkg/utils"
 
 	"github.com/google/uuid"
 )

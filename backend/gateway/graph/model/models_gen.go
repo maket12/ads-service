@@ -9,10 +9,94 @@ import (
 	"strconv"
 )
 
+// Ad - full info
+type Ad struct {
+	ID          string   `json:"id"`
+	SellerID    string   `json:"sellerId"`
+	Title       string   `json:"title"`
+	Description *string  `json:"description,omitempty"`
+	Price       float64  `json:"price"`
+	Status      AdStatus `json:"status"`
+	Images      []string `json:"images,omitempty"`
+	CreatedAt   string   `json:"createdAt"`
+	UpdatedAt   *string  `json:"updatedAt,omitempty"`
+}
+
+type CreateAdInput struct {
+	Title       string   `json:"title"`
+	Description *string  `json:"description,omitempty"`
+	Price       float64  `json:"price"`
+	Images      []string `json:"images,omitempty"`
+}
+
+type LoginInput struct {
+	Email     string  `json:"email"`
+	Password  string  `json:"password"`
+	IP        *string `json:"ip,omitempty"`
+	UserAgent *string `json:"userAgent,omitempty"`
+}
+
+// Login Response
+type LoginResponse struct {
+	AccessToken  string `json:"accessToken"`
+	RefreshToken string `json:"refreshToken"`
+}
+
 type Mutation struct {
 }
 
 type Query struct {
+}
+
+type RefreshSessionInput struct {
+	OldRefreshToken string  `json:"oldRefreshToken"`
+	IP              *string `json:"ip,omitempty"`
+	UserAgent       *string `json:"userAgent,omitempty"`
+}
+
+// Refresh Session Response
+type RefreshSessionResponse struct {
+	AccessToken  string `json:"accessToken"`
+	RefreshToken string `json:"refreshToken"`
+}
+
+type RegisterInput struct {
+	Email    string `json:"email"`
+	Password string `json:"password"`
+}
+
+type UpdateAdInput struct {
+	AdID        string   `json:"adId"`
+	Title       *string  `json:"title,omitempty"`
+	Description *string  `json:"description,omitempty"`
+	Price       *float64 `json:"price,omitempty"`
+	Images      []string `json:"images,omitempty"`
+}
+
+type UpdateProfileInput struct {
+	FirstName *string `json:"firstName,omitempty"`
+	LastName  *string `json:"lastName,omitempty"`
+	Phone     *string `json:"phone,omitempty"`
+	AvatarURL *string `json:"avatarUrl,omitempty"`
+	Bio       *string `json:"bio,omitempty"`
+}
+
+// User (Account + Role + Profile)
+type User struct {
+	ID        string   `json:"id"`
+	Role      UserRole `json:"role"`
+	FirstName *string  `json:"firstName,omitempty"`
+	LastName  *string  `json:"lastName,omitempty"`
+	Phone     *string  `json:"phone,omitempty"`
+	AvatarURL *string  `json:"avatarUrl,omitempty"`
+	Bio       *string  `json:"bio,omitempty"`
+	UpdatedAt *string  `json:"updatedAt,omitempty"`
+}
+
+// Validate Access Token Response
+type ValidateAccessTokenResponse struct {
+	AccountID string   `json:"accountId"`
+	Role      UserRole `json:"role"`
 }
 
 // Ad Status
@@ -70,6 +154,62 @@ func (e *AdStatus) UnmarshalJSON(b []byte) error {
 }
 
 func (e AdStatus) MarshalJSON() ([]byte, error) {
+	var buf bytes.Buffer
+	e.MarshalGQL(&buf)
+	return buf.Bytes(), nil
+}
+
+// User Role
+type UserRole string
+
+const (
+	UserRoleUser  UserRole = "USER"
+	UserRoleAdmin UserRole = "ADMIN"
+)
+
+var AllUserRole = []UserRole{
+	UserRoleUser,
+	UserRoleAdmin,
+}
+
+func (e UserRole) IsValid() bool {
+	switch e {
+	case UserRoleUser, UserRoleAdmin:
+		return true
+	}
+	return false
+}
+
+func (e UserRole) String() string {
+	return string(e)
+}
+
+func (e *UserRole) UnmarshalGQL(v any) error {
+	str, ok := v.(string)
+	if !ok {
+		return fmt.Errorf("enums must be strings")
+	}
+
+	*e = UserRole(str)
+	if !e.IsValid() {
+		return fmt.Errorf("%s is not a valid UserRole", str)
+	}
+	return nil
+}
+
+func (e UserRole) MarshalGQL(w io.Writer) {
+	fmt.Fprint(w, strconv.Quote(e.String()))
+}
+
+func (e *UserRole) UnmarshalJSON(b []byte) error {
+	s, err := strconv.Unquote(string(b))
+	if err != nil {
+		return err
+	}
+	return e.UnmarshalGQL(s)
+}
+
+func (e UserRole) MarshalJSON() ([]byte, error) {
 	var buf bytes.Buffer
 	e.MarshalGQL(&buf)
 	return buf.Bytes(), nil

@@ -3,7 +3,7 @@ package port
 import (
 	"context"
 
-	"github.com/maket12/ads-service/authservice/internal/domain/model"
+	"github.com/maket12/ads-service/backend/authservice/internal/domain/model"
 )
 
 type VerificationTokenRepository interface {

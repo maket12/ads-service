@@ -3,7 +3,7 @@ package port
 import (
 	"context"
 
-	"github.com/maket12/ads-service/userservice/internal/domain/model"
+	"github.com/maket12/ads-service/backend/userservice/internal/domain/model"
 
 	"github.com/google/uuid"
 )

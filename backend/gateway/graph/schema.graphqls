@@ -1,7 +1,13 @@
+""" User Role """
+enum UserRole {
+    USER
+    ADMIN
+}
+
 """ User (Account + Role + Profile) """
 type User {
     id: ID!
-    role: String
+    role: UserRole!
     firstName: String
     lastName: String
     phone: String
@@ -22,6 +28,12 @@ type RefreshSessionResponse {
     refreshToken: String!
 }
 
+""" Validate Access Token Response """
+type ValidateAccessTokenResponse {
+    accountId: ID!
+    role: UserRole!
+}
+
 """ Ad Status"""
 enum AdStatus {
     ON_MODERATION
@@ -32,15 +44,58 @@ enum AdStatus {
 
 """ Ad - full info """
 type Ad {
-    adId: ID!
+    id: ID!
     sellerId: ID!
     title: String!
     description: String
     price: Float!
     status: AdStatus!
-    images: [String]!
-    createdAt: String
+    images: [String!]
+    createdAt: String!
     updatedAt: String
+}
+
+# ---- Inputs ----
+
+input RegisterInput {
+    email: String!
+    password: String!
+}
+
+input LoginInput {
+    email: String!
+    password: String!
+    ip: String
+    userAgent: String
+}
+
+input RefreshSessionInput {
+    oldRefreshToken: String!
+    ip: String
+    userAgent: String
+}
+
+input UpdateProfileInput {
+    firstName: String
+    lastName: String
+    phone: String
+    avatarUrl: String
+    bio: String
+}
+
+input CreateAdInput {
+    title: String!
+    description: String
+    price: Float!
+    images: [String!]
+}
+
+input UpdateAdInput {
+    adId: ID!
+    title: String
+    description: String
+    price: Float
+    images: [String!]
 }
 
 type Query {
@@ -49,71 +104,70 @@ type Query {
 
     # rpc GetAd
     ad(adId: ID!): Ad
+
+    # rpc ListAds
+    ads: [Ad!]!
+
+    # rpc ListAllAds
+    allAds(limit: Int!, offset: Int!): [Ad!]!
+
+    # rpc ValidateAccessToken
+    validateAccessToken(token: String!): ValidateAccessTokenResponse!
 }
 
 type Mutation {
     # --- Auth Service methods ---
 
     # rpc Register
-    register(email: String!, password: String!): ID!
+    register(input: RegisterInput!): ID!
 
     # rpc Login
-    login(
-        email: String!,
-        password: String!,
-        ip: String,
-        userAgent: String
-    ): LoginResponse!
+    login(input: LoginInput!): LoginResponse!
 
     # rpc Logout
     logout(refreshToken: String!): Boolean!
 
     # rpc RefreshSession
-    refreshSession(
-        oldRefreshToken: String!,
-        ip: String,
-        userAgent: String
-    ): RefreshSessionResponse!
+    refreshSession(input: RefreshSessionInput!): RefreshSessionResponse!
 
     # rpc AssignRole
-    assignRole(
-        accountId: ID!,
-        role: String!
-    ): Boolean!
+    assignRole(accountId: ID!, role: UserRole!): Boolean!
+
+    # rpc SendVerification
+    sendVerification(accountId: ID!): Boolean!
+
+    # rpc VerifyEmail
+    verifyEmail(token: String!): Boolean!
+
+    # rpc BlockAccount
+    block(accountId: ID!): Boolean!
+
+    # rpc DeleteAccount
+    delete(accountId: ID!): Boolean!
+
 
     # --- User Service methods ---
 
     # rpc UpdateProfile
-    updateProfile(
-        firstName: String
-        lastName: String
-        phone: String
-        avatarUrl: String
-        bio: String
-    ): Boolean!
+    updateProfile(input: UpdateProfileInput!): Boolean!
 
     # --- Ad Service methods ---
 
     # rpc CreateAd
-    createAd(
-        title: String!
-        description: String
-        price: Float!
-        images: [String]!
-    ): ID!
+    createAd(input: CreateAdInput!): ID!
 
     # rpc UpdateAd
-    updateAd(
-        adId: ID!
-        title: String
-        description: String
-        price: Float
-        images: [String]!
-    ): Boolean!
+    updateAd(input: UpdateAdInput!): Boolean!
 
-    # rpc PublishAd | RejectAd | DeleteAd
-    updateAdStatus(
-        adId: ID!
-        adStatus: AdStatus!
-    ): Boolean!
+    # rpc PublishAd
+    publish(adId: ID!): Boolean!
+
+    # rpc RejectAd
+    reject(adId: ID!): Boolean!
+
+    # rpc DeleteAd
+    deleteAd(adId: ID!): Boolean!
+
+    # rpc DeleteAllAds
+    deleteAllAds(sellerId: ID!): Boolean!
 }

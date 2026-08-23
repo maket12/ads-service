@@ -5,9 +5,9 @@ import (
 	"fmt"
 	"log/slog"
 
-	"github.com/maket12/ads-service/adservice/internal/app/usecase"
-	"github.com/maket12/ads-service/adservice/pkg/generated/ad_v1"
-	"github.com/maket12/ads-service/adservice/pkg/utils"
+	"github.com/maket12/ads-service/backend/adservice/internal/app/usecase"
+	"github.com/maket12/ads-service/backend/adservice/pkg/generated/ad_v1"
+	"github.com/maket12/ads-service/backend/adservice/pkg/utils"
 	"google.golang.org/grpc/codes"
 
 	"github.com/google/uuid"
@@ -124,7 +124,7 @@ func (h *AdHandler) UpdateAd(ctx context.Context, req *ad_v1.UpdateAdRequest) (*
 	}
 
 	h.log.InfoContext(ctx, "updated ad",
-		slog.String("id", req.GetAdId()),
+		slog.String("id", req.GetId()),
 		slog.String("description", req.GetDescription()),
 		slog.String("title", req.GetTitle()),
 		slog.Int("price", int(req.GetPrice())),
@@ -145,7 +145,7 @@ func (h *AdHandler) PublishAd(ctx context.Context, req *ad_v1.PublishAdRequest) 
 	}
 
 	slog.InfoContext(ctx, "published ad",
-		slog.String("id", req.GetAdId()),
+		slog.String("id", req.GetId()),
 	)
 
 	return MapPublishAdDTOToPb(ucResp), nil
@@ -163,7 +163,7 @@ func (h *AdHandler) RejectAd(ctx context.Context, req *ad_v1.RejectAdRequest) (*
 	}
 
 	slog.InfoContext(ctx, "rejected ad",
-		slog.String("id", req.GetAdId()),
+		slog.String("id", req.GetId()),
 	)
 
 	return MapRejectAdDTOToPb(ucResp), nil
@@ -182,7 +182,7 @@ func (h *AdHandler) DeleteAd(ctx context.Context, req *ad_v1.DeleteAdRequest) (*
 	}
 
 	slog.InfoContext(ctx, "deleted ad",
-		slog.String("id", req.GetAdId()),
+		slog.String("id", req.GetId()),
 	)
 
 	return MapDeleteAdDTOToPb(ucResp), nil

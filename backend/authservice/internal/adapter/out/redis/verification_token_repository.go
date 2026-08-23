@@ -6,9 +6,9 @@ import (
 	"errors"
 	"fmt"
 
-	"github.com/maket12/ads-service/authservice/internal/domain/model"
-	pkgerrs "github.com/maket12/ads-service/authservice/pkg/errs"
-	pkgredis "github.com/maket12/ads-service/authservice/pkg/redis"
+	"github.com/maket12/ads-service/backend/authservice/internal/domain/model"
+	pkgerrs "github.com/maket12/ads-service/backend/authservice/pkg/errs"
+	pkgredis "github.com/maket12/ads-service/backend/authservice/pkg/redis"
 	"github.com/redis/go-redis/v9"
 )
 

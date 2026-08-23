@@ -8,9 +8,9 @@ import (
 	"os"
 	"testing"
 
-	"github.com/maket12/ads-service/authservice/migrations"
+	"github.com/maket12/ads-service/backend/authservice/migrations"
 
-	pkgpostgres "github.com/maket12/ads-service/authservice/pkg/postgres"
+	pkgpostgres "github.com/maket12/ads-service/backend/authservice/pkg/postgres"
 	"github.com/stretchr/testify/suite"
 )
 

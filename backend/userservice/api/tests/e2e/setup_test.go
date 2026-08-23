@@ -15,8 +15,8 @@ import (
 
 	trmpgx "github.com/avito-tech/go-transaction-manager/drivers/pgxv5/v2"
 	"github.com/google/uuid"
-	"github.com/maket12/ads-service/userservice/internal/app/dto"
-	"github.com/maket12/ads-service/userservice/pkg/utils"
+	"github.com/maket12/ads-service/backend/userservice/internal/app/dto"
+	"github.com/maket12/ads-service/backend/userservice/pkg/utils"
 	amqp "github.com/rabbitmq/amqp091-go"
 	"github.com/stretchr/testify/require"
 	"google.golang.org/grpc"
@@ -25,17 +25,17 @@ import (
 
 	_ "github.com/golang-migrate/migrate/v4/database/postgres"
 
-	"github.com/maket12/ads-service/userservice/cmd/app/config"
-	adaptergrpc "github.com/maket12/ads-service/userservice/internal/adapter/in/grpc"
-	adapterrabbitmq "github.com/maket12/ads-service/userservice/internal/adapter/in/rabbitmq"
-	adapterpostgres "github.com/maket12/ads-service/userservice/internal/adapter/out/postgres"
-	"github.com/maket12/ads-service/userservice/internal/app/usecase"
-	"github.com/maket12/ads-service/userservice/internal/domain/port"
-	adapterphone "github.com/maket12/ads-service/userservice/internal/infrastructure/phone"
-	"github.com/maket12/ads-service/userservice/migrations"
-	"github.com/maket12/ads-service/userservice/pkg/generated/user_v1"
-	pkgpostgres "github.com/maket12/ads-service/userservice/pkg/postgres"
-	pkgrabbitmq "github.com/maket12/ads-service/userservice/pkg/rabbitmq"
+	"github.com/maket12/ads-service/backend/userservice/cmd/app/config"
+	adaptergrpc "github.com/maket12/ads-service/backend/userservice/internal/adapter/in/grpc"
+	adapterrabbitmq "github.com/maket12/ads-service/backend/userservice/internal/adapter/in/rabbitmq"
+	adapterpostgres "github.com/maket12/ads-service/backend/userservice/internal/adapter/out/postgres"
+	"github.com/maket12/ads-service/backend/userservice/internal/app/usecase"
+	"github.com/maket12/ads-service/backend/userservice/internal/domain/port"
+	adapterphone "github.com/maket12/ads-service/backend/userservice/internal/infrastructure/phone"
+	"github.com/maket12/ads-service/backend/userservice/migrations"
+	"github.com/maket12/ads-service/backend/userservice/pkg/generated/user_v1"
+	pkgpostgres "github.com/maket12/ads-service/backend/userservice/pkg/postgres"
+	pkgrabbitmq "github.com/maket12/ads-service/backend/userservice/pkg/rabbitmq"
 )
 
 const bufSize = 1024 * 1024

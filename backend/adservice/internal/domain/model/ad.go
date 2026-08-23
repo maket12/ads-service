@@ -4,8 +4,8 @@ import (
 	"errors"
 	"time"
 
-	pkgerrs "github.com/maket12/ads-service/adservice/pkg/errs"
-	"github.com/maket12/ads-service/adservice/pkg/utils"
+	pkgerrs "github.com/maket12/ads-service/backend/adservice/pkg/errs"
+	"github.com/maket12/ads-service/backend/adservice/pkg/utils"
 
 	"github.com/google/uuid"
 )
