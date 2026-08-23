@@ -1,7 +1,13 @@
+""" User Role """
+enum UserRole {
+    user
+    admin
+}
+
 """ User (Account + Role + Profile) """
 type User {
     id: ID!
-    role: String
+    role: UserRole!
     firstName: String
     lastName: String
     phone: String
@@ -24,10 +30,10 @@ type RefreshSessionResponse {
 
 """ Ad Status"""
 enum AdStatus {
-    ON_MODERATION
-    PUBLISHED
-    REJECTED
-    DELETED
+    on_moderation
+    published
+    rejected
+    deleted
 }
 
 """ Ad - full info """

@@ -4,5 +4,6 @@ use (
 	./authservice
 	./userservice
 	./adservice
+	./gateway
 )
 

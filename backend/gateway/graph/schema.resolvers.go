@@ -10,21 +10,21 @@ import (
 	"fmt"
 	"time"
 
+	"github.com/maket12/ads-service/adservice/pkg/generated/ad_v1"
+	"github.com/maket12/ads-service/authservice/pkg/generated/auth_v1"
 	"github.com/maket12/ads-service/gateway/graph/model"
-	"github.com/maket12/ads-service/pkg/generated/ad_v1"
-	"github.com/maket12/ads-service/pkg/generated/auth_v1"
-	"github.com/maket12/ads-service/pkg/generated/user_v1"
 	"github.com/maket12/ads-service/pkg/utils"
+	"github.com/maket12/ads-service/userservice/pkg/generated/user_v1"
 )
 
 // Price is the resolver for the price field.
 func (r *adResolver) Price(ctx context.Context, obj *ad_v1.GetAdResponse) (float64, error) {
-	return float64(obj.GetPrice()), nil
+	return float64(obj.GetAd().GetPrice()), nil
 }
 
 // Status is the resolver for the status field.
 func (r *adResolver) Status(ctx context.Context, obj *ad_v1.GetAdResponse) (model.AdStatus, error) {
-	return model.AdStatus(obj.Status), nil
+	return model.AdStatus(obj.GetAd().GetStatus()), nil
 }
 
 // CreatedAt is the resolver for the createdAt field.
