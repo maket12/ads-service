@@ -9,32 +9,78 @@ import (
 	"context"
 	"fmt"
 
+	"github.com/maket12/ads-service/backend/authservice/pkg/generated/auth_v1"
 	"github.com/maket12/ads-service/backend/gateway/graph/model"
 )
 
 // Register is the resolver for the register field.
 func (r *mutationResolver) Register(ctx context.Context, input model.RegisterInput) (string, error) {
-	resp, err := r.AuthClient.Register(ctx)
+	resp, err := r.AuthClient.Register(ctx, &auth_v1.RegisterRequest{
+		Email:    input.Email,
+		Password: input.Password,
+	})
+	if err != nil {
+		return "", mapGRPCError(err)
+	}
+	return resp.AccountId, nil
 }
 
 // Login is the resolver for the login field.
 func (r *mutationResolver) Login(ctx context.Context, input model.LoginInput) (*model.LoginResponse, error) {
-	panic(fmt.Errorf("not implemented: Login - login"))
+	resp, err := r.AuthClient.Login(ctx, &auth_v1.LoginRequest{
+		Email:     input.Email,
+		Password:  input.Password,
+		Ip:        input.IP,
+		UserAgent: input.UserAgent,
+	})
+	if err != nil {
+		return nil, mapGRPCError(err)
+	}
+
+	return &model.LoginResponse{
+		AccessToken:  resp.AccessToken,
+		RefreshToken: resp.RefreshToken,
+	}, nil
 }
 
 // Logout is the resolver for the logout field.
 func (r *mutationResolver) Logout(ctx context.Context, refreshToken string) (bool, error) {
-	panic(fmt.Errorf("not implemented: Logout - logout"))
+	resp, err := r.AuthClient.Logout(ctx, &auth_v1.LogoutRequest{
+		RefreshToken: refreshToken,
+	})
+	if err != nil {
+		return false, mapGRPCError(err)
+	}
+	return resp.Logout, nil
 }
 
 // RefreshSession is the resolver for the refreshSession field.
 func (r *mutationResolver) RefreshSession(ctx context.Context, input model.RefreshSessionInput) (*model.RefreshSessionResponse, error) {
-	panic(fmt.Errorf("not implemented: RefreshSession - refreshSession"))
+	resp, err := r.AuthClient.RefreshSession(ctx, &auth_v1.RefreshSessionRequest{
+		OldRefreshToken: input.OldRefreshToken,
+		Ip:              input.IP,
+		UserAgent:       input.UserAgent,
+	})
+	if err != nil {
+		return nil, mapGRPCError(err)
+	}
+
+	return &model.RefreshSessionResponse{
+		AccessToken:  resp.AccessToken,
+		RefreshToken: resp.RefreshToken,
+	}, nil
 }
 
 // AssignRole is the resolver for the assignRole field.
 func (r *mutationResolver) AssignRole(ctx context.Context, accountID string, role model.UserRole) (bool, error) {
-	panic(fmt.Errorf("not implemented: AssignRole - assignRole"))
+	resp, err := r.AuthClient.AssignRole(ctx, &auth_v1.AssignRoleRequest{
+		AccountId: accountID,
+		Role:      role.String(),
+	})
+	if err != nil {
+		return false, mapGRPCError(err)
+	}
+	return resp.Assigned, nil
 }
 
 // SendVerification is the resolver for the sendVerification field.
