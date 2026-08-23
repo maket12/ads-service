@@ -140,18 +140,14 @@ func runServer(ctx context.Context, cfg *config.Config, logger *slog.Logger) err
 	deleteAdUC := usecase.NewDeleteAdUC(trManager, adRepo, mediaRepo)
 	deleteAllAdsUC := usecase.NewDeleteAllAdsUC(trManager, adRepo, mediaRepo)
 	listSellerAdsUC := usecase.NewListSellerAdsUC(adRepo)
+	listAllAdsUC := usecase.NewListAllAdsUC(adRepo)
 
 	// Handler
 	adHandler := adaptergrpc.NewAdHandler(
-		logger,
-		createAdUC,
-		getAdUC,
-		updateAdUC,
-		publishAdUC,
-		rejectAdUC,
-		deleteAdUC,
-		deleteAllAdsUC,
-		listSellerAdsUC,
+		logger, createAdUC, getAdUC,
+		updateAdUC, publishAdUC, rejectAdUC,
+		deleteAdUC, deleteAllAdsUC,
+		listSellerAdsUC, listAllAdsUC,
 	)
 
 	// gRPC server

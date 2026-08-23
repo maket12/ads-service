@@ -62,7 +62,7 @@ func (uc *RegisterUC) Execute(ctx context.Context, in dto.RegisterInput) (dto.Re
 
 	// Save all into database
 	err = uc.trManager.Do(ctx, func(txCtx context.Context) error {
-		createErr := uc.account.Create(ctx, account)
+		createErr := uc.account.Create(txCtx, account)
 		if createErr != nil {
 			if errors.Is(createErr, pkgerrs.ErrObjectAlreadyExists) {
 				return ucerrs.ErrAccountAlreadyExists
@@ -70,7 +70,7 @@ func (uc *RegisterUC) Execute(ctx context.Context, in dto.RegisterInput) (dto.Re
 			return ucerrs.Wrap(ucerrs.ErrCreateAccountDB, createErr)
 		}
 
-		createErr = uc.accountRole.Create(ctx, accountRole)
+		createErr = uc.accountRole.Create(txCtx, accountRole)
 		if createErr != nil {
 			return ucerrs.Wrap(ucerrs.ErrCreateAccountRoleDB, createErr)
 		}

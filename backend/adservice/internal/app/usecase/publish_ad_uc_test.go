@@ -44,7 +44,7 @@ func TestPublishAdUC_Execute(t *testing.T) {
 			name:    "Success",
 			buildAd: newAd,
 			input: func(adID uuid.UUID) dto.PublishAdInput {
-				return dto.PublishAdInput{AdID: adID, SellerID: sellerID}
+				return dto.PublishAdInput{AdID: adID}
 			},
 			mockBehaviour: func(a *mocks.MockAdRepository, adID uuid.UUID) {
 				a.EXPECT().Update(mock.Anything, mock.AnythingOfType("*model.Ad")).Return(nil)
@@ -55,7 +55,7 @@ func TestPublishAdUC_Execute(t *testing.T) {
 			name:    "Failure - ad not found",
 			buildAd: func() *model.Ad { return nil },
 			input: func(adID uuid.UUID) dto.PublishAdInput {
-				return dto.PublishAdInput{AdID: adID, SellerID: sellerID}
+				return dto.PublishAdInput{AdID: adID}
 			},
 			mockBehaviour: func(a *mocks.MockAdRepository, adID uuid.UUID) {},
 			expectErr:     ucerrs.ErrAdNotFound,
@@ -64,7 +64,7 @@ func TestPublishAdUC_Execute(t *testing.T) {
 			name:    "Failure - db error on get",
 			buildAd: func() *model.Ad { return nil },
 			input: func(adID uuid.UUID) dto.PublishAdInput {
-				return dto.PublishAdInput{AdID: adID, SellerID: sellerID}
+				return dto.PublishAdInput{AdID: adID}
 			},
 			mockBehaviour: func(a *mocks.MockAdRepository, adID uuid.UUID) {},
 			expectErr:     ucerrs.ErrGetAdDB,
@@ -73,7 +73,7 @@ func TestPublishAdUC_Execute(t *testing.T) {
 			name:    "Failure - cannot publish",
 			buildAd: undeployableAd,
 			input: func(adID uuid.UUID) dto.PublishAdInput {
-				return dto.PublishAdInput{AdID: adID, SellerID: sellerID}
+				return dto.PublishAdInput{AdID: adID}
 			},
 			mockBehaviour: func(a *mocks.MockAdRepository, adID uuid.UUID) {},
 			expectErr:     ucerrs.ErrCannotPublish,
@@ -82,7 +82,7 @@ func TestPublishAdUC_Execute(t *testing.T) {
 			name:    "Failure - update ad db error",
 			buildAd: newAd,
 			input: func(adID uuid.UUID) dto.PublishAdInput {
-				return dto.PublishAdInput{AdID: adID, SellerID: sellerID}
+				return dto.PublishAdInput{AdID: adID}
 			},
 			mockBehaviour: func(a *mocks.MockAdRepository, adID uuid.UUID) {
 				a.EXPECT().Update(mock.Anything, mock.AnythingOfType("*model.Ad")).Return(errors.New("db error"))

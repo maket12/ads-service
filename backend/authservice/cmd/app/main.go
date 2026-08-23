@@ -201,7 +201,7 @@ func runServer(ctx context.Context, cfg *config.Config, logger *slog.Logger) err
 	vTokenRepo := adapterredis.NewVerificationTokenRepository(redisClient)
 
 	// Email Sender
-	smtpClient := adapteryamail.NewSmtpClient(
+	smtpClient := adapteryamail.NewSMTPClient(
 		cfg.SMTPHost, cfg.SMTPPort,
 		cfg.SMTPEmail, cfg.SMTPPassword,
 		cfg.VerificationBaseURL,
@@ -244,13 +244,15 @@ func runServer(ctx context.Context, cfg *config.Config, logger *slog.Logger) err
 		smtpClient, cfg.VerificationTTL,
 	)
 	verifyEmailUC := usecase.NewVerifyEmailUC(accRepo, vTokenRepo, smtpClient)
+	blockAccountUC := usecase.NewBlockAccountUC(accRepo, accRoleRepo)
+	deleteAccountUC := usecase.NewDeleteAccountUC(accRepo, accRoleRepo, accountPublisher)
 
 	// Handler
 	handler := adaptergrpc.NewAuthHandler(
 		logger, registerUC, loginUC,
 		logoutUC, refreshSessionUC,
-		validateAccessUC, assignRoleUC,
-		sendVerificationUC, verifyEmailUC,
+		validateAccessUC, assignRoleUC, sendVerificationUC,
+		verifyEmailUC, blockAccountUC, deleteAccountUC,
 	)
 
 	// gRPC server

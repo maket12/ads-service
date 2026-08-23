@@ -97,12 +97,12 @@ func (uc *LoginUC) Execute(ctx context.Context, in dto.LoginInput) (dto.LoginOut
 			return ucerrs.Wrap(ucerrs.ErrInvalidInput, updErr)
 		}
 
-		if updErr = uc.account.Update(ctx, account); updErr != nil {
+		if updErr = uc.account.Update(txCtx, account); updErr != nil {
 			return ucerrs.Wrap(ucerrs.ErrUpdateAccountDB, updErr)
 		}
 
 		// Revoke all sessions for the same device
-		if updErr = uc.refreshSession.RevokeAllForAccountByIPUA(ctx,
+		if updErr = uc.refreshSession.RevokeAllForAccountByIPUA(txCtx,
 			account.ID(), in.IP, in.UserAgent,
 			utils.VPtr(model.ReasonReAuth.String()),
 		); updErr != nil {
@@ -118,7 +118,7 @@ func (uc *LoginUC) Execute(ctx context.Context, in dto.LoginInput) (dto.LoginOut
 			return ucerrs.Wrap(ucerrs.ErrInvalidInput, createErr)
 		}
 
-		if createErr = uc.refreshSession.Create(ctx, refreshSession); createErr != nil {
+		if createErr = uc.refreshSession.Create(txCtx, refreshSession); createErr != nil {
 			return ucerrs.Wrap(ucerrs.ErrCreateRefreshSessionDB, createErr)
 		}
 

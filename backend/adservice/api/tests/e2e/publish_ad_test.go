@@ -51,13 +51,6 @@ func TestPublishAd_BadCases(t *testing.T) {
 			expectedError: "ad not found",
 		},
 		{
-			name:          "Permission Denied - Account Isn't Owner",
-			sellerID:      gofakeit.UUID(),
-			adID:          adID,
-			expectedCode:  codes.PermissionDenied,
-			expectedError: "no permission to access this data",
-		},
-		{
 			name:          "Failed Precondition - Ad Has Been Published",
 			sellerID:      sellerID,
 			adID:          publishedAdID,

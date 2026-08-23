@@ -12,6 +12,6 @@ func (f FakeTxManager) Do(ctx context.Context, fn func(ctx context.Context) erro
 	return fn(ctx)
 }
 
-func (f FakeTxManager) DoWithSettings(ctx context.Context, s trm.Settings, fn func(ctx context.Context) error) error {
+func (f FakeTxManager) DoWithSettings(ctx context.Context, _ trm.Settings, fn func(ctx context.Context) error) error {
 	return fn(ctx)
 }

@@ -6,7 +6,7 @@ import (
 	"net/smtp"
 )
 
-type SmtpClient struct {
+type SMTPClient struct {
 	host                string
 	port                string
 	source              string
@@ -14,8 +14,8 @@ type SmtpClient struct {
 	verificationBaseURL string
 }
 
-func NewSmtpClient(host, port, source, password, verfBaseURL string) *SmtpClient {
-	return &SmtpClient{
+func NewSMTPClient(host, port, source, password, verfBaseURL string) *SMTPClient {
+	return &SMTPClient{
 		host:                host,
 		port:                port,
 		source:              source,
@@ -24,7 +24,7 @@ func NewSmtpClient(host, port, source, password, verfBaseURL string) *SmtpClient
 	}
 }
 
-func (c *SmtpClient) SendVerificationEmail(_ context.Context,
+func (c *SMTPClient) SendVerificationEmail(_ context.Context,
 	toEmail, token string,
 ) error {
 	link := fmt.Sprintf("%s?token=%s", c.verificationBaseURL, token)
