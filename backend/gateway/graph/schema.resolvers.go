@@ -9,79 +9,32 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/maket12/ads-service/backend/adservice/pkg/generated/ad_v1"
-	"github.com/maket12/ads-service/backend/authservice/pkg/generated/auth_v1"
-	"github.com/maket12/ads-service/backend/authservice/pkg/utils"
 	"github.com/maket12/ads-service/backend/gateway/graph/model"
-	"github.com/maket12/ads-service/backend/userservice/pkg/generated/user_v1"
 )
 
 // Register is the resolver for the register field.
 func (r *mutationResolver) Register(ctx context.Context, input model.RegisterInput) (string, error) {
-	resp, err := r.AuthClient.Register(ctx, &auth_v1.RegisterRequest{
-		Email:    email,
-		Password: password,
-	})
-	if err != nil {
-		return "", err
-	}
-	return resp.GetAccountId(), nil
+	resp, err := r.AuthClient.Register(ctx)
 }
 
 // Login is the resolver for the login field.
 func (r *mutationResolver) Login(ctx context.Context, input model.LoginInput) (*model.LoginResponse, error) {
-	resp, err := r.AuthClient.Login(ctx, &auth_v1.LoginRequest{
-		Email:     email,
-		Password:  password,
-		Ip:        ip,
-		UserAgent: userAgent,
-	})
-	if err != nil {
-		return nil, err
-	}
-	return &auth_v1.LoginResponse{
-		AccessToken:  resp.GetAccessToken(),
-		RefreshToken: resp.GetRefreshToken(),
-	}, nil
+	panic(fmt.Errorf("not implemented: Login - login"))
 }
 
 // Logout is the resolver for the logout field.
 func (r *mutationResolver) Logout(ctx context.Context, refreshToken string) (bool, error) {
-	resp, err := r.AuthClient.Logout(
-		ctx, &auth_v1.LogoutRequest{RefreshToken: refreshToken},
-	)
-	if err != nil {
-		return false, err
-	}
-	return resp.GetLogout(), nil
+	panic(fmt.Errorf("not implemented: Logout - logout"))
 }
 
 // RefreshSession is the resolver for the refreshSession field.
 func (r *mutationResolver) RefreshSession(ctx context.Context, input model.RefreshSessionInput) (*model.RefreshSessionResponse, error) {
-	resp, err := r.AuthClient.RefreshSession(ctx, &auth_v1.RefreshSessionRequest{
-		OldRefreshToken: oldRefreshToken,
-		Ip:              ip,
-		UserAgent:       userAgent,
-	})
-	if err != nil {
-		return nil, err
-	}
-	return &auth_v1.RefreshSessionResponse{
-		AccessToken:  resp.GetAccessToken(),
-		RefreshToken: resp.GetRefreshToken(),
-	}, nil
+	panic(fmt.Errorf("not implemented: RefreshSession - refreshSession"))
 }
 
 // AssignRole is the resolver for the assignRole field.
 func (r *mutationResolver) AssignRole(ctx context.Context, accountID string, role model.UserRole) (bool, error) {
-	resp, err := r.AuthClient.AssignRole(ctx, &auth_v1.AssignRoleRequest{
-		AccountId: accountID,
-		Role:      role,
-	})
-	if err != nil {
-		return false, err
-	}
-	return resp.GetAssign(), nil
+	panic(fmt.Errorf("not implemented: AssignRole - assignRole"))
 }
 
 // SendVerification is the resolver for the sendVerification field.
@@ -106,93 +59,17 @@ func (r *mutationResolver) Delete(ctx context.Context, accountID string) (bool, 
 
 // UpdateProfile is the resolver for the updateProfile field.
 func (r *mutationResolver) UpdateProfile(ctx context.Context, input model.UpdateProfileInput) (bool, error) {
-	idVal := ctx.Value(utils.AccountIDKey)
-	if idVal == nil {
-		return false, fmt.Errorf("unauthorized")
-	}
-
-	outCtx := utils.PackAccountIDForGRPC(ctx, idVal.(string))
-
-	resp, err := r.UserClient.UpdateProfile(outCtx, &user_v1.UpdateProfileRequest{
-		FirstName: firstName,
-		LastName:  lastName,
-		Phone:     phone,
-		AvatarUrl: avatarURL,
-		Bio:       bio,
-	})
-	if err != nil {
-		return false, err
-	}
-
-	return resp.GetSuccess(), nil
+	panic(fmt.Errorf("not implemented: UpdateProfile - updateProfile"))
 }
 
 // CreateAd is the resolver for the createAd field.
 func (r *mutationResolver) CreateAd(ctx context.Context, input model.CreateAdInput) (string, error) {
-	idVal := ctx.Value(utils.AccountIDKey)
-	if idVal == nil {
-		return "", fmt.Errorf("unauthorized")
-	}
-
-	outCtx := utils.PackAccountIDForGRPC(ctx, idVal.(string))
-
-	var imagesFixed []string
-	if len(images) != 0 {
-		for i := range images {
-			if images[i] != nil {
-				imagesFixed[i] = *images[i]
-			}
-		}
-	}
-
-	resp, err := r.AdClient.CreateAd(outCtx, &ad_v1.CreateAdRequest{
-		Title:       title,
-		Description: description,
-		Price:       int64(price),
-		Images:      imagesFixed,
-	})
-	if err != nil {
-		return "", err
-	}
-
-	return resp.GetAdId(), nil
+	panic(fmt.Errorf("not implemented: CreateAd - createAd"))
 }
 
 // UpdateAd is the resolver for the updateAd field.
 func (r *mutationResolver) UpdateAd(ctx context.Context, input model.UpdateAdInput) (bool, error) {
-	idVal := ctx.Value(utils.AccountIDKey)
-	if idVal == nil {
-		return false, fmt.Errorf("unauthorized")
-	}
-
-	outCtx := utils.PackAccountIDForGRPC(ctx, idVal.(string))
-
-	var priceFixed int64
-	if price != nil {
-		priceFixed = int64(*price)
-	}
-
-	var imagesFixed []string
-	if len(images) != 0 {
-		for i := range images {
-			if images[i] != nil {
-				imagesFixed[i] = *images[i]
-			}
-		}
-	}
-
-	resp, err := r.AdClient.UpdateAd(outCtx, &ad_v1.UpdateAdRequest{
-		AdId:        adID,
-		Title:       title,
-		Description: description,
-		Price:       &priceFixed,
-		Images:      imagesFixed,
-	})
-	if err != nil {
-		return false, err
-	}
-
-	return resp.GetSuccess(), nil
+	panic(fmt.Errorf("not implemented: UpdateAd - updateAd"))
 }
 
 // Publish is the resolver for the publish field.
@@ -217,32 +94,12 @@ func (r *mutationResolver) DeleteAllAds(ctx context.Context, sellerID string) (b
 
 // Me is the resolver for the me field.
 func (r *queryResolver) Me(ctx context.Context) (*model.User, error) {
-	idVal := ctx.Value(utils.AccountIDKey)
-	if idVal == nil {
-		return nil, fmt.Errorf("unauthorized")
-	}
-
-	roleVal := ctx.Value(utils.AccountRoleKey)
-	if roleVal == nil {
-		return nil, fmt.Errorf("unauthorized")
-	}
-
-	outCtx := utils.PackAccountIDForGRPC(ctx, idVal.(string))
-	outCtx = utils.PackAccountRoleForGRPC(outCtx, roleVal.(string))
-
-	return r.UserClient.GetProfile(outCtx, &user_v1.GetProfileRequest{})
+	panic(fmt.Errorf("not implemented: Me - me"))
 }
 
 // Ad is the resolver for the ad field.
 func (r *queryResolver) Ad(ctx context.Context, adID string) (*model.Ad, error) {
-	idVal := ctx.Value(utils.AccountIDKey)
-	if idVal == nil {
-		return nil, fmt.Errorf("unauthorized")
-	}
-
-	outCtx := utils.PackAccountIDForGRPC(ctx, idVal.(string))
-
-	return r.AdClient.GetAd(outCtx, &ad_v1.GetAdRequest{AdId: adID})
+	panic(fmt.Errorf("not implemented: Ad - ad"))
 }
 
 // Ads is the resolver for the ads field.
