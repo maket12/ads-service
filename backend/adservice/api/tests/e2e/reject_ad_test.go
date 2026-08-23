@@ -51,13 +51,6 @@ func TestRejectAd_BadCases(t *testing.T) {
 			expectedError: "ad not found",
 		},
 		{
-			name:          "Permission Denied - Account Isn't Owner",
-			sellerID:      gofakeit.UUID(),
-			adID:          adID,
-			expectedCode:  codes.PermissionDenied,
-			expectedError: "no permission to access this data",
-		},
-		{
 			name:          "Failed Precondition - Ad Has Been Rejected",
 			sellerID:      sellerID,
 			adID:          rejectedAdID,
@@ -65,7 +58,7 @@ func TestRejectAd_BadCases(t *testing.T) {
 			expectedError: "ad has been already published or not available",
 		},
 		{
-			name:          "Unauthenticated - missing seller id",
+			name:          "Unauthenticated",
 			sellerID:      "",
 			adID:          adID,
 			expectedCode:  codes.Unauthenticated,

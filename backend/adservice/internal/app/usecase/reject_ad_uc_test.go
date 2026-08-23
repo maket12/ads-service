@@ -27,7 +27,6 @@ func TestRejectAdUC_Execute(t *testing.T) {
 	}
 
 	sellerID := uuid.New()
-	otherSellerID := uuid.New()
 
 	newAd := func() *model.Ad {
 		ad, _ := model.NewAd(sellerID, "title", nil, 100, nil)
@@ -45,7 +44,7 @@ func TestRejectAdUC_Execute(t *testing.T) {
 			name:    "Success",
 			buildAd: newAd,
 			input: func(adID uuid.UUID) dto.RejectAdInput {
-				return dto.RejectAdInput{AdID: adID, SellerID: sellerID}
+				return dto.RejectAdInput{AdID: adID}
 			},
 			mockBehaviour: func(a *mocks.MockAdRepository, adID uuid.UUID) {
 				a.EXPECT().Update(mock.Anything, mock.AnythingOfType("*model.Ad")).Return(nil)
@@ -56,7 +55,7 @@ func TestRejectAdUC_Execute(t *testing.T) {
 			name:    "Failure - ad not found",
 			buildAd: func() *model.Ad { return nil },
 			input: func(adID uuid.UUID) dto.RejectAdInput {
-				return dto.RejectAdInput{AdID: adID, SellerID: sellerID}
+				return dto.RejectAdInput{AdID: adID}
 			},
 			mockBehaviour: func(a *mocks.MockAdRepository, adID uuid.UUID) {},
 			expectErr:     ucerrs.ErrAdNotFound,
@@ -65,25 +64,16 @@ func TestRejectAdUC_Execute(t *testing.T) {
 			name:    "Failure - db error on get",
 			buildAd: func() *model.Ad { return nil },
 			input: func(adID uuid.UUID) dto.RejectAdInput {
-				return dto.RejectAdInput{AdID: adID, SellerID: sellerID}
+				return dto.RejectAdInput{AdID: adID}
 			},
 			mockBehaviour: func(a *mocks.MockAdRepository, adID uuid.UUID) {},
 			expectErr:     ucerrs.ErrGetAdDB,
 		},
 		{
-			name:    "Failure - access denied",
-			buildAd: newAd,
-			input: func(adID uuid.UUID) dto.RejectAdInput {
-				return dto.RejectAdInput{AdID: adID, SellerID: otherSellerID}
-			},
-			mockBehaviour: func(a *mocks.MockAdRepository, adID uuid.UUID) {},
-			expectErr:     ucerrs.ErrAccessDenied,
-		},
-		{
 			name:    "Failure - cannot reject",
 			buildAd: unrejectableAd,
 			input: func(adID uuid.UUID) dto.RejectAdInput {
-				return dto.RejectAdInput{AdID: adID, SellerID: sellerID}
+				return dto.RejectAdInput{AdID: adID}
 			},
 			mockBehaviour: func(a *mocks.MockAdRepository, adID uuid.UUID) {},
 			expectErr:     ucerrs.ErrCannotReject,
@@ -92,7 +82,7 @@ func TestRejectAdUC_Execute(t *testing.T) {
 			name:    "Failure - update ad db error",
 			buildAd: newAd,
 			input: func(adID uuid.UUID) dto.RejectAdInput {
-				return dto.RejectAdInput{AdID: adID, SellerID: sellerID}
+				return dto.RejectAdInput{AdID: adID}
 			},
 			mockBehaviour: func(a *mocks.MockAdRepository, adID uuid.UUID) {
 				a.EXPECT().Update(mock.Anything, mock.AnythingOfType("*model.Ad")).Return(errors.New("db error"))

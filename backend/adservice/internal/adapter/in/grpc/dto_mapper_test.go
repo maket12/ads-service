@@ -99,14 +99,12 @@ func TestMapUpdateAdDTOToPb(t *testing.T) {
 }
 
 func TestMapPublishAdPbToDTO(t *testing.T) {
-	sellerID := uuid.New()
 	adID := uuid.New()
 	req := &ad_v1.PublishAdRequest{AdId: adID.String()}
 
-	result := grpc.MapPublishAdPbToDTO(req, sellerID)
+	result := grpc.MapPublishAdPbToDTO(req)
 
 	assert.Equal(t, adID, result.AdID)
-	assert.Equal(t, sellerID, result.SellerID)
 }
 
 func TestMapPublishAdDTOToPb(t *testing.T) {
@@ -118,14 +116,12 @@ func TestMapPublishAdDTOToPb(t *testing.T) {
 }
 
 func TestMapRejectAdPbToDTO(t *testing.T) {
-	sellerID := uuid.New()
 	adID := uuid.New()
 	req := &ad_v1.RejectAdRequest{AdId: adID.String()}
 
-	result := grpc.MapRejectAdPbToDTO(req, sellerID)
+	result := grpc.MapRejectAdPbToDTO(req)
 
 	assert.Equal(t, adID, result.AdID)
-	assert.Equal(t, sellerID, result.SellerID)
 }
 
 func TestMapRejectAdDTOToPb(t *testing.T) {

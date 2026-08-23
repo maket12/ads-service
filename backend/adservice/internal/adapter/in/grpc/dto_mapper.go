@@ -69,11 +69,10 @@ func MapUpdateAdDTOToPb(out dto.UpdateAdOutput) *ad_v1.UpdateAdResponse {
 	return &ad_v1.UpdateAdResponse{Success: out.Success}
 }
 
-func MapPublishAdPbToDTO(req *ad_v1.PublishAdRequest, sellerID uuid.UUID) dto.PublishAdInput {
+func MapPublishAdPbToDTO(req *ad_v1.PublishAdRequest) dto.PublishAdInput {
 	adID, _ := uuid.Parse(req.GetAdId())
 	return dto.PublishAdInput{
-		AdID:     adID,
-		SellerID: sellerID,
+		AdID: adID,
 	}
 }
 
@@ -81,11 +80,10 @@ func MapPublishAdDTOToPb(out dto.PublishAdOutput) *ad_v1.PublishAdResponse {
 	return &ad_v1.PublishAdResponse{Success: out.Success}
 }
 
-func MapRejectAdPbToDTO(req *ad_v1.RejectAdRequest, sellerID uuid.UUID) dto.RejectAdInput {
+func MapRejectAdPbToDTO(req *ad_v1.RejectAdRequest) dto.RejectAdInput {
 	adID, _ := uuid.Parse(req.GetAdId())
 	return dto.RejectAdInput{
-		AdID:     adID,
-		SellerID: sellerID,
+		AdID: adID,
 	}
 }
 

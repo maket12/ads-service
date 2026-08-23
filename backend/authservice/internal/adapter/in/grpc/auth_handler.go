@@ -161,7 +161,7 @@ func (h *AuthHandler) AssignRole(
 	ctx context.Context,
 	req *auth_v1.AssignRoleRequest,
 ) (*auth_v1.AssignRoleResponse, error) {
-	if err := h.authenticate(ctx, "assign-role"); err != nil {
+	if err := h.authorize(ctx, "assign-role"); err != nil {
 		return nil, err
 	}
 
@@ -216,7 +216,7 @@ func (h *AuthHandler) BlockAccount(
 	ctx context.Context,
 	req *auth_v1.BlockAccountRequest,
 ) (*auth_v1.BlockAccountResponse, error) {
-	if err := h.authenticate(ctx, "block-account"); err != nil {
+	if err := h.authorize(ctx, "block-account"); err != nil {
 		return nil, err
 	}
 
@@ -238,7 +238,7 @@ func (h *AuthHandler) DeleteAccount(
 	ctx context.Context,
 	req *auth_v1.DeleteAccountRequest,
 ) (*auth_v1.DeleteAccountResponse, error) {
-	if err := h.authenticate(ctx, "delete-account"); err != nil {
+	if err := h.authorize(ctx, "delete-account"); err != nil {
 		return nil, err
 	}
 
@@ -256,7 +256,7 @@ func (h *AuthHandler) DeleteAccount(
 	return MapDeleteAccountDTOToPb(ucResp), nil
 }
 
-func (h *AuthHandler) authenticate(ctx context.Context, method string) error {
+func (h *AuthHandler) authorize(ctx context.Context, method string) error {
 	accountID, gRPCErr := h.extractID(ctx)
 	if gRPCErr != nil {
 		return gRPCErr

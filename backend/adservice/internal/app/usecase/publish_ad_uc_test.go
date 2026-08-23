@@ -27,7 +27,6 @@ func TestPublishAdUC_Execute(t *testing.T) {
 	}
 
 	sellerID := uuid.New()
-	otherSellerID := uuid.New()
 
 	newAd := func() *model.Ad {
 		ad, _ := model.NewAd(sellerID, "title", nil, 100, nil)
@@ -69,15 +68,6 @@ func TestPublishAdUC_Execute(t *testing.T) {
 			},
 			mockBehaviour: func(a *mocks.MockAdRepository, adID uuid.UUID) {},
 			expectErr:     ucerrs.ErrGetAdDB,
-		},
-		{
-			name:    "Failure - access denied",
-			buildAd: newAd,
-			input: func(adID uuid.UUID) dto.PublishAdInput {
-				return dto.PublishAdInput{AdID: adID, SellerID: otherSellerID}
-			},
-			mockBehaviour: func(a *mocks.MockAdRepository, adID uuid.UUID) {},
-			expectErr:     ucerrs.ErrAccessDenied,
 		},
 		{
 			name:    "Failure - cannot publish",

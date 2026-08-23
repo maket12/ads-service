@@ -2,6 +2,7 @@ package grpc
 
 import (
 	"context"
+	"fmt"
 	"log/slog"
 
 	"github.com/maket12/ads-service/adservice/internal/app/usecase"
@@ -74,9 +75,9 @@ func (h *AdHandler) extractRole(ctx context.Context) (string, error) {
 }
 
 func (h *AdHandler) CreateAd(ctx context.Context, req *ad_v1.CreateAdRequest) (*ad_v1.CreateAdResponse, error) {
-	accountID, gRPCErr := h.extractID(ctx)
-	if gRPCErr != nil {
-		return nil, gRPCErr
+	accountID, err := h.authorize(ctx, "create-ad", false)
+	if err != nil {
+		return nil, err
 	}
 
 	ucResp, err := h.createAdUC.Execute(ctx, MapCreateAdPbToDTO(req, accountID))
@@ -95,9 +96,9 @@ func (h *AdHandler) CreateAd(ctx context.Context, req *ad_v1.CreateAdRequest) (*
 }
 
 func (h *AdHandler) GetAd(ctx context.Context, req *ad_v1.GetAdRequest) (*ad_v1.GetAdResponse, error) {
-	accountID, gRPCErr := h.extractID(ctx)
-	if gRPCErr != nil {
-		return nil, gRPCErr
+	accountID, err := h.authorize(ctx, "get-ad", false)
+	if err != nil {
+		return nil, err
 	}
 
 	ucResp, err := h.getAdUC.Execute(ctx, MapGetAdPbToDTO(req, accountID))
@@ -110,9 +111,9 @@ func (h *AdHandler) GetAd(ctx context.Context, req *ad_v1.GetAdRequest) (*ad_v1.
 }
 
 func (h *AdHandler) UpdateAd(ctx context.Context, req *ad_v1.UpdateAdRequest) (*ad_v1.UpdateAdResponse, error) {
-	accountID, gRPCErr := h.extractID(ctx)
-	if gRPCErr != nil {
-		return nil, gRPCErr
+	accountID, err := h.authorize(ctx, "update-ad", false)
+	if err != nil {
+		return nil, err
 	}
 
 	ucResp, err := h.updateAdUC.Execute(ctx, MapUpdateAdPbToDTO(req, accountID))
@@ -133,25 +134,11 @@ func (h *AdHandler) UpdateAd(ctx context.Context, req *ad_v1.UpdateAdRequest) (*
 }
 
 func (h *AdHandler) PublishAd(ctx context.Context, req *ad_v1.PublishAdRequest) (*ad_v1.PublishAdResponse, error) {
-	accountID, gRPCErr := h.extractID(ctx)
-	if gRPCErr != nil {
-		return nil, gRPCErr
+	if _, err := h.authorize(ctx, "publish-ad", true); err != nil {
+		return nil, err
 	}
 
-	role, gRPCErr := h.extractRole(ctx)
-	if gRPCErr != nil {
-		return nil, gRPCErr
-	}
-
-	if role != "admin" {
-		h.log.WarnContext(ctx, "[publish-ad] access denied for non-admin user",
-			slog.String("account_id", accountID.String()),
-			slog.String("role", role),
-		)
-		return nil, status.Error(codes.PermissionDenied, "access denied: admin role required")
-	}
-
-	ucResp, err := h.publishAdUC.Execute(ctx, MapPublishAdPbToDTO(req, accountID))
+	ucResp, err := h.publishAdUC.Execute(ctx, MapPublishAdPbToDTO(req))
 	if err != nil {
 		code, msg := h.handleError(ctx, err, "failed to publish ad")
 		return nil, status.Error(code, msg)
@@ -165,25 +152,11 @@ func (h *AdHandler) PublishAd(ctx context.Context, req *ad_v1.PublishAdRequest) 
 }
 
 func (h *AdHandler) RejectAd(ctx context.Context, req *ad_v1.RejectAdRequest) (*ad_v1.RejectAdResponse, error) {
-	accountID, gRPCErr := h.extractID(ctx)
-	if gRPCErr != nil {
-		return nil, gRPCErr
+	if _, err := h.authorize(ctx, "reject-ad", true); err != nil {
+		return nil, err
 	}
 
-	role, gRPCErr := h.extractRole(ctx)
-	if gRPCErr != nil {
-		return nil, gRPCErr
-	}
-
-	if role != "admin" {
-		h.log.WarnContext(ctx, "[reject-ad] access denied for non-admin user",
-			slog.String("account_id", accountID.String()),
-			slog.String("role", role),
-		)
-		return nil, status.Error(codes.PermissionDenied, "access denied: admin role required")
-	}
-
-	ucResp, err := h.rejectAdUC.Execute(ctx, MapRejectAdPbToDTO(req, accountID))
+	ucResp, err := h.rejectAdUC.Execute(ctx, MapRejectAdPbToDTO(req))
 	if err != nil {
 		code, msg := h.handleError(ctx, err, "failed to reject ad")
 		return nil, status.Error(code, msg)
@@ -197,9 +170,9 @@ func (h *AdHandler) RejectAd(ctx context.Context, req *ad_v1.RejectAdRequest) (*
 }
 
 func (h *AdHandler) DeleteAd(ctx context.Context, req *ad_v1.DeleteAdRequest) (*ad_v1.DeleteAdResponse, error) {
-	accountID, gRPCErr := h.extractID(ctx)
-	if gRPCErr != nil {
-		return nil, gRPCErr
+	accountID, err := h.authorize(ctx, "reject-ad", false)
+	if err != nil {
+		return nil, err
 	}
 
 	ucResp, err := h.deleteAdUC.Execute(ctx, MapDeleteAdPbToDTO(req, accountID))
@@ -216,22 +189,8 @@ func (h *AdHandler) DeleteAd(ctx context.Context, req *ad_v1.DeleteAdRequest) (*
 }
 
 func (h *AdHandler) DeleteAllAds(ctx context.Context, req *ad_v1.DeleteAllAdsRequest) (*ad_v1.DeleteAllAdsResponse, error) {
-	accountID, gRPCErr := h.extractID(ctx)
-	if gRPCErr != nil {
-		return nil, gRPCErr
-	}
-
-	role, gRPCErr := h.extractRole(ctx)
-	if gRPCErr != nil {
-		return nil, gRPCErr
-	}
-
-	if role != "admin" {
-		h.log.WarnContext(ctx, "[delete-all-ads] access denied for non-admin user",
-			slog.String("account_id", accountID.String()),
-			slog.String("role", role),
-		)
-		return nil, status.Error(codes.PermissionDenied, "access denied: admin role required")
+	if _, err := h.authorize(ctx, "delete-all-ads", true); err != nil {
+		return nil, err
 	}
 
 	ucResp, err := h.deleteAllAdsUC.Execute(ctx, MapDeleteAllAdsPbToDTO(req))
@@ -246,9 +205,9 @@ func (h *AdHandler) DeleteAllAds(ctx context.Context, req *ad_v1.DeleteAllAdsReq
 }
 
 func (h *AdHandler) ListAds(ctx context.Context, req *ad_v1.ListAdsRequest) (*ad_v1.ListAdsResponse, error) {
-	accountID, gRPCErr := h.extractID(ctx)
-	if gRPCErr != nil {
-		return nil, gRPCErr
+	accountID, err := h.authorize(ctx, "list-ads", false)
+	if err != nil {
+		return nil, err
 	}
 
 	ucResp, err := h.listSellerAdsUC.Execute(ctx, MapListAdsPbToDTO(req, accountID))
@@ -261,22 +220,8 @@ func (h *AdHandler) ListAds(ctx context.Context, req *ad_v1.ListAdsRequest) (*ad
 }
 
 func (h *AdHandler) ListAllAds(ctx context.Context, req *ad_v1.ListAllAdsRequest) (*ad_v1.ListAllAdsResponse, error) {
-	accountID, gRPCErr := h.extractID(ctx)
-	if gRPCErr != nil {
-		return nil, gRPCErr
-	}
-
-	role, gRPCErr := h.extractRole(ctx)
-	if gRPCErr != nil {
-		return nil, gRPCErr
-	}
-
-	if role != "admin" {
-		h.log.WarnContext(ctx, "[list-all-ads] access denied for non-admin user",
-			slog.String("account_id", accountID.String()),
-			slog.String("role", role),
-		)
-		return nil, status.Error(codes.PermissionDenied, "access denied: admin role required")
+	if _, err := h.authorize(ctx, "list-all-ads", true); err != nil {
+		return nil, err
 	}
 
 	ucResp, err := h.listAllAdsUC.Execute(ctx, MapListAllAdsPbToDTO(req))
@@ -286,6 +231,36 @@ func (h *AdHandler) ListAllAds(ctx context.Context, req *ad_v1.ListAllAdsRequest
 	}
 
 	return MapListAllAdsDTOToPb(ucResp), nil
+}
+
+func (h *AdHandler) authorize(
+	ctx context.Context,
+	method string, admin bool,
+) (uuid.UUID, error) {
+	accountID, gRPCErr := h.extractID(ctx)
+	if gRPCErr != nil {
+		return uuid.Nil, gRPCErr
+	}
+
+	if !admin {
+		return accountID, nil
+	}
+
+	role, gRPCErr := h.extractRole(ctx)
+	if gRPCErr != nil {
+		return uuid.Nil, gRPCErr
+	}
+
+	if role != "admin" {
+		methodName := fmt.Sprintf("[%s]", method)
+		h.log.WarnContext(ctx, methodName+" access denied for non-admin user",
+			slog.String("account_id", accountID.String()),
+			slog.String("role", role),
+		)
+		return uuid.Nil, status.Error(codes.PermissionDenied, "access denied: admin role required")
+	}
+
+	return accountID, nil
 }
 
 func (h *AdHandler) handleError(

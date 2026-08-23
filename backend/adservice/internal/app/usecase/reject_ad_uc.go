@@ -28,11 +28,6 @@ func (uc *RejectAdUC) Execute(ctx context.Context, in dto.RejectAdInput) (dto.Re
 		)
 	}
 
-	// Check if current user can reject this ad
-	if ad.SellerID() != in.SellerID {
-		return dto.RejectAdOutput{Success: false}, ucerrs.ErrAccessDenied
-	}
-
 	// Reject
 	err = ad.Reject()
 	if err != nil {
