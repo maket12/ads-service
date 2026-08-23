@@ -1,8 +1,8 @@
 package mapper
 
 import (
-	"github.com/maket12/ads-service/adservice/internal/app/dto"
-	"github.com/maket12/ads-service/adservice/internal/domain/model"
+	"github.com/maket12/ads-service/backend/adservice/internal/app/dto"
+	"github.com/maket12/ads-service/backend/adservice/internal/domain/model"
 )
 
 func mapDomainToAdDTO(ad *model.Ad) dto.Ad {

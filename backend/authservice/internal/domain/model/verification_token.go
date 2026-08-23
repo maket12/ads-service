@@ -6,7 +6,7 @@ import (
 	"time"
 
 	"github.com/google/uuid"
-	pkgerrs "github.com/maket12/ads-service/authservice/pkg/errs"
+	pkgerrs "github.com/maket12/ads-service/backend/authservice/pkg/errs"
 )
 
 const minTTL = time.Minute

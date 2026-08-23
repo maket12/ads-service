@@ -4,8 +4,8 @@ import (
 	"time"
 
 	"github.com/jackc/pgx/v5/pgtype"
-	"github.com/maket12/ads-service/authservice/internal/adapter/out/postgres/sqlc"
-	"github.com/maket12/ads-service/authservice/internal/domain/model"
+	"github.com/maket12/ads-service/backend/authservice/internal/adapter/out/postgres/sqlc"
+	"github.com/maket12/ads-service/backend/authservice/internal/domain/model"
 )
 
 func MapAccountToSQLCCreate(acc *model.Account) sqlc.CreateAccountParams {

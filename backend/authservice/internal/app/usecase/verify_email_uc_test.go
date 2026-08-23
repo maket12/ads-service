@@ -6,12 +6,12 @@ import (
 	"testing"
 	"time"
 
-	"github.com/maket12/ads-service/authservice/internal/app/dto"
-	ucerrs "github.com/maket12/ads-service/authservice/internal/app/errs"
-	"github.com/maket12/ads-service/authservice/internal/app/usecase"
-	"github.com/maket12/ads-service/authservice/internal/domain/model"
-	"github.com/maket12/ads-service/authservice/internal/domain/port/mocks"
-	pkgerrs "github.com/maket12/ads-service/authservice/pkg/errs"
+	"github.com/maket12/ads-service/backend/authservice/internal/app/dto"
+	ucerrs "github.com/maket12/ads-service/backend/authservice/internal/app/errs"
+	"github.com/maket12/ads-service/backend/authservice/internal/app/usecase"
+	"github.com/maket12/ads-service/backend/authservice/internal/domain/model"
+	"github.com/maket12/ads-service/backend/authservice/internal/domain/port/mocks"
+	pkgerrs "github.com/maket12/ads-service/backend/authservice/pkg/errs"
 
 	"github.com/google/uuid"
 	"github.com/stretchr/testify/assert"

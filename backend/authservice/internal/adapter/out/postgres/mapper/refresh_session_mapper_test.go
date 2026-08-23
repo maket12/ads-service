@@ -6,14 +6,14 @@ import (
 	"time"
 
 	"github.com/brianvoe/gofakeit/v7"
-	"github.com/maket12/ads-service/authservice/internal/adapter/out/postgres/mapper"
+	"github.com/maket12/ads-service/backend/authservice/internal/adapter/out/postgres/mapper"
 
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5/pgtype"
 	"github.com/stretchr/testify/require"
 
-	"github.com/maket12/ads-service/authservice/internal/adapter/out/postgres/sqlc"
-	"github.com/maket12/ads-service/authservice/internal/domain/model"
+	"github.com/maket12/ads-service/backend/authservice/internal/adapter/out/postgres/sqlc"
+	"github.com/maket12/ads-service/backend/authservice/internal/domain/model"
 )
 
 func TestMapRefreshSessionToSQLCCreate(t *testing.T) {

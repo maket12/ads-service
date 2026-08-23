@@ -8,9 +8,9 @@ import (
 	"time"
 
 	trmpgx "github.com/avito-tech/go-transaction-manager/drivers/pgxv5/v2"
-	adapterpg "github.com/maket12/ads-service/userservice/internal/adapter/out/postgres"
-	"github.com/maket12/ads-service/userservice/internal/domain/model"
-	pkgerrs "github.com/maket12/ads-service/userservice/pkg/errs"
+	adapterpg "github.com/maket12/ads-service/backend/userservice/internal/adapter/out/postgres"
+	"github.com/maket12/ads-service/backend/userservice/internal/domain/model"
+	pkgerrs "github.com/maket12/ads-service/backend/userservice/pkg/errs"
 
 	_ "github.com/golang-migrate/migrate/v4/database/postgres"
 

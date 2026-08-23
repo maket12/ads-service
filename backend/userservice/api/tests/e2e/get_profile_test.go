@@ -7,8 +7,8 @@ import (
 	"testing"
 
 	"github.com/google/uuid"
-	"github.com/maket12/ads-service/userservice/pkg/generated/user_v1"
-	"github.com/maket12/ads-service/userservice/pkg/utils"
+	"github.com/maket12/ads-service/backend/userservice/pkg/generated/user_v1"
+	"github.com/maket12/ads-service/backend/userservice/pkg/utils"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	"google.golang.org/grpc/codes"

@@ -3,8 +3,8 @@ package grpc
 import (
 	"errors"
 
-	ucerrs "github.com/maket12/ads-service/adservice/internal/app/errs"
-	pkgerrs "github.com/maket12/ads-service/adservice/pkg/errs"
+	ucerrs "github.com/maket12/ads-service/backend/adservice/internal/app/errs"
+	pkgerrs "github.com/maket12/ads-service/backend/adservice/pkg/errs"
 
 	"google.golang.org/grpc/codes"
 )

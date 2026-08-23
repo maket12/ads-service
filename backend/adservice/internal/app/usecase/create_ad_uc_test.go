@@ -7,10 +7,10 @@ import (
 
 	"github.com/brianvoe/gofakeit/v7"
 	"github.com/google/uuid"
-	"github.com/maket12/ads-service/adservice/internal/app/dto"
-	ucerrs "github.com/maket12/ads-service/adservice/internal/app/errs"
-	"github.com/maket12/ads-service/adservice/internal/app/usecase"
-	"github.com/maket12/ads-service/adservice/internal/domain/port/mocks"
+	"github.com/maket12/ads-service/backend/adservice/internal/app/dto"
+	ucerrs "github.com/maket12/ads-service/backend/adservice/internal/app/errs"
+	"github.com/maket12/ads-service/backend/adservice/internal/app/usecase"
+	"github.com/maket12/ads-service/backend/adservice/internal/domain/port/mocks"
 	"github.com/maket12/ads-service/userservice/pkg/utils"
 
 	"github.com/stretchr/testify/assert"

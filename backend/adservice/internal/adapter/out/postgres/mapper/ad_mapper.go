@@ -4,8 +4,8 @@ import (
 	"time"
 
 	"github.com/jackc/pgx/v5/pgtype"
-	"github.com/maket12/ads-service/adservice/internal/adapter/out/postgres/sqlc"
-	"github.com/maket12/ads-service/adservice/internal/domain/model"
+	"github.com/maket12/ads-service/backend/adservice/internal/adapter/out/postgres/sqlc"
+	"github.com/maket12/ads-service/backend/adservice/internal/domain/model"
 )
 
 func MapSQLCToAd(rawAd sqlc.Ad) *model.Ad {

@@ -5,9 +5,9 @@ import (
 	"fmt"
 	"log/slog"
 
-	"github.com/maket12/ads-service/adservice/internal/app/usecase"
-	"github.com/maket12/ads-service/adservice/pkg/generated/ad_v1"
-	"github.com/maket12/ads-service/adservice/pkg/utils"
+	"github.com/maket12/ads-service/backend/adservice/internal/app/usecase"
+	"github.com/maket12/ads-service/backend/adservice/pkg/generated/ad_v1"
+	"github.com/maket12/ads-service/backend/adservice/pkg/utils"
 	"google.golang.org/grpc/codes"
 
 	"github.com/google/uuid"

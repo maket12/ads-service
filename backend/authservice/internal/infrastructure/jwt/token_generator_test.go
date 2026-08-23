@@ -8,8 +8,8 @@ import (
 
 	"github.com/golang-jwt/jwt/v5"
 	"github.com/google/uuid"
-	"github.com/maket12/ads-service/authservice/internal/domain/port"
-	infrajwt "github.com/maket12/ads-service/authservice/internal/infrastructure/jwt"
+	"github.com/maket12/ads-service/backend/authservice/internal/domain/port"
+	infrajwt "github.com/maket12/ads-service/backend/authservice/internal/infrastructure/jwt"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
