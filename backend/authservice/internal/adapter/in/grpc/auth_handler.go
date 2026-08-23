@@ -2,6 +2,7 @@ package grpc
 
 import (
 	"context"
+	"fmt"
 	"log/slog"
 
 	"github.com/google/uuid"
@@ -24,6 +25,8 @@ type AuthHandler struct {
 	assignRoleUC          *usecase.AssignRoleUC
 	sendVerificationUC    *usecase.SendVerificationUC
 	verifyEmailUC         *usecase.VerifyEmailUC
+	blockAccountUC        *usecase.BlockAccountUC
+	deleteAccountUC       *usecase.DeleteAccountUC
 }
 
 func NewAuthHandler(
@@ -36,6 +39,8 @@ func NewAuthHandler(
 	assignRoleUC *usecase.AssignRoleUC,
 	sendVerificationUC *usecase.SendVerificationUC,
 	verifyEmailUC *usecase.VerifyEmailUC,
+	blockAccountUC *usecase.BlockAccountUC,
+	deleteAccountUC *usecase.DeleteAccountUC,
 ) *AuthHandler {
 	return &AuthHandler{
 		log:                   log,
@@ -47,6 +52,8 @@ func NewAuthHandler(
 		assignRoleUC:          assignRoleUC,
 		sendVerificationUC:    sendVerificationUC,
 		verifyEmailUC:         verifyEmailUC,
+		blockAccountUC:        blockAccountUC,
+		deleteAccountUC:       deleteAccountUC,
 	}
 }
 
@@ -154,22 +161,8 @@ func (h *AuthHandler) AssignRole(
 	ctx context.Context,
 	req *auth_v1.AssignRoleRequest,
 ) (*auth_v1.AssignRoleResponse, error) {
-	accountID, gRPCErr := h.extractID(ctx)
-	if gRPCErr != nil {
-		return nil, gRPCErr
-	}
-
-	role, gRPCErr := h.extractRole(ctx)
-	if gRPCErr != nil {
-		return nil, gRPCErr
-	}
-
-	if role != "admin" {
-		h.log.WarnContext(ctx, "[assign-role] access denied for non-admin user",
-			slog.String("account_id", accountID.String()),
-			slog.String("role", role),
-		)
-		return nil, status.Error(codes.PermissionDenied, "access denied: admin role required")
+	if err := h.authenticate(ctx, "assign-role"); err != nil {
+		return nil, err
 	}
 
 	ucResp, err := h.assignRoleUC.Execute(ctx, MapAssignRolePbToDTO(req))
@@ -223,14 +216,67 @@ func (h *AuthHandler) BlockAccount(
 	ctx context.Context,
 	req *auth_v1.BlockAccountRequest,
 ) (*auth_v1.BlockAccountResponse, error) {
-	// TODO: Implement the method
+	if err := h.authenticate(ctx, "block-account"); err != nil {
+		return nil, err
+	}
+
+	ucResp, err := h.blockAccountUC.Execute(ctx, MapBlockAccountPbToDTO(req))
+
+	if err != nil {
+		code, msg := h.handleError(ctx, err, "failed to block account")
+		return nil, status.Error(code, msg)
+	}
+
+	h.log.InfoContext(ctx, "blocked account",
+		slog.String("account_id", req.GetAccountId()),
+	)
+
+	return MapBlockAccountDTOToPb(ucResp), nil
 }
 
 func (h *AuthHandler) DeleteAccount(
 	ctx context.Context,
 	req *auth_v1.DeleteAccountRequest,
 ) (*auth_v1.DeleteAccountResponse, error) {
-	// TODO: Implement the method
+	if err := h.authenticate(ctx, "delete-account"); err != nil {
+		return nil, err
+	}
+
+	ucResp, err := h.deleteAccountUC.Execute(ctx, MapDeleteAccountPbToDTO(req))
+
+	if err != nil {
+		code, msg := h.handleError(ctx, err, "failed to delete account")
+		return nil, status.Error(code, msg)
+	}
+
+	h.log.InfoContext(ctx, "deleted account",
+		slog.String("account_id", req.GetAccountId()),
+	)
+
+	return MapDeleteAccountDTOToPb(ucResp), nil
+}
+
+func (h *AuthHandler) authenticate(ctx context.Context, method string) error {
+	accountID, gRPCErr := h.extractID(ctx)
+	if gRPCErr != nil {
+		return gRPCErr
+	}
+
+	role, gRPCErr := h.extractRole(ctx)
+	if gRPCErr != nil {
+		return gRPCErr
+	}
+
+	if role != "admin" {
+		methodName := fmt.Sprintf("[%s]", method)
+		h.log.WarnContext(ctx, methodName+" access denied for non-admin user",
+			slog.String("account_id", accountID.String()),
+			slog.String("role", role),
+		)
+		return status.Error(codes.PermissionDenied, "access denied: admin role required")
+	}
+
+	return nil
 }
 
 func (h *AuthHandler) handleError(

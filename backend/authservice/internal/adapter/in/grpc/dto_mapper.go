@@ -97,3 +97,21 @@ func MapVerifyEmailPbToDTO(req *auth_v1.VerifyEmailRequest) dto.VerifyEmailInput
 func MapVerifyEmailDTOToPb(out dto.VerifyEmailOutput) *auth_v1.VerifyEmailResponse {
 	return &auth_v1.VerifyEmailResponse{Verified: out.Verified}
 }
+
+func MapBlockAccountPbToDTO(req *auth_v1.BlockAccountRequest) dto.BlockAccountInput {
+	accID, _ := uuid.Parse(req.GetAccountId())
+	return dto.BlockAccountInput{AccountID: accID}
+}
+
+func MapBlockAccountDTOToPb(out dto.BlockAccountOutput) *auth_v1.BlockAccountResponse {
+	return &auth_v1.BlockAccountResponse{Blocked: out.Blocked}
+}
+
+func MapDeleteAccountPbToDTO(req *auth_v1.DeleteAccountRequest) dto.DeleteAccountInput {
+	accID, _ := uuid.Parse(req.GetAccountId())
+	return dto.DeleteAccountInput{AccountID: accID}
+}
+
+func MapDeleteAccountDTOToPb(out dto.DeleteAccountOutput) *auth_v1.DeleteAccountResponse {
+	return &auth_v1.DeleteAccountResponse{Deleted: out.Deleted}
+}
