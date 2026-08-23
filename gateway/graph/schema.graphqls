@@ -1,0 +1,119 @@
+""" User (Account + Role + Profile) """
+type User {
+    id: ID!
+    role: String
+    firstName: String
+    lastName: String
+    phone: String
+    avatarUrl: String
+    bio: String
+    updatedAt: String
+}
+
+""" Login Response """
+type LoginResponse {
+    accessToken: String!
+    refreshToken: String!
+}
+
+""" Refresh Session Response """
+type RefreshSessionResponse {
+    accessToken: String!
+    refreshToken: String!
+}
+
+""" Ad Status"""
+enum AdStatus {
+    ON_MODERATION
+    PUBLISHED
+    REJECTED
+    DELETED
+}
+
+""" Ad - full info """
+type Ad {
+    adId: ID!
+    sellerId: ID!
+    title: String!
+    description: String
+    price: Float!
+    status: AdStatus!
+    images: [String]!
+    createdAt: String
+    updatedAt: String
+}
+
+type Query {
+    # rpc GetProfile
+    me: User
+
+    # rpc GetAd
+    ad(adId: ID!): Ad
+}
+
+type Mutation {
+    # --- Auth Service methods ---
+
+    # rpc Register
+    register(email: String!, password: String!): ID!
+
+    # rpc Login
+    login(
+        email: String!,
+        password: String!,
+        ip: String,
+        userAgent: String
+    ): LoginResponse!
+
+    # rpc Logout
+    logout(refreshToken: String!): Boolean!
+
+    # rpc RefreshSession
+    refreshSession(
+        oldRefreshToken: String!,
+        ip: String,
+        userAgent: String
+    ): RefreshSessionResponse!
+
+    # rpc AssignRole
+    assignRole(
+        accountId: ID!,
+        role: String!
+    ): Boolean!
+
+    # --- User Service methods ---
+
+    # rpc UpdateProfile
+    updateProfile(
+        firstName: String
+        lastName: String
+        phone: String
+        avatarUrl: String
+        bio: String
+    ): Boolean!
+
+    # --- Ad Service methods ---
+
+    # rpc CreateAd
+    createAd(
+        title: String!
+        description: String
+        price: Float!
+        images: [String]!
+    ): ID!
+
+    # rpc UpdateAd
+    updateAd(
+        adId: ID!
+        title: String
+        description: String
+        price: Float
+        images: [String]!
+    ): Boolean!
+
+    # rpc PublishAd | RejectAd | DeleteAd
+    updateAdStatus(
+        adId: ID!
+        adStatus: AdStatus!
+    ): Boolean!
+}

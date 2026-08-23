@@ -92,7 +92,7 @@ func (x *CreateAdRequest) GetImages() []string {
 
 type CreateAdResponse struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
-	AdId          string                 `protobuf:"bytes,1,opt,name=ad_id,json=adId,proto3" json:"ad_id,omitempty"`
+	Id            string                 `protobuf:"bytes,1,opt,name=id,proto3" json:"id,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -127,16 +127,16 @@ func (*CreateAdResponse) Descriptor() ([]byte, []int) {
 	return file_adservice_proto_rawDescGZIP(), []int{1}
 }
 
-func (x *CreateAdResponse) GetAdId() string {
+func (x *CreateAdResponse) GetId() string {
 	if x != nil {
-		return x.AdId
+		return x.Id
 	}
 	return ""
 }
 
 type GetAdRequest struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
-	AdId          string                 `protobuf:"bytes,1,opt,name=ad_id,json=adId,proto3" json:"ad_id,omitempty"`
+	Id            string                 `protobuf:"bytes,1,opt,name=id,proto3" json:"id,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -171,16 +171,16 @@ func (*GetAdRequest) Descriptor() ([]byte, []int) {
 	return file_adservice_proto_rawDescGZIP(), []int{2}
 }
 
-func (x *GetAdRequest) GetAdId() string {
+func (x *GetAdRequest) GetId() string {
 	if x != nil {
-		return x.AdId
+		return x.Id
 	}
 	return ""
 }
 
 type Ad struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
-	AdId          string                 `protobuf:"bytes,1,opt,name=ad_id,json=adId,proto3" json:"ad_id,omitempty"`
+	Id            string                 `protobuf:"bytes,1,opt,name=id,proto3" json:"id,omitempty"`
 	SellerId      string                 `protobuf:"bytes,2,opt,name=seller_id,json=sellerId,proto3" json:"seller_id,omitempty"`
 	Title         string                 `protobuf:"bytes,3,opt,name=title,proto3" json:"title,omitempty"`
 	Description   *string                `protobuf:"bytes,4,opt,name=description,proto3,oneof" json:"description,omitempty"`
@@ -223,9 +223,9 @@ func (*Ad) Descriptor() ([]byte, []int) {
 	return file_adservice_proto_rawDescGZIP(), []int{3}
 }
 
-func (x *Ad) GetAdId() string {
+func (x *Ad) GetId() string {
 	if x != nil {
-		return x.AdId
+		return x.Id
 	}
 	return ""
 }
@@ -332,7 +332,7 @@ func (x *GetAdResponse) GetAd() *Ad {
 
 type UpdateAdRequest struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
-	AdId          string                 `protobuf:"bytes,1,opt,name=ad_id,json=adId,proto3" json:"ad_id,omitempty"`
+	Id            string                 `protobuf:"bytes,1,opt,name=id,proto3" json:"id,omitempty"`
 	Title         *string                `protobuf:"bytes,2,opt,name=title,proto3,oneof" json:"title,omitempty"`
 	Description   *string                `protobuf:"bytes,3,opt,name=description,proto3,oneof" json:"description,omitempty"`
 	Price         *int64                 `protobuf:"varint,4,opt,name=price,proto3,oneof" json:"price,omitempty"`
@@ -371,9 +371,9 @@ func (*UpdateAdRequest) Descriptor() ([]byte, []int) {
 	return file_adservice_proto_rawDescGZIP(), []int{5}
 }
 
-func (x *UpdateAdRequest) GetAdId() string {
+func (x *UpdateAdRequest) GetId() string {
 	if x != nil {
-		return x.AdId
+		return x.Id
 	}
 	return ""
 }
@@ -452,7 +452,7 @@ func (x *UpdateAdResponse) GetSuccess() bool {
 
 type PublishAdRequest struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
-	AdId          string                 `protobuf:"bytes,1,opt,name=ad_id,json=adId,proto3" json:"ad_id,omitempty"`
+	Id            string                 `protobuf:"bytes,1,opt,name=id,proto3" json:"id,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -487,9 +487,9 @@ func (*PublishAdRequest) Descriptor() ([]byte, []int) {
 	return file_adservice_proto_rawDescGZIP(), []int{7}
 }
 
-func (x *PublishAdRequest) GetAdId() string {
+func (x *PublishAdRequest) GetId() string {
 	if x != nil {
-		return x.AdId
+		return x.Id
 	}
 	return ""
 }
@@ -540,7 +540,7 @@ func (x *PublishAdResponse) GetSuccess() bool {
 
 type RejectAdRequest struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
-	AdId          string                 `protobuf:"bytes,1,opt,name=ad_id,json=adId,proto3" json:"ad_id,omitempty"`
+	Id            string                 `protobuf:"bytes,1,opt,name=id,proto3" json:"id,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -575,9 +575,9 @@ func (*RejectAdRequest) Descriptor() ([]byte, []int) {
 	return file_adservice_proto_rawDescGZIP(), []int{9}
 }
 
-func (x *RejectAdRequest) GetAdId() string {
+func (x *RejectAdRequest) GetId() string {
 	if x != nil {
-		return x.AdId
+		return x.Id
 	}
 	return ""
 }
@@ -628,7 +628,7 @@ func (x *RejectAdResponse) GetSuccess() bool {
 
 type DeleteAdRequest struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
-	AdId          string                 `protobuf:"bytes,1,opt,name=ad_id,json=adId,proto3" json:"ad_id,omitempty"`
+	Id            string                 `protobuf:"bytes,1,opt,name=id,proto3" json:"id,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -663,9 +663,9 @@ func (*DeleteAdRequest) Descriptor() ([]byte, []int) {
 	return file_adservice_proto_rawDescGZIP(), []int{11}
 }
 
-func (x *DeleteAdRequest) GetAdId() string {
+func (x *DeleteAdRequest) GetId() string {
 	if x != nil {
-		return x.AdId
+		return x.Id
 	}
 	return ""
 }
@@ -988,13 +988,13 @@ const file_adservice_proto_rawDesc = "" +
 	"\vdescription\x18\x02 \x01(\tH\x00R\vdescription\x88\x01\x01\x12\x14\n" +
 	"\x05price\x18\x03 \x01(\x03R\x05price\x12\x16\n" +
 	"\x06images\x18\x04 \x03(\tR\x06imagesB\x0e\n" +
-	"\f_description\"'\n" +
-	"\x10CreateAdResponse\x12\x13\n" +
-	"\x05ad_id\x18\x01 \x01(\tR\x04adId\"#\n" +
-	"\fGetAdRequest\x12\x13\n" +
-	"\x05ad_id\x18\x01 \x01(\tR\x04adId\"\xd3\x02\n" +
-	"\x02Ad\x12\x13\n" +
-	"\x05ad_id\x18\x01 \x01(\tR\x04adId\x12\x1b\n" +
+	"\f_description\"\"\n" +
+	"\x10CreateAdResponse\x12\x0e\n" +
+	"\x02id\x18\x01 \x01(\tR\x02id\"\x1e\n" +
+	"\fGetAdRequest\x12\x0e\n" +
+	"\x02id\x18\x01 \x01(\tR\x02id\"\xce\x02\n" +
+	"\x02Ad\x12\x0e\n" +
+	"\x02id\x18\x01 \x01(\tR\x02id\x12\x1b\n" +
 	"\tseller_id\x18\x02 \x01(\tR\bsellerId\x12\x14\n" +
 	"\x05title\x18\x03 \x01(\tR\x05title\x12%\n" +
 	"\vdescription\x18\x04 \x01(\tH\x00R\vdescription\x88\x01\x01\x12\x14\n" +
@@ -1008,9 +1008,9 @@ const file_adservice_proto_rawDesc = "" +
 	"\f_descriptionB\r\n" +
 	"\v_updated_at\"'\n" +
 	"\rGetAdResponse\x12\x16\n" +
-	"\x02ad\x18\x01 \x01(\v2\x06.ad.AdR\x02ad\"\xbf\x01\n" +
-	"\x0fUpdateAdRequest\x12\x13\n" +
-	"\x05ad_id\x18\x01 \x01(\tR\x04adId\x12\x19\n" +
+	"\x02ad\x18\x01 \x01(\v2\x06.ad.AdR\x02ad\"\xba\x01\n" +
+	"\x0fUpdateAdRequest\x12\x0e\n" +
+	"\x02id\x18\x01 \x01(\tR\x02id\x12\x19\n" +
 	"\x05title\x18\x02 \x01(\tH\x00R\x05title\x88\x01\x01\x12%\n" +
 	"\vdescription\x18\x03 \x01(\tH\x01R\vdescription\x88\x01\x01\x12\x19\n" +
 	"\x05price\x18\x04 \x01(\x03H\x02R\x05price\x88\x01\x01\x12\x16\n" +
@@ -1019,17 +1019,17 @@ const file_adservice_proto_rawDesc = "" +
 	"\f_descriptionB\b\n" +
 	"\x06_price\",\n" +
 	"\x10UpdateAdResponse\x12\x18\n" +
-	"\asuccess\x18\x01 \x01(\bR\asuccess\"'\n" +
-	"\x10PublishAdRequest\x12\x13\n" +
-	"\x05ad_id\x18\x01 \x01(\tR\x04adId\"-\n" +
+	"\asuccess\x18\x01 \x01(\bR\asuccess\"\"\n" +
+	"\x10PublishAdRequest\x12\x0e\n" +
+	"\x02id\x18\x01 \x01(\tR\x02id\"-\n" +
 	"\x11PublishAdResponse\x12\x18\n" +
-	"\asuccess\x18\x01 \x01(\bR\asuccess\"&\n" +
-	"\x0fRejectAdRequest\x12\x13\n" +
-	"\x05ad_id\x18\x01 \x01(\tR\x04adId\",\n" +
+	"\asuccess\x18\x01 \x01(\bR\asuccess\"!\n" +
+	"\x0fRejectAdRequest\x12\x0e\n" +
+	"\x02id\x18\x01 \x01(\tR\x02id\",\n" +
 	"\x10RejectAdResponse\x12\x18\n" +
-	"\asuccess\x18\x01 \x01(\bR\asuccess\"&\n" +
-	"\x0fDeleteAdRequest\x12\x13\n" +
-	"\x05ad_id\x18\x01 \x01(\tR\x04adId\",\n" +
+	"\asuccess\x18\x01 \x01(\bR\asuccess\"!\n" +
+	"\x0fDeleteAdRequest\x12\x0e\n" +
+	"\x02id\x18\x01 \x01(\tR\x02id\",\n" +
 	"\x10DeleteAdResponse\x12\x18\n" +
 	"\asuccess\x18\x01 \x01(\bR\asuccess\"2\n" +
 	"\x13DeleteAllAdsRequest\x12\x1b\n" +

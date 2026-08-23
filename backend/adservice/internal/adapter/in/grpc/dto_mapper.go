@@ -19,11 +19,11 @@ func MapCreateAdPbToDTO(req *ad_v1.CreateAdRequest, sellerID uuid.UUID) dto.Crea
 }
 
 func MapCreateAdDTOToPb(out dto.CreateAdOutput) *ad_v1.CreateAdResponse {
-	return &ad_v1.CreateAdResponse{AdId: out.AdID.String()}
+	return &ad_v1.CreateAdResponse{Id: out.AdID.String()}
 }
 
 func MapGetAdPbToDTO(req *ad_v1.GetAdRequest, sellerID uuid.UUID) dto.GetAdInput {
-	adID, _ := uuid.Parse(req.GetAdId())
+	adID, _ := uuid.Parse(req.GetId())
 	return dto.GetAdInput{
 		AdID:     adID,
 		SellerID: sellerID,
@@ -37,7 +37,7 @@ func mapAdDTOToPB(ad dto.Ad) *ad_v1.Ad {
 	}
 
 	return &ad_v1.Ad{
-		AdId:        ad.AdID.String(),
+		Id:          ad.AdID.String(),
 		SellerId:    ad.SellerID.String(),
 		Title:       ad.Title,
 		Description: ad.Description,
@@ -54,7 +54,7 @@ func MapGetAdDTOToPb(out dto.GetAdOutput) *ad_v1.GetAdResponse {
 }
 
 func MapUpdateAdPbToDTO(req *ad_v1.UpdateAdRequest, sellerID uuid.UUID) dto.UpdateAdInput {
-	adID, _ := uuid.Parse(req.GetAdId())
+	adID, _ := uuid.Parse(req.GetId())
 	return dto.UpdateAdInput{
 		AdID:        adID,
 		SellerID:    sellerID,
@@ -70,7 +70,7 @@ func MapUpdateAdDTOToPb(out dto.UpdateAdOutput) *ad_v1.UpdateAdResponse {
 }
 
 func MapPublishAdPbToDTO(req *ad_v1.PublishAdRequest) dto.PublishAdInput {
-	adID, _ := uuid.Parse(req.GetAdId())
+	adID, _ := uuid.Parse(req.GetId())
 	return dto.PublishAdInput{
 		AdID: adID,
 	}
@@ -81,7 +81,7 @@ func MapPublishAdDTOToPb(out dto.PublishAdOutput) *ad_v1.PublishAdResponse {
 }
 
 func MapRejectAdPbToDTO(req *ad_v1.RejectAdRequest) dto.RejectAdInput {
-	adID, _ := uuid.Parse(req.GetAdId())
+	adID, _ := uuid.Parse(req.GetId())
 	return dto.RejectAdInput{
 		AdID: adID,
 	}
@@ -92,7 +92,7 @@ func MapRejectAdDTOToPb(out dto.RejectAdOutput) *ad_v1.RejectAdResponse {
 }
 
 func MapDeleteAdPbToDTO(req *ad_v1.DeleteAdRequest, sellerID uuid.UUID) dto.DeleteAdInput {
-	adID, _ := uuid.Parse(req.GetAdId())
+	adID, _ := uuid.Parse(req.GetId())
 	return dto.DeleteAdInput{
 		AdID:     adID,
 		SellerID: sellerID,
