@@ -89,7 +89,7 @@ func TestLoginUC_Execute(t *testing.T) {
 				Email:    email,
 				Password: password,
 			},
-			mockBehaviour: func(a adapter, acc *model.Account) {
+			mockBehaviour: func(a adapter, _ *model.Account) {
 				a.account.EXPECT().
 					GetByEmail(mock.Anything, email).
 					Return(nil, pkgerrs.ErrObjectNotFound)
@@ -102,7 +102,7 @@ func TestLoginUC_Execute(t *testing.T) {
 				Email:    email,
 				Password: password,
 			},
-			mockBehaviour: func(a adapter, acc *model.Account) {
+			mockBehaviour: func(a adapter, _ *model.Account) {
 				a.account.EXPECT().
 					GetByEmail(mock.Anything, email).
 					Return(nil, errors.New("db error"))

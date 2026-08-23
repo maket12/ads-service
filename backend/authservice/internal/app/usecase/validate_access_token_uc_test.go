@@ -50,7 +50,7 @@ func TestValidateAccessTokenUC_Execute(t *testing.T) {
 			input: dto.ValidateAccessTokenInput{
 				AccessToken: tokenStr,
 			},
-			mockBehaviour: func(a adapter, accountID uuid.UUID, account *model.Account) {
+			mockBehaviour: func(a adapter, _ uuid.UUID, _ *model.Account) {
 				a.tokenGenerator.EXPECT().ValidateAccessToken(mock.Anything, tokenStr).Return(uuid.Nil, "", errors.New("malformed"))
 			},
 			expectErr: ucerrs.ErrInvalidAccessToken,
@@ -60,7 +60,7 @@ func TestValidateAccessTokenUC_Execute(t *testing.T) {
 			input: dto.ValidateAccessTokenInput{
 				AccessToken: tokenStr,
 			},
-			mockBehaviour: func(a adapter, accountID uuid.UUID, account *model.Account) {
+			mockBehaviour: func(a adapter, accountID uuid.UUID, _ *model.Account) {
 				a.tokenGenerator.EXPECT().ValidateAccessToken(mock.Anything, tokenStr).Return(accountID, roleName, nil)
 				a.account.EXPECT().GetByID(mock.Anything, accountID).Return(nil, pkgerrs.ErrObjectNotFound)
 			},
@@ -71,7 +71,7 @@ func TestValidateAccessTokenUC_Execute(t *testing.T) {
 			input: dto.ValidateAccessTokenInput{
 				AccessToken: tokenStr,
 			},
-			mockBehaviour: func(a adapter, accountID uuid.UUID, account *model.Account) {
+			mockBehaviour: func(a adapter, accountID uuid.UUID, _ *model.Account) {
 				a.tokenGenerator.EXPECT().ValidateAccessToken(mock.Anything, tokenStr).Return(accountID, roleName, nil)
 				a.account.EXPECT().GetByID(mock.Anything, accountID).Return(nil, errors.New("reset"))
 			},

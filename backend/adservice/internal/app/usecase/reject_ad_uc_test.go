@@ -46,7 +46,7 @@ func TestRejectAdUC_Execute(t *testing.T) {
 			input: func(adID uuid.UUID) dto.RejectAdInput {
 				return dto.RejectAdInput{AdID: adID}
 			},
-			mockBehaviour: func(a *mocks.MockAdRepository, adID uuid.UUID) {
+			mockBehaviour: func(a *mocks.MockAdRepository, _ uuid.UUID) {
 				a.EXPECT().Update(mock.Anything, mock.AnythingOfType("*model.Ad")).Return(nil)
 			},
 			expectErr: nil,
@@ -57,7 +57,7 @@ func TestRejectAdUC_Execute(t *testing.T) {
 			input: func(adID uuid.UUID) dto.RejectAdInput {
 				return dto.RejectAdInput{AdID: adID}
 			},
-			mockBehaviour: func(a *mocks.MockAdRepository, adID uuid.UUID) {},
+			mockBehaviour: func(_ *mocks.MockAdRepository, _ uuid.UUID) {},
 			expectErr:     ucerrs.ErrAdNotFound,
 		},
 		{
@@ -66,7 +66,7 @@ func TestRejectAdUC_Execute(t *testing.T) {
 			input: func(adID uuid.UUID) dto.RejectAdInput {
 				return dto.RejectAdInput{AdID: adID}
 			},
-			mockBehaviour: func(a *mocks.MockAdRepository, adID uuid.UUID) {},
+			mockBehaviour: func(_ *mocks.MockAdRepository, _ uuid.UUID) {},
 			expectErr:     ucerrs.ErrGetAdDB,
 		},
 		{
@@ -75,7 +75,7 @@ func TestRejectAdUC_Execute(t *testing.T) {
 			input: func(adID uuid.UUID) dto.RejectAdInput {
 				return dto.RejectAdInput{AdID: adID}
 			},
-			mockBehaviour: func(a *mocks.MockAdRepository, adID uuid.UUID) {},
+			mockBehaviour: func(_ *mocks.MockAdRepository, _ uuid.UUID) {},
 			expectErr:     ucerrs.ErrCannotReject,
 		},
 		{
@@ -84,7 +84,7 @@ func TestRejectAdUC_Execute(t *testing.T) {
 			input: func(adID uuid.UUID) dto.RejectAdInput {
 				return dto.RejectAdInput{AdID: adID}
 			},
-			mockBehaviour: func(a *mocks.MockAdRepository, adID uuid.UUID) {
+			mockBehaviour: func(a *mocks.MockAdRepository, _ uuid.UUID) {
 				a.EXPECT().Update(mock.Anything, mock.AnythingOfType("*model.Ad")).Return(errors.New("db error"))
 			},
 			expectErr: ucerrs.ErrUpdateAdDB,

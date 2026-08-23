@@ -74,7 +74,7 @@ func TestGetAdUC_Execute(t *testing.T) {
 			input: func(adID uuid.UUID) dto.GetAdInput {
 				return dto.GetAdInput{AdID: adID, SellerID: sellerID}
 			},
-			mockBehaviour: func(a adapter, adID uuid.UUID) {},
+			mockBehaviour: func(_ adapter, _ uuid.UUID) {},
 			expectErr:     ucerrs.ErrAdNotFound,
 		},
 		{
@@ -83,7 +83,7 @@ func TestGetAdUC_Execute(t *testing.T) {
 			input: func(adID uuid.UUID) dto.GetAdInput {
 				return dto.GetAdInput{AdID: adID, SellerID: sellerID}
 			},
-			mockBehaviour: func(a adapter, adID uuid.UUID) {},
+			mockBehaviour: func(_ adapter, _ uuid.UUID) {},
 			expectErr:     ucerrs.ErrGetAdDB,
 		},
 		{
@@ -92,7 +92,7 @@ func TestGetAdUC_Execute(t *testing.T) {
 			input: func(adID uuid.UUID) dto.GetAdInput {
 				return dto.GetAdInput{AdID: adID, SellerID: otherSellerID}
 			},
-			mockBehaviour: func(a adapter, adID uuid.UUID) {},
+			mockBehaviour: func(_ adapter, _ uuid.UUID) {},
 			expectErr:     ucerrs.ErrAccessDenied,
 		},
 		{

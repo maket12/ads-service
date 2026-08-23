@@ -59,7 +59,7 @@ func TestDeleteAllAdsUC_Execute(t *testing.T) {
 			buildAds: func() []*model.Ad {
 				return nil
 			},
-			mockBehaviour: func(a adapter, ads []*model.Ad) {},
+			mockBehaviour: func(_ adapter, _ []*model.Ad) {},
 			expectErr:     ucerrs.ErrListSellerAdsDB,
 		},
 		{

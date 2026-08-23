@@ -91,7 +91,7 @@ func TestRefreshSessionUC_Execute(t *testing.T) {
 				IP:           ip,
 				UserAgent:    ua,
 			},
-			mockBehaviour: func(a adapter, accountID, sessionID uuid.UUID, rawToken string) {
+			mockBehaviour: func(a adapter, _, _ uuid.UUID, _ string) {
 				a.tokenGenerator.EXPECT().
 					ValidateRefreshToken(mock.Anything, rawToken).
 					Return(uuid.Nil, uuid.Nil, errors.New("bad signature"))

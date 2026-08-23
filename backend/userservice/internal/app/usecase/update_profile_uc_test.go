@@ -90,7 +90,7 @@ func TestUpdateProfileUC_Execute(t *testing.T) {
 			input: dto.UpdateProfileInput{
 				AccountID: accountID,
 			},
-			mockBehaviour: func(a adapter, p *model.Profile) {
+			mockBehaviour: func(a adapter, _ *model.Profile) {
 				a.profile.EXPECT().
 					Get(mock.Anything, accountID).
 					Return(nil, pkgerrs.ErrObjectNotFound)
@@ -102,7 +102,7 @@ func TestUpdateProfileUC_Execute(t *testing.T) {
 			input: dto.UpdateProfileInput{
 				AccountID: accountID,
 			},
-			mockBehaviour: func(a adapter, p *model.Profile) {
+			mockBehaviour: func(a adapter, _ *model.Profile) {
 				a.profile.EXPECT().
 					Get(mock.Anything, accountID).
 					Return(nil, errors.New("db error"))

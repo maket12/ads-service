@@ -66,7 +66,7 @@ func TestCreateAdUC_Execute(t *testing.T) {
 				Price:       price,
 				Images:      images,
 			},
-			mockBehaviour: func(a adapter) {},
+			mockBehaviour: func(_ adapter) {},
 			expectErr:     ucerrs.ErrInvalidInput,
 		},
 		{

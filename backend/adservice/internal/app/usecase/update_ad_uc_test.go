@@ -75,7 +75,7 @@ func TestUpdateAdUC_Execute(t *testing.T) {
 			input: func(adID uuid.UUID) dto.UpdateAdInput {
 				return dto.UpdateAdInput{AdID: adID, SellerID: sellerID}
 			},
-			mockBehaviour: func(a adapter, adID uuid.UUID) {},
+			mockBehaviour: func(_ adapter, _ uuid.UUID) {},
 			expectErr:     ucerrs.ErrAdNotFound,
 		},
 		{
@@ -84,7 +84,7 @@ func TestUpdateAdUC_Execute(t *testing.T) {
 			input: func(adID uuid.UUID) dto.UpdateAdInput {
 				return dto.UpdateAdInput{AdID: adID, SellerID: sellerID}
 			},
-			mockBehaviour: func(a adapter, adID uuid.UUID) {},
+			mockBehaviour: func(_ adapter, _ uuid.UUID) {},
 			expectErr:     ucerrs.ErrGetAdDB,
 		},
 		{
@@ -93,7 +93,7 @@ func TestUpdateAdUC_Execute(t *testing.T) {
 			input: func(adID uuid.UUID) dto.UpdateAdInput {
 				return dto.UpdateAdInput{AdID: adID, SellerID: otherSellerID}
 			},
-			mockBehaviour: func(a adapter, adID uuid.UUID) {},
+			mockBehaviour: func(_ adapter, _ uuid.UUID) {},
 			expectErr:     ucerrs.ErrAccessDenied,
 		},
 		{
@@ -109,7 +109,7 @@ func TestUpdateAdUC_Execute(t *testing.T) {
 					Images:      newImages,
 				}
 			},
-			mockBehaviour: func(a adapter, adID uuid.UUID) {},
+			mockBehaviour: func(_ adapter, _ uuid.UUID) {},
 			expectErr:     ucerrs.ErrCannotUpdate,
 		},
 		{
@@ -125,7 +125,7 @@ func TestUpdateAdUC_Execute(t *testing.T) {
 					Images:      newImages,
 				}
 			},
-			mockBehaviour: func(a adapter, adID uuid.UUID) {
+			mockBehaviour: func(a adapter, _ uuid.UUID) {
 				a.ad.EXPECT().Update(mock.Anything, mock.AnythingOfType("*model.Ad")).Return(errors.New("db error"))
 			},
 			expectErr: ucerrs.ErrUpdateAdDB,

@@ -58,7 +58,7 @@ func TestDeleteAdUC_Execute(t *testing.T) {
 			input: func(adID uuid.UUID) dto.DeleteAdInput {
 				return dto.DeleteAdInput{AdID: adID, SellerID: sellerID}
 			},
-			mockBehaviour: func(a adapter, adID uuid.UUID) {},
+			mockBehaviour: func(_ adapter, _ uuid.UUID) {},
 			expectErr:     ucerrs.ErrAdNotFound,
 		},
 		{
@@ -67,7 +67,7 @@ func TestDeleteAdUC_Execute(t *testing.T) {
 			input: func(adID uuid.UUID) dto.DeleteAdInput {
 				return dto.DeleteAdInput{AdID: adID, SellerID: sellerID}
 			},
-			mockBehaviour: func(a adapter, adID uuid.UUID) {},
+			mockBehaviour: func(_ adapter, _ uuid.UUID) {},
 			expectErr:     ucerrs.ErrGetAdDB,
 		},
 		{
@@ -76,7 +76,7 @@ func TestDeleteAdUC_Execute(t *testing.T) {
 			input: func(adID uuid.UUID) dto.DeleteAdInput {
 				return dto.DeleteAdInput{AdID: adID, SellerID: otherSellerID}
 			},
-			mockBehaviour: func(a adapter, adID uuid.UUID) {},
+			mockBehaviour: func(_ adapter, _ uuid.UUID) {},
 			expectErr:     ucerrs.ErrAccessDenied,
 		},
 		{
@@ -89,7 +89,7 @@ func TestDeleteAdUC_Execute(t *testing.T) {
 			input: func(adID uuid.UUID) dto.DeleteAdInput {
 				return dto.DeleteAdInput{AdID: adID, SellerID: sellerID}
 			},
-			mockBehaviour: func(a adapter, adID uuid.UUID) {},
+			mockBehaviour: func(_ adapter, _ uuid.UUID) {},
 			expectErr:     ucerrs.ErrCannotDelete,
 		},
 		{
@@ -141,7 +141,7 @@ func TestDeleteAdUC_Execute(t *testing.T) {
 			input: func(adID uuid.UUID) dto.DeleteAdInput {
 				return dto.DeleteAdInput{AdID: adID, SellerID: sellerID}
 			},
-			mockBehaviour: func(a adapter, adID uuid.UUID) {
+			mockBehaviour: func(a adapter, _ uuid.UUID) {
 				a.ad.EXPECT().Update(mock.Anything, mock.AnythingOfType("*model.Ad")).Return(errors.New("db error"))
 			},
 			expectErr: ucerrs.ErrUpdateAdDB,

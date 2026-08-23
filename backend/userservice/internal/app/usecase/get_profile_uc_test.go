@@ -42,7 +42,7 @@ func TestGetProfileUC_Execute(t *testing.T) {
 		},
 		{
 			name: "Failure - profile not found",
-			mockBehaviour: func(a adapter, p *model.Profile) {
+			mockBehaviour: func(a adapter, _ *model.Profile) {
 				a.profile.EXPECT().
 					Get(mock.Anything, accountID).
 					Return(nil, pkgerrs.ErrObjectNotFound)
@@ -51,7 +51,7 @@ func TestGetProfileUC_Execute(t *testing.T) {
 		},
 		{
 			name: "Failure - db error on Get",
-			mockBehaviour: func(a adapter, p *model.Profile) {
+			mockBehaviour: func(a adapter, _ *model.Profile) {
 				a.profile.EXPECT().
 					Get(mock.Anything, accountID).
 					Return(nil, errors.New("db error"))

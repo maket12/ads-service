@@ -17,6 +17,8 @@ linters:
     - misspell
 
 linters-settings:
+  typecheck:
+    alias-analysis: true
   gofmt:
     simplify: true
 

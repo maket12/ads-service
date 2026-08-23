@@ -53,7 +53,7 @@ func TestVerifyEmailUC_Execute(t *testing.T) {
 			input: dto.VerifyEmailInput{
 				Token: rawTokenStr,
 			},
-			mockBehaviour: func(a adapter, account *model.Account, vToken *model.VerificationToken) {
+			mockBehaviour: func(a adapter, _ *model.Account, _ *model.VerificationToken) {
 				a.verificationToken.EXPECT().Get(mock.Anything, rawTokenStr).Return(nil, pkgerrs.ErrObjectNotFound)
 			},
 			expectErr: ucerrs.ErrVerificationTokenNotFound,
@@ -63,7 +63,7 @@ func TestVerifyEmailUC_Execute(t *testing.T) {
 			input: dto.VerifyEmailInput{
 				Token: rawTokenStr,
 			},
-			mockBehaviour: func(a adapter, account *model.Account, vToken *model.VerificationToken) {
+			mockBehaviour: func(a adapter, _ *model.Account, _ *model.VerificationToken) {
 				expired := model.RestoreVerificationToken(rawTokenStr, uuid.New(), time.Nanosecond, time.Now().Add(-1*time.Second))
 				a.verificationToken.EXPECT().Get(mock.Anything, rawTokenStr).Return(expired, nil)
 			},
@@ -74,7 +74,7 @@ func TestVerifyEmailUC_Execute(t *testing.T) {
 			input: dto.VerifyEmailInput{
 				Token: rawTokenStr,
 			},
-			mockBehaviour: func(a adapter, account *model.Account, vToken *model.VerificationToken) {
+			mockBehaviour: func(a adapter, _ *model.Account, vToken *model.VerificationToken) {
 				a.verificationToken.EXPECT().Get(mock.Anything, rawTokenStr).Return(vToken, nil)
 				a.account.EXPECT().GetByID(mock.Anything, vToken.AccountID()).Return(nil, pkgerrs.ErrObjectNotFound)
 			},
