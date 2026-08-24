@@ -7,11 +7,12 @@ package graph
 
 import (
 	"context"
-	"fmt"
 
+	"github.com/maket12/ads-service/backend/adservice/pkg/generated/ad_v1"
 	"github.com/maket12/ads-service/backend/authservice/pkg/generated/auth_v1"
 	authutils "github.com/maket12/ads-service/backend/authservice/pkg/utils"
 	"github.com/maket12/ads-service/backend/gateway/graph/model"
+	"github.com/maket12/ads-service/backend/userservice/pkg/generated/user_v1"
 	"github.com/vektah/gqlparser/v2/gqlerror"
 )
 
@@ -159,67 +160,220 @@ func (r *mutationResolver) Block(ctx context.Context, accountID string) (bool, e
 
 // Delete is the resolver for the delete field.
 func (r *mutationResolver) Delete(ctx context.Context, accountID string) (bool, error) {
-	panic(fmt.Errorf("not implemented: Delete - delete"))
+	if _, err := requireRole(ctx, RoleAdmin); err != nil {
+		return false, err
+	}
+
+	resp, err := r.AuthClient.DeleteAccount(ctx, &auth_v1.DeleteAccountRequest{
+		AccountId: accountID,
+	})
+	if err != nil {
+		return false, mapGRPCError(err)
+	}
+
+	return resp.Deleted, nil
 }
 
 // UpdateProfile is the resolver for the updateProfile field.
 func (r *mutationResolver) UpdateProfile(ctx context.Context, input model.UpdateProfileInput) (bool, error) {
-	panic(fmt.Errorf("not implemented: UpdateProfile - updateProfile"))
+	if _, err := requireAuth(ctx); err != nil {
+		return false, err
+	}
+
+	resp, err := r.UserClient.UpdateProfile(ctx, &user_v1.UpdateProfileRequest{
+		FirstName: input.FirstName,
+		LastName:  input.LastName,
+		Phone:     input.Phone,
+		AvatarUrl: input.AvatarURL,
+		Bio:       input.Bio,
+	})
+	if err != nil {
+		return false, mapGRPCError(err)
+	}
+
+	return resp.Success, nil
 }
 
 // CreateAd is the resolver for the createAd field.
 func (r *mutationResolver) CreateAd(ctx context.Context, input model.CreateAdInput) (string, error) {
-	panic(fmt.Errorf("not implemented: CreateAd - createAd"))
+	if _, err := requireAuth(ctx); err != nil {
+		return "", err
+	}
+
+	resp, err := r.AdClient.CreateAd(ctx, &ad_v1.CreateAdRequest{
+		Title:       input.Title,
+		Description: input.Description,
+		Price:       int64(input.Price),
+		Images:      input.Images,
+	})
+	if err != nil {
+		return "", mapGRPCError(err)
+	}
+
+	return resp.Id, nil
 }
 
 // UpdateAd is the resolver for the updateAd field.
 func (r *mutationResolver) UpdateAd(ctx context.Context, input model.UpdateAdInput) (bool, error) {
-	panic(fmt.Errorf("not implemented: UpdateAd - updateAd"))
+	if _, err := requireAuth(ctx); err != nil {
+		return false, err
+	}
+
+	resp, err := r.AdClient.UpdateAd(ctx, &ad_v1.UpdateAdRequest{
+		Id:          input.AdID,
+		Title:       input.Title,
+		Description: input.Description,
+		Price:       mapFloatPtrToInt(input.Price),
+		Images:      input.Images,
+	})
+	if err != nil {
+		return false, mapGRPCError(err)
+	}
+
+	return resp.Success, nil
 }
 
 // Publish is the resolver for the publish field.
 func (r *mutationResolver) Publish(ctx context.Context, adID string) (bool, error) {
-	panic(fmt.Errorf("not implemented: Publish - publish"))
+	if _, err := requireRole(ctx, RoleAdmin); err != nil {
+		return false, err
+	}
+
+	resp, err := r.AdClient.PublishAd(ctx, &ad_v1.PublishAdRequest{Id: adID})
+	if err != nil {
+		return false, mapGRPCError(err)
+	}
+
+	return resp.Success, nil
 }
 
 // Reject is the resolver for the reject field.
 func (r *mutationResolver) Reject(ctx context.Context, adID string) (bool, error) {
-	panic(fmt.Errorf("not implemented: Reject - reject"))
+	if _, err := requireRole(ctx, RoleAdmin); err != nil {
+		return false, err
+	}
+
+	resp, err := r.AdClient.RejectAd(ctx, &ad_v1.RejectAdRequest{Id: adID})
+	if err != nil {
+		return false, mapGRPCError(err)
+	}
+
+	return resp.Success, nil
 }
 
 // DeleteAd is the resolver for the deleteAd field.
 func (r *mutationResolver) DeleteAd(ctx context.Context, adID string) (bool, error) {
-	panic(fmt.Errorf("not implemented: DeleteAd - deleteAd"))
+	if _, err := requireAuth(ctx); err != nil {
+		return false, err
+	}
+
+	resp, err := r.AdClient.DeleteAd(ctx, &ad_v1.DeleteAdRequest{Id: adID})
+	if err != nil {
+		return false, mapGRPCError(err)
+	}
+
+	return resp.Success, nil
 }
 
 // DeleteAllAds is the resolver for the deleteAllAds field.
 func (r *mutationResolver) DeleteAllAds(ctx context.Context, sellerID string) (bool, error) {
-	panic(fmt.Errorf("not implemented: DeleteAllAds - deleteAllAds"))
+	if _, err := requireRole(ctx, RoleAdmin); err != nil {
+		return false, err
+	}
+
+	resp, err := r.AdClient.DeleteAllAds(ctx, &ad_v1.DeleteAllAdsRequest{
+		SellerId: sellerID,
+	})
+	if err != nil {
+		return false, mapGRPCError(err)
+	}
+
+	return resp.Success, nil
 }
 
 // Me is the resolver for the me field.
 func (r *queryResolver) Me(ctx context.Context) (*model.User, error) {
-	panic(fmt.Errorf("not implemented: Me - me"))
+	accountID, err := requireAuth(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	role := model.UserRole(authutils.GetAccountRoleFromCtx(ctx))
+
+	resp, err := r.UserClient.GetProfile(ctx, &user_v1.GetProfileRequest{})
+	if err != nil {
+		return nil, mapGRPCError(err)
+	}
+
+	return &model.User{
+		ID:        accountID,
+		Role:      role,
+		FirstName: resp.FirstName,
+		LastName:  resp.LastName,
+		Phone:     resp.Phone,
+		AvatarURL: resp.AvatarUrl,
+		Bio:       resp.Bio,
+		UpdatedAt: authutils.VPtr(resp.UpdatedAt.String()),
+	}, nil
 }
 
 // Ad is the resolver for the ad field.
 func (r *queryResolver) Ad(ctx context.Context, adID string) (*model.Ad, error) {
-	panic(fmt.Errorf("not implemented: Ad - ad"))
+	if _, err := requireAuth(ctx); err != nil {
+		return nil, err
+	}
+
+	resp, err := r.AdClient.GetAd(ctx, &ad_v1.GetAdRequest{Id: adID})
+	if err != nil {
+		return nil, mapGRPCError(err)
+	}
+
+	return mapAdGRPCToGateway(resp.Ad), nil
 }
 
 // Ads is the resolver for the ads field.
 func (r *queryResolver) Ads(ctx context.Context) ([]*model.Ad, error) {
-	panic(fmt.Errorf("not implemented: Ads - ads"))
+	if _, err := requireAuth(ctx); err != nil {
+		return nil, err
+	}
+
+	resp, err := r.AdClient.ListAds(ctx, &ad_v1.ListAdsRequest{})
+	if err != nil {
+		return nil, mapGRPCError(err)
+	}
+
+	return mapAdListGRPCToGateway(resp.Ads), nil
 }
 
 // AllAds is the resolver for the allAds field.
 func (r *queryResolver) AllAds(ctx context.Context, limit int, offset int) ([]*model.Ad, error) {
-	panic(fmt.Errorf("not implemented: AllAds - allAds"))
+	if _, err := requireRole(ctx, RoleAdmin); err != nil {
+		return nil, err
+	}
+
+	resp, err := r.AdClient.ListAllAds(ctx, &ad_v1.ListAllAdsRequest{
+		Limit:  int32(limit),
+		Offset: int32(offset),
+	})
+	if err != nil {
+		return nil, mapGRPCError(err)
+	}
+
+	return mapAdListGRPCToGateway(resp.Ads), nil
 }
 
 // ValidateAccessToken is the resolver for the validateAccessToken field.
 func (r *queryResolver) ValidateAccessToken(ctx context.Context, token string) (*model.ValidateAccessTokenResponse, error) {
-	panic(fmt.Errorf("not implemented: ValidateAccessToken - validateAccessToken"))
+	resp, err := r.AuthClient.ValidateAccessToken(ctx, &auth_v1.ValidateAccessTokenRequest{
+		AccessToken: token,
+	})
+	if err != nil {
+		return nil, mapGRPCError(err)
+	}
+	return &model.ValidateAccessTokenResponse{
+		AccountID: resp.AccountId,
+		Role:      model.UserRole(resp.Role),
+	}, nil
 }
 
 // Mutation returns MutationResolver implementation.
