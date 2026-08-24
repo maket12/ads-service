@@ -11,7 +11,7 @@ import (
 	ucerrs "github.com/maket12/ads-service/backend/adservice/internal/app/errs"
 	"github.com/maket12/ads-service/backend/adservice/internal/app/usecase"
 	"github.com/maket12/ads-service/backend/adservice/internal/domain/port/mocks"
-	"github.com/maket12/ads-service/userservice/pkg/utils"
+	"github.com/maket12/ads-service/backend/adservice/pkg/utils"
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
