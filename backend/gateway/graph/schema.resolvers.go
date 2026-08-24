@@ -10,8 +10,41 @@ import (
 	"fmt"
 
 	"github.com/maket12/ads-service/backend/authservice/pkg/generated/auth_v1"
+	authutils "github.com/maket12/ads-service/backend/authservice/pkg/utils"
 	"github.com/maket12/ads-service/backend/gateway/graph/model"
+	"github.com/vektah/gqlparser/v2/gqlerror"
 )
+
+var (
+	RoleUser  = "USER"
+	RoleAdmin = "ADMIN"
+)
+
+func requireAuth(ctx context.Context) (string, error) {
+	accountID, ok := authutils.GetAccountIDFromCtx(ctx)
+	if !ok || accountID == "" {
+		return "", &gqlerror.Error{
+			Message:    "authentication required",
+			Extensions: map[string]interface{}{"code": "UNAUTHENTICATED"},
+		}
+	}
+	return accountID, nil
+}
+
+func requireRole(ctx context.Context, role string) (string, error) {
+	accountID, err := requireAuth(ctx)
+	if err != nil {
+		return "", err
+	}
+	actualRole := authutils.GetAccountRoleFromCtx(ctx)
+	if actualRole != role {
+		return "", &gqlerror.Error{
+			Message:    "forbidden",
+			Extensions: map[string]interface{}{"code": "FORBIDDEN"},
+		}
+	}
+	return accountID, nil
+}
 
 // Register is the resolver for the register field.
 func (r *mutationResolver) Register(ctx context.Context, input model.RegisterInput) (string, error) {
@@ -73,6 +106,10 @@ func (r *mutationResolver) RefreshSession(ctx context.Context, input model.Refre
 
 // AssignRole is the resolver for the assignRole field.
 func (r *mutationResolver) AssignRole(ctx context.Context, accountID string, role model.UserRole) (bool, error) {
+	if _, err := requireRole(ctx, RoleAdmin); err != nil {
+		return false, err
+	}
+
 	resp, err := r.AuthClient.AssignRole(ctx, &auth_v1.AssignRoleRequest{
 		AccountId: accountID,
 		Role:      role.String(),
@@ -80,22 +117,44 @@ func (r *mutationResolver) AssignRole(ctx context.Context, accountID string, rol
 	if err != nil {
 		return false, mapGRPCError(err)
 	}
+
 	return resp.Assigned, nil
 }
 
 // SendVerification is the resolver for the sendVerification field.
 func (r *mutationResolver) SendVerification(ctx context.Context, accountID string) (bool, error) {
-	panic(fmt.Errorf("not implemented: SendVerification - sendVerification"))
+	resp, err := r.AuthClient.SendVerification(ctx, &auth_v1.SendVerificationRequest{
+		AccountId: accountID,
+	})
+	if err != nil {
+		return false, mapGRPCError(err)
+	}
+	return resp.Sent, nil
 }
 
 // VerifyEmail is the resolver for the verifyEmail field.
 func (r *mutationResolver) VerifyEmail(ctx context.Context, token string) (bool, error) {
-	panic(fmt.Errorf("not implemented: VerifyEmail - verifyEmail"))
+	resp, err := r.AuthClient.VerifyEmail(ctx, &auth_v1.VerifyEmailRequest{Token: token})
+	if err != nil {
+		return false, mapGRPCError(err)
+	}
+	return resp.Verified, nil
 }
 
 // Block is the resolver for the block field.
 func (r *mutationResolver) Block(ctx context.Context, accountID string) (bool, error) {
-	panic(fmt.Errorf("not implemented: Block - block"))
+	if _, err := requireRole(ctx, RoleAdmin); err != nil {
+		return false, err
+	}
+
+	resp, err := r.AuthClient.BlockAccount(ctx, &auth_v1.BlockAccountRequest{
+		AccountId: accountID,
+	})
+	if err != nil {
+		return false, mapGRPCError(err)
+	}
+
+	return resp.Blocked, nil
 }
 
 // Delete is the resolver for the delete field.

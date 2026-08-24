@@ -4,7 +4,7 @@ import (
 	"context"
 	"errors"
 
-	pkgerrs "github.com/maket12/ads-service/adservice/pkg/errs"
+	pkgerrs "github.com/maket12/ads-service/backend/authservice/pkg/errs"
 
 	"github.com/google/uuid"
 	"google.golang.org/grpc/metadata"
@@ -79,4 +79,15 @@ func SetAccountIDInCtx(ctx context.Context, accountID string) context.Context {
 // SetAccountRoleInCtx Sets account role in context (gateway)
 func SetAccountRoleInCtx(ctx context.Context, role string) context.Context {
 	return context.WithValue(ctx, AccountRoleKey, role)
+}
+
+// GetAccountIDFromCtx Returns account id from context (gateway)
+func GetAccountIDFromCtx(ctx context.Context) (string, bool) {
+	id, ok := ctx.Value(AccountIDKey).(string)
+	return id, ok
+}
+
+// GetAccountRoleFromCtx Returns account role from context (gateway)
+func GetAccountRoleFromCtx(ctx context.Context) string {
+	return ctx.Value(AccountRoleKey).(string)
 }
