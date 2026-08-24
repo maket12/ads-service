@@ -7,17 +7,19 @@ WORKDIR /app
 COPY go.mod go.sum ./
 RUN go mod download
 
-COPY gateway/ ./gateway/
-COPY pkg/ ./pkg/
+COPY graph ./graph/
+COPY internal/ ./internal/
+COPY "cmd/" "./cmd/"
 
-RUN CGO_ENABLED=0 GOOS=linux go build -o /app/bin/gateway ./gateway/cmd/app/server.go
+RUN CGO_ENABLED=0 GOOS=linux go build -o /app/gateway ./cmd/app/server.go
 
 FROM alpine:latest
 WORKDIR /app
 
 RUN apk --no-cache add ca-certificates
 
-COPY --from=builder /app/bin/gateway .
+COPY --from=builder /app/gateway /app/gateway
 
 EXPOSE 8080
-CMD ["./gateway"]
+
+CMD ["/app/gateway"]

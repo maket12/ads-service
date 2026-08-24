@@ -18,19 +18,3 @@ models:
   ID:
     model:
       - github.com/99designs/gqlgen/graphql.ID
-
-#  User:
-#    model:
-#      - ads/pkg/generated/user_v1.GetProfileResponse
-
-#  LoginResponse:
-#    model:
-#      - ads/pkg/generated/auth_v1.LoginResponse
-#
-#  RefreshSessionResponse:
-#    model:
-#      - ads/pkg/generated/auth_v1.RefreshSessionResponse
-#
-#  Ad:
-#    model:
-#      - ads/pkg/generated/ad_v1.GetAdResponse

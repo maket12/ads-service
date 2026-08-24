@@ -7,257 +7,373 @@ package graph
 
 import (
 	"context"
-	"fmt"
 
 	"github.com/maket12/ads-service/backend/adservice/pkg/generated/ad_v1"
 	"github.com/maket12/ads-service/backend/authservice/pkg/generated/auth_v1"
-	"github.com/maket12/ads-service/backend/authservice/pkg/utils"
+	authutils "github.com/maket12/ads-service/backend/authservice/pkg/utils"
 	"github.com/maket12/ads-service/backend/gateway/graph/model"
 	"github.com/maket12/ads-service/backend/userservice/pkg/generated/user_v1"
+	"github.com/vektah/gqlparser/v2/gqlerror"
 )
+
+var (
+	RoleUser  = "USER"
+	RoleAdmin = "ADMIN"
+)
+
+func requireAuth(ctx context.Context) (string, error) {
+	accountID, ok := authutils.GetAccountIDFromCtx(ctx)
+	if !ok || accountID == "" {
+		return "", &gqlerror.Error{
+			Message:    "authentication required",
+			Extensions: map[string]interface{}{"code": "UNAUTHENTICATED"},
+		}
+	}
+	return accountID, nil
+}
+
+func requireRole(ctx context.Context, role string) (string, error) {
+	accountID, err := requireAuth(ctx)
+	if err != nil {
+		return "", err
+	}
+	actualRole := authutils.GetAccountRoleFromCtx(ctx)
+	if actualRole != role {
+		return "", &gqlerror.Error{
+			Message:    "forbidden",
+			Extensions: map[string]interface{}{"code": "FORBIDDEN"},
+		}
+	}
+	return accountID, nil
+}
 
 // Register is the resolver for the register field.
 func (r *mutationResolver) Register(ctx context.Context, input model.RegisterInput) (string, error) {
 	resp, err := r.AuthClient.Register(ctx, &auth_v1.RegisterRequest{
-		Email:    email,
-		Password: password,
+		Email:    input.Email,
+		Password: input.Password,
 	})
 	if err != nil {
-		return "", err
+		return "", mapGRPCError(err)
 	}
-	return resp.GetAccountId(), nil
+	return resp.AccountId, nil
 }
 
 // Login is the resolver for the login field.
 func (r *mutationResolver) Login(ctx context.Context, input model.LoginInput) (*model.LoginResponse, error) {
 	resp, err := r.AuthClient.Login(ctx, &auth_v1.LoginRequest{
-		Email:     email,
-		Password:  password,
-		Ip:        ip,
-		UserAgent: userAgent,
+		Email:     input.Email,
+		Password:  input.Password,
+		Ip:        input.IP,
+		UserAgent: input.UserAgent,
 	})
 	if err != nil {
-		return nil, err
+		return nil, mapGRPCError(err)
 	}
-	return &auth_v1.LoginResponse{
-		AccessToken:  resp.GetAccessToken(),
-		RefreshToken: resp.GetRefreshToken(),
+
+	return &model.LoginResponse{
+		AccessToken:  resp.AccessToken,
+		RefreshToken: resp.RefreshToken,
 	}, nil
 }
 
 // Logout is the resolver for the logout field.
 func (r *mutationResolver) Logout(ctx context.Context, refreshToken string) (bool, error) {
-	resp, err := r.AuthClient.Logout(
-		ctx, &auth_v1.LogoutRequest{RefreshToken: refreshToken},
-	)
+	resp, err := r.AuthClient.Logout(ctx, &auth_v1.LogoutRequest{
+		RefreshToken: refreshToken,
+	})
 	if err != nil {
-		return false, err
+		return false, mapGRPCError(err)
 	}
-	return resp.GetLogout(), nil
+	return resp.Logout, nil
 }
 
 // RefreshSession is the resolver for the refreshSession field.
 func (r *mutationResolver) RefreshSession(ctx context.Context, input model.RefreshSessionInput) (*model.RefreshSessionResponse, error) {
 	resp, err := r.AuthClient.RefreshSession(ctx, &auth_v1.RefreshSessionRequest{
-		OldRefreshToken: oldRefreshToken,
-		Ip:              ip,
-		UserAgent:       userAgent,
+		OldRefreshToken: input.OldRefreshToken,
+		Ip:              input.IP,
+		UserAgent:       input.UserAgent,
 	})
 	if err != nil {
-		return nil, err
+		return nil, mapGRPCError(err)
 	}
-	return &auth_v1.RefreshSessionResponse{
-		AccessToken:  resp.GetAccessToken(),
-		RefreshToken: resp.GetRefreshToken(),
+
+	return &model.RefreshSessionResponse{
+		AccessToken:  resp.AccessToken,
+		RefreshToken: resp.RefreshToken,
 	}, nil
 }
 
 // AssignRole is the resolver for the assignRole field.
 func (r *mutationResolver) AssignRole(ctx context.Context, accountID string, role model.UserRole) (bool, error) {
-	resp, err := r.AuthClient.AssignRole(ctx, &auth_v1.AssignRoleRequest{
-		AccountId: accountID,
-		Role:      role,
-	})
-	if err != nil {
+	if _, err := requireRole(ctx, RoleAdmin); err != nil {
 		return false, err
 	}
-	return resp.GetAssign(), nil
+
+	resp, err := r.AuthClient.AssignRole(ctx, &auth_v1.AssignRoleRequest{
+		AccountId: accountID,
+		Role:      role.String(),
+	})
+	if err != nil {
+		return false, mapGRPCError(err)
+	}
+
+	return resp.Assigned, nil
 }
 
 // SendVerification is the resolver for the sendVerification field.
 func (r *mutationResolver) SendVerification(ctx context.Context, accountID string) (bool, error) {
-	panic(fmt.Errorf("not implemented: SendVerification - sendVerification"))
+	resp, err := r.AuthClient.SendVerification(ctx, &auth_v1.SendVerificationRequest{
+		AccountId: accountID,
+	})
+	if err != nil {
+		return false, mapGRPCError(err)
+	}
+	return resp.Sent, nil
 }
 
 // VerifyEmail is the resolver for the verifyEmail field.
 func (r *mutationResolver) VerifyEmail(ctx context.Context, token string) (bool, error) {
-	panic(fmt.Errorf("not implemented: VerifyEmail - verifyEmail"))
+	resp, err := r.AuthClient.VerifyEmail(ctx, &auth_v1.VerifyEmailRequest{Token: token})
+	if err != nil {
+		return false, mapGRPCError(err)
+	}
+	return resp.Verified, nil
 }
 
 // Block is the resolver for the block field.
 func (r *mutationResolver) Block(ctx context.Context, accountID string) (bool, error) {
-	panic(fmt.Errorf("not implemented: Block - block"))
+	if _, err := requireRole(ctx, RoleAdmin); err != nil {
+		return false, err
+	}
+
+	resp, err := r.AuthClient.BlockAccount(ctx, &auth_v1.BlockAccountRequest{
+		AccountId: accountID,
+	})
+	if err != nil {
+		return false, mapGRPCError(err)
+	}
+
+	return resp.Blocked, nil
 }
 
 // Delete is the resolver for the delete field.
 func (r *mutationResolver) Delete(ctx context.Context, accountID string) (bool, error) {
-	panic(fmt.Errorf("not implemented: Delete - delete"))
+	if _, err := requireRole(ctx, RoleAdmin); err != nil {
+		return false, err
+	}
+
+	resp, err := r.AuthClient.DeleteAccount(ctx, &auth_v1.DeleteAccountRequest{
+		AccountId: accountID,
+	})
+	if err != nil {
+		return false, mapGRPCError(err)
+	}
+
+	return resp.Deleted, nil
 }
 
 // UpdateProfile is the resolver for the updateProfile field.
 func (r *mutationResolver) UpdateProfile(ctx context.Context, input model.UpdateProfileInput) (bool, error) {
-	idVal := ctx.Value(utils.AccountIDKey)
-	if idVal == nil {
-		return false, fmt.Errorf("unauthorized")
-	}
-
-	outCtx := utils.PackAccountIDForGRPC(ctx, idVal.(string))
-
-	resp, err := r.UserClient.UpdateProfile(outCtx, &user_v1.UpdateProfileRequest{
-		FirstName: firstName,
-		LastName:  lastName,
-		Phone:     phone,
-		AvatarUrl: avatarURL,
-		Bio:       bio,
-	})
-	if err != nil {
+	if _, err := requireAuth(ctx); err != nil {
 		return false, err
 	}
 
-	return resp.GetSuccess(), nil
+	resp, err := r.UserClient.UpdateProfile(ctx, &user_v1.UpdateProfileRequest{
+		FirstName: input.FirstName,
+		LastName:  input.LastName,
+		Phone:     input.Phone,
+		AvatarUrl: input.AvatarURL,
+		Bio:       input.Bio,
+	})
+	if err != nil {
+		return false, mapGRPCError(err)
+	}
+
+	return resp.Success, nil
 }
 
 // CreateAd is the resolver for the createAd field.
 func (r *mutationResolver) CreateAd(ctx context.Context, input model.CreateAdInput) (string, error) {
-	idVal := ctx.Value(utils.AccountIDKey)
-	if idVal == nil {
-		return "", fmt.Errorf("unauthorized")
-	}
-
-	outCtx := utils.PackAccountIDForGRPC(ctx, idVal.(string))
-
-	var imagesFixed []string
-	if len(images) != 0 {
-		for i := range images {
-			if images[i] != nil {
-				imagesFixed[i] = *images[i]
-			}
-		}
-	}
-
-	resp, err := r.AdClient.CreateAd(outCtx, &ad_v1.CreateAdRequest{
-		Title:       title,
-		Description: description,
-		Price:       int64(price),
-		Images:      imagesFixed,
-	})
-	if err != nil {
+	if _, err := requireAuth(ctx); err != nil {
 		return "", err
 	}
 
-	return resp.GetAdId(), nil
+	resp, err := r.AdClient.CreateAd(ctx, &ad_v1.CreateAdRequest{
+		Title:       input.Title,
+		Description: input.Description,
+		Price:       int64(input.Price),
+		Images:      input.Images,
+	})
+	if err != nil {
+		return "", mapGRPCError(err)
+	}
+
+	return resp.Id, nil
 }
 
 // UpdateAd is the resolver for the updateAd field.
 func (r *mutationResolver) UpdateAd(ctx context.Context, input model.UpdateAdInput) (bool, error) {
-	idVal := ctx.Value(utils.AccountIDKey)
-	if idVal == nil {
-		return false, fmt.Errorf("unauthorized")
-	}
-
-	outCtx := utils.PackAccountIDForGRPC(ctx, idVal.(string))
-
-	var priceFixed int64
-	if price != nil {
-		priceFixed = int64(*price)
-	}
-
-	var imagesFixed []string
-	if len(images) != 0 {
-		for i := range images {
-			if images[i] != nil {
-				imagesFixed[i] = *images[i]
-			}
-		}
-	}
-
-	resp, err := r.AdClient.UpdateAd(outCtx, &ad_v1.UpdateAdRequest{
-		AdId:        adID,
-		Title:       title,
-		Description: description,
-		Price:       &priceFixed,
-		Images:      imagesFixed,
-	})
-	if err != nil {
+	if _, err := requireAuth(ctx); err != nil {
 		return false, err
 	}
 
-	return resp.GetSuccess(), nil
+	resp, err := r.AdClient.UpdateAd(ctx, &ad_v1.UpdateAdRequest{
+		Id:          input.AdID,
+		Title:       input.Title,
+		Description: input.Description,
+		Price:       mapFloatPtrToInt(input.Price),
+		Images:      input.Images,
+	})
+	if err != nil {
+		return false, mapGRPCError(err)
+	}
+
+	return resp.Success, nil
 }
 
 // Publish is the resolver for the publish field.
 func (r *mutationResolver) Publish(ctx context.Context, adID string) (bool, error) {
-	panic(fmt.Errorf("not implemented: Publish - publish"))
+	if _, err := requireRole(ctx, RoleAdmin); err != nil {
+		return false, err
+	}
+
+	resp, err := r.AdClient.PublishAd(ctx, &ad_v1.PublishAdRequest{Id: adID})
+	if err != nil {
+		return false, mapGRPCError(err)
+	}
+
+	return resp.Success, nil
 }
 
 // Reject is the resolver for the reject field.
 func (r *mutationResolver) Reject(ctx context.Context, adID string) (bool, error) {
-	panic(fmt.Errorf("not implemented: Reject - reject"))
+	if _, err := requireRole(ctx, RoleAdmin); err != nil {
+		return false, err
+	}
+
+	resp, err := r.AdClient.RejectAd(ctx, &ad_v1.RejectAdRequest{Id: adID})
+	if err != nil {
+		return false, mapGRPCError(err)
+	}
+
+	return resp.Success, nil
 }
 
 // DeleteAd is the resolver for the deleteAd field.
 func (r *mutationResolver) DeleteAd(ctx context.Context, adID string) (bool, error) {
-	panic(fmt.Errorf("not implemented: DeleteAd - deleteAd"))
+	if _, err := requireAuth(ctx); err != nil {
+		return false, err
+	}
+
+	resp, err := r.AdClient.DeleteAd(ctx, &ad_v1.DeleteAdRequest{Id: adID})
+	if err != nil {
+		return false, mapGRPCError(err)
+	}
+
+	return resp.Success, nil
 }
 
 // DeleteAllAds is the resolver for the deleteAllAds field.
 func (r *mutationResolver) DeleteAllAds(ctx context.Context, sellerID string) (bool, error) {
-	panic(fmt.Errorf("not implemented: DeleteAllAds - deleteAllAds"))
+	if _, err := requireRole(ctx, RoleAdmin); err != nil {
+		return false, err
+	}
+
+	resp, err := r.AdClient.DeleteAllAds(ctx, &ad_v1.DeleteAllAdsRequest{
+		SellerId: sellerID,
+	})
+	if err != nil {
+		return false, mapGRPCError(err)
+	}
+
+	return resp.Success, nil
 }
 
 // Me is the resolver for the me field.
 func (r *queryResolver) Me(ctx context.Context) (*model.User, error) {
-	idVal := ctx.Value(utils.AccountIDKey)
-	if idVal == nil {
-		return nil, fmt.Errorf("unauthorized")
+	accountID, err := requireAuth(ctx)
+	if err != nil {
+		return nil, err
 	}
 
-	roleVal := ctx.Value(utils.AccountRoleKey)
-	if roleVal == nil {
-		return nil, fmt.Errorf("unauthorized")
+	role := model.UserRole(authutils.GetAccountRoleFromCtx(ctx))
+
+	resp, err := r.UserClient.GetProfile(ctx, &user_v1.GetProfileRequest{})
+	if err != nil {
+		return nil, mapGRPCError(err)
 	}
 
-	outCtx := utils.PackAccountIDForGRPC(ctx, idVal.(string))
-	outCtx = utils.PackAccountRoleForGRPC(outCtx, roleVal.(string))
-
-	return r.UserClient.GetProfile(outCtx, &user_v1.GetProfileRequest{})
+	return &model.User{
+		ID:        accountID,
+		Role:      role,
+		FirstName: resp.FirstName,
+		LastName:  resp.LastName,
+		Phone:     resp.Phone,
+		AvatarURL: resp.AvatarUrl,
+		Bio:       resp.Bio,
+		UpdatedAt: authutils.VPtr(resp.UpdatedAt.String()),
+	}, nil
 }
 
 // Ad is the resolver for the ad field.
 func (r *queryResolver) Ad(ctx context.Context, adID string) (*model.Ad, error) {
-	idVal := ctx.Value(utils.AccountIDKey)
-	if idVal == nil {
-		return nil, fmt.Errorf("unauthorized")
+	if _, err := requireAuth(ctx); err != nil {
+		return nil, err
 	}
 
-	outCtx := utils.PackAccountIDForGRPC(ctx, idVal.(string))
+	resp, err := r.AdClient.GetAd(ctx, &ad_v1.GetAdRequest{Id: adID})
+	if err != nil {
+		return nil, mapGRPCError(err)
+	}
 
-	return r.AdClient.GetAd(outCtx, &ad_v1.GetAdRequest{AdId: adID})
+	return mapAdGRPCToGateway(resp.Ad), nil
 }
 
 // Ads is the resolver for the ads field.
 func (r *queryResolver) Ads(ctx context.Context) ([]*model.Ad, error) {
-	panic(fmt.Errorf("not implemented: Ads - ads"))
+	if _, err := requireAuth(ctx); err != nil {
+		return nil, err
+	}
+
+	resp, err := r.AdClient.ListAds(ctx, &ad_v1.ListAdsRequest{})
+	if err != nil {
+		return nil, mapGRPCError(err)
+	}
+
+	return mapAdListGRPCToGateway(resp.Ads), nil
 }
 
 // AllAds is the resolver for the allAds field.
 func (r *queryResolver) AllAds(ctx context.Context, limit int, offset int) ([]*model.Ad, error) {
-	panic(fmt.Errorf("not implemented: AllAds - allAds"))
+	if _, err := requireRole(ctx, RoleAdmin); err != nil {
+		return nil, err
+	}
+
+	resp, err := r.AdClient.ListAllAds(ctx, &ad_v1.ListAllAdsRequest{
+		Limit:  int32(limit),
+		Offset: int32(offset),
+	})
+	if err != nil {
+		return nil, mapGRPCError(err)
+	}
+
+	return mapAdListGRPCToGateway(resp.Ads), nil
 }
 
 // ValidateAccessToken is the resolver for the validateAccessToken field.
 func (r *queryResolver) ValidateAccessToken(ctx context.Context, token string) (*model.ValidateAccessTokenResponse, error) {
-	panic(fmt.Errorf("not implemented: ValidateAccessToken - validateAccessToken"))
+	resp, err := r.AuthClient.ValidateAccessToken(ctx, &auth_v1.ValidateAccessTokenRequest{
+		AccessToken: token,
+	})
+	if err != nil {
+		return nil, mapGRPCError(err)
+	}
+	return &model.ValidateAccessTokenResponse{
+		AccountID: resp.AccountId,
+		Role:      model.UserRole(resp.Role),
+	}, nil
 }
 
 // Mutation returns MutationResolver implementation.
