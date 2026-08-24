@@ -17,8 +17,8 @@ import (
 )
 
 var (
-	RoleUser  = "USER"
-	RoleAdmin = "ADMIN"
+	RoleUser  = "user"
+	RoleAdmin = "admin"
 )
 
 func requireAuth(ctx context.Context) (string, error) {
@@ -386,3 +386,40 @@ type (
 	mutationResolver struct{ *Resolver }
 	queryResolver    struct{ *Resolver }
 )
+
+// !!! WARNING !!!
+// The code below was going to be deleted when updating resolvers. It has been copied here so you have
+// one last chance to move it out of harms way if you want. There are two reasons this happens:
+//  - When renaming or deleting a resolver the old code will be put in here. You can safely delete
+//    it when you're done.
+//  - You have helper methods in this file. Move them out to keep these resolver files clean.
+/*
+	var (
+	RoleUser  = "USER"
+	RoleAdmin = "ADMIN"
+)
+func requireAuth(ctx context.Context) (string, error) {
+	accountID, ok := authutils.GetAccountIDFromCtx(ctx)
+	if !ok || accountID == "" {
+		return "", &gqlerror.Error{
+			Message:    "authentication required",
+			Extensions: map[string]interface{}{"code": "UNAUTHENTICATED"},
+		}
+	}
+	return accountID, nil
+}
+func requireRole(ctx context.Context, role string) (string, error) {
+	accountID, err := requireAuth(ctx)
+	if err != nil {
+		return "", err
+	}
+	actualRole := authutils.GetAccountRoleFromCtx(ctx)
+	if actualRole != role {
+		return "", &gqlerror.Error{
+			Message:    "forbidden",
+			Extensions: map[string]interface{}{"code": "FORBIDDEN"},
+		}
+	}
+	return accountID, nil
+}
+*/

@@ -103,10 +103,10 @@ type ValidateAccessTokenResponse struct {
 type AdStatus string
 
 const (
-	AdStatusOnModeration AdStatus = "ON_MODERATION"
-	AdStatusPublished    AdStatus = "PUBLISHED"
-	AdStatusRejected     AdStatus = "REJECTED"
-	AdStatusDeleted      AdStatus = "DELETED"
+	AdStatusOnModeration AdStatus = "on_moderation"
+	AdStatusPublished    AdStatus = "published"
+	AdStatusRejected     AdStatus = "rejected"
+	AdStatusDeleted      AdStatus = "deleted"
 )
 
 var AllAdStatus = []AdStatus{
@@ -163,8 +163,8 @@ func (e AdStatus) MarshalJSON() ([]byte, error) {
 type UserRole string
 
 const (
-	UserRoleUser  UserRole = "USER"
-	UserRoleAdmin UserRole = "ADMIN"
+	UserRoleUser  UserRole = "user"
+	UserRoleAdmin UserRole = "admin"
 )
 
 var AllUserRole = []UserRole{

@@ -20,6 +20,6 @@ RUN apk --no-cache add ca-certificates
 
 COPY --from=builder /app/gateway /app/gateway
 
-EXPOSE 8080
+EXPOSE 6060
 
 CMD ["/app/gateway"]

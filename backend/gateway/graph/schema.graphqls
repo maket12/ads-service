@@ -1,7 +1,7 @@
 """ User Role """
 enum UserRole {
-    USER
-    ADMIN
+    user
+    admin
 }
 
 """ User (Account + Role + Profile) """
@@ -36,10 +36,10 @@ type ValidateAccessTokenResponse {
 
 """ Ad Status"""
 enum AdStatus {
-    ON_MODERATION
-    PUBLISHED
-    REJECTED
-    DELETED
+    on_moderation
+    published
+    rejected
+    deleted
 }
 
 """ Ad - full info """

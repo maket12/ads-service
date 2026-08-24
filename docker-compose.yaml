@@ -201,15 +201,17 @@ services:
     build: ./backend/gateway
     container_name: ads-gateway
     ports:
-      - "${GATEWAY_PORT}:${GATEWAY_PORT}"
-    environment:
-      - AUTH_GRPC_ADDR=auth-service:${AUTH_GRPC_PORT}
-      - USER_GRPC_ADDR=user-service:${USER_GRPC_PORT}
-      - AD_GRPC_ADDR=ad-service:${AD_GRPC_PORT}
+      - "${GATEWAY_PORT}:6060"
     depends_on:
       - auth-service
       - user-service
       - ad-service
+    environment:
+      - AUTH_GRPC_ADDR=auth-service:${AUTH_GRPC_PORT}
+      - USER_GRPC_ADDR=user-service:${USER_GRPC_PORT}
+      - AD_GRPC_ADDR=ad-service:${AD_GRPC_PORT}
+    env_file:
+      - ./backend/gateway/.env
 
 volumes:
   auth_db_data:

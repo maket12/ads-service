@@ -20,7 +20,7 @@ func WithAuth(authClient auth_v1.AuthServiceClient) func(handler http.Handler) h
 				resp, err := authClient.ValidateAccessToken(ctx, &auth_v1.ValidateAccessTokenRequest{
 					AccessToken: token,
 				})
-				if err != nil {
+				if err == nil && resp != nil {
 					ctx = utils.SetAccountIDInCtx(ctx, resp.AccountId)
 					ctx = utils.SetAccountRoleInCtx(ctx, resp.Role)
 				}

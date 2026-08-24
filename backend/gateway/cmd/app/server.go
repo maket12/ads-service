@@ -77,7 +77,7 @@ func main() {
 	}
 
 	// New GraphQL server
-	srv := handler.New(graph.NewExecutableSchema(graph.Config{
+	srv := handler.NewDefaultServer(graph.NewExecutableSchema(graph.Config{
 		Resolvers: resolver,
 	}))
 
@@ -87,7 +87,7 @@ func main() {
 	mux.Handle("/query", middleware.WithAuth(authClient)(srv))
 
 	log.Printf("Gateway: Server is running on port %d", cfg.GatewayPort)
-	log.Fatal(http.ListenAndServe(fmt.Sprintf(":%d", cfg.GatewayPort), nil))
+	log.Fatal(http.ListenAndServe(fmt.Sprintf(":%d", cfg.GatewayPort), mux))
 }
 
 // mustDial creates a gRPC client connection with the auth-propagation

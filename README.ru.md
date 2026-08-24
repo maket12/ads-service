@@ -29,7 +29,7 @@
                                    │ HTTPS
                                    ▼
 ┌───────────────────────────────────────────────────────────────────────────┐
-│                     GraphQL Gateway (Port: 8080)                          │
+│                     GraphQL Gateway (Port: 6060)                          │
 │                      Aggregation, Authorization                           │
 └───────────────┬─────────────────┬─────────────────┬───────────────────────┘
                 │                 │                 │
@@ -97,14 +97,14 @@ cp .env.example .env
 docker compose up --build
 
 # 4. Открыть GraphQL playground
-http://localhost:8080/graphql
+http://localhost:6060/graphql
 ```
 
 ---
 
 ## 🔌 **API Endpoints**
 
-### **GraphQL Gateway** (порт `8080`)
+### **GraphQL Gateway** (порт `6060`)
 
 ```graphql
 # Примеры запросов
@@ -168,7 +168,7 @@ docker-compose up --build
 # - auth-service:50051
 # - user-service:50052
 # - ad-service:50053
-# - gateway:8080
+# - gateway:6060
 # - postgres:5432
 # - mongodb:27017
 # - rabbitmq:5672
