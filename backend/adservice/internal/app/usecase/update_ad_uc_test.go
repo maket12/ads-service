@@ -39,7 +39,11 @@ func TestUpdateAdUC_Execute(t *testing.T) {
 	newImages := []string{"img2.png"}
 
 	newAd := func() *model.Ad {
-		ad, _ := model.NewAd(sellerID, "title", nil, 100, nil)
+		ad, _ := model.NewAd(
+			sellerID, "title",
+			nil, 100,
+			model.CategoryFood.String(), nil,
+		)
 		return ad
 	}
 	// Ad that can no longer be updated, e.g. already deleted.

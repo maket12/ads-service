@@ -32,7 +32,11 @@ func TestDeleteAllAdsUC_Execute(t *testing.T) {
 	sellerID := uuid.New()
 
 	moderationAd := func() *model.Ad {
-		ad, _ := model.NewAd(sellerID, "title", nil, 100, nil)
+		ad, _ := model.NewAd(
+			sellerID, "title",
+			nil, 100,
+			model.CategoryFood.String(), nil,
+		)
 		return ad
 	}
 	publishedAd := func() *model.Ad {

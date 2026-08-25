@@ -10,6 +10,7 @@ import (
 	"github.com/maket12/ads-service/backend/adservice/internal/app/dto"
 	ucerrs "github.com/maket12/ads-service/backend/adservice/internal/app/errs"
 	"github.com/maket12/ads-service/backend/adservice/internal/app/usecase"
+	"github.com/maket12/ads-service/backend/adservice/internal/domain/model"
 	"github.com/maket12/ads-service/backend/adservice/internal/domain/port/mocks"
 	"github.com/maket12/ads-service/backend/adservice/pkg/utils"
 
@@ -34,6 +35,7 @@ func TestCreateAdUC_Execute(t *testing.T) {
 	title := gofakeit.ProductName()
 	description := utils.VPtr(gofakeit.ProductDescription())
 	price := int64(gofakeit.Price(1, 1000))
+	category := model.CategoryHome.String()
 	images := []string{gofakeit.URL(), gofakeit.URL()}
 
 	var tests = []testCase{
@@ -44,6 +46,7 @@ func TestCreateAdUC_Execute(t *testing.T) {
 				Title:       title,
 				Description: description,
 				Price:       price,
+				Category:    category,
 				Images:      images,
 			},
 			mockBehaviour: func(a adapter) {
@@ -76,6 +79,7 @@ func TestCreateAdUC_Execute(t *testing.T) {
 				Title:       title,
 				Description: description,
 				Price:       price,
+				Category:    category,
 				Images:      images,
 			},
 			mockBehaviour: func(a adapter) {
@@ -92,6 +96,7 @@ func TestCreateAdUC_Execute(t *testing.T) {
 				Title:       title,
 				Description: description,
 				Price:       price,
+				Category:    category,
 				Images:      images,
 			},
 			mockBehaviour: func(a adapter) {

@@ -35,7 +35,11 @@ func TestDeleteAdUC_Execute(t *testing.T) {
 	otherSellerID := uuid.New()
 
 	newAd := func() *model.Ad {
-		ad, _ := model.NewAd(sellerID, "title", nil, 100, nil)
+		ad, _ := model.NewAd(
+			sellerID, "title",
+			nil, 100,
+			model.CategoryFood.String(), nil,
+		)
 		return ad
 	}
 

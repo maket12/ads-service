@@ -12,6 +12,7 @@ type Ad struct {
 	Title       string
 	Description *string
 	Price       int64
+	Category    string
 	Status      string
 	Images      []string
 	CreatedAt   time.Time

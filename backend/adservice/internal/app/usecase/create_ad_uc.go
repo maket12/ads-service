@@ -31,8 +31,8 @@ func NewCreateAdUC(
 func (uc *CreateAdUC) Execute(ctx context.Context, in dto.CreateAdInput) (dto.CreateAdOutput, error) {
 	// Create ad
 	ad, err := model.NewAd(
-		in.SellerID, in.Title,
-		in.Description, in.Price, in.Images,
+		in.SellerID, in.Title, in.Description,
+		in.Price, in.Category, in.Images,
 	)
 	if err != nil {
 		return dto.CreateAdOutput{}, ucerrs.Wrap(

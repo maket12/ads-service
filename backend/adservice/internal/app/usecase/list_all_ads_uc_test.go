@@ -32,7 +32,11 @@ func TestListAllAdsUC_Execute(t *testing.T) {
 			name:  "Success",
 			input: dto.ListAllAdsInput{Limit: limit, Offset: offset},
 			mockBehaviour: func(a *mocks.MockAdRepository) {
-				ad, _ := model.NewAd(sellerID, "title", nil, 100, nil)
+				ad, _ := model.NewAd(
+					sellerID, "title",
+					nil, 100,
+					model.CategoryFood.String(), nil,
+				)
 				a.EXPECT().
 					ListAds(mock.Anything, limit, offset).
 					Return([]*model.Ad{ad}, nil)

@@ -7,6 +7,7 @@ type CreateAdInput struct {
 	Title       string
 	Description *string
 	Price       int64
+	Category    string
 	Images      []string
 }
 
