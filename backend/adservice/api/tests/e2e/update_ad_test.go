@@ -1,4 +1,4 @@
-//go:build e2e
+///go:build e2e
 
 package e2e
 
@@ -46,6 +46,7 @@ func TestUpdateAd_BadCases(t *testing.T) {
 		title         *string
 		description   *string
 		price         *int64
+		category      *string
 		expectedCode  codes.Code
 		expectedError string
 	}
@@ -72,6 +73,14 @@ func TestUpdateAd_BadCases(t *testing.T) {
 			sellerID:      sellerID,
 			adID:          adID,
 			price:         utils.VPtr(int64(-100)),
+			expectedCode:  codes.InvalidArgument,
+			expectedError: "invalid input",
+		},
+		{
+			name:          "Invalid Argument - Unknown Category",
+			sellerID:      sellerID,
+			adID:          adID,
+			category:      utils.VPtr("unsupported"),
 			expectedCode:  codes.InvalidArgument,
 			expectedError: "invalid input",
 		},
@@ -114,6 +123,7 @@ func TestUpdateAd_BadCases(t *testing.T) {
 				Title:       tt.title,
 				Description: tt.description,
 				Price:       tt.price,
+				Category:    tt.category,
 			})
 
 			require.Error(t, err)

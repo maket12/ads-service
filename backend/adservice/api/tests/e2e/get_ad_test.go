@@ -1,4 +1,4 @@
-//go:build e2e
+///go:build e2e
 
 package e2e
 
@@ -22,6 +22,7 @@ func TestGetAd_Success(t *testing.T) {
 		Title:       gofakeit.ProductName(),
 		Description: utils.VPtr(gofakeit.ProductDescription()),
 		Price:       int64(gofakeit.Price(10000, 50000)),
+		Category:    "food",
 		Images:      []string{gofakeit.URL(), gofakeit.URL()},
 	}
 	adID, sellerID := app.createAd(t, nil, payload)
@@ -36,6 +37,7 @@ func TestGetAd_Success(t *testing.T) {
 	require.Equal(t, payload.GetTitle(), resp.GetAd().GetTitle())
 	require.Equal(t, payload.GetDescription(), resp.GetAd().GetDescription())
 	require.Equal(t, payload.GetPrice(), resp.GetAd().GetPrice())
+	require.Equal(t, payload.Category, resp.GetAd().Category)
 	require.ElementsMatch(t, payload.GetImages(), resp.GetAd().GetImages())
 }
 
@@ -90,6 +92,7 @@ func TestGetAd_BadCases(t *testing.T) {
 			assert.Empty(t, resp.GetAd().GetDescription())
 			assert.Empty(t, resp.GetAd().GetPrice())
 			assert.Empty(t, resp.GetAd().GetStatus())
+			assert.Empty(t, resp.GetAd().GetCategory())
 			assert.Empty(t, resp.GetAd().GetImages())
 			assert.Empty(t, resp.GetAd().GetCreatedAt())
 			assert.Empty(t, resp.GetAd().GetUpdatedAt())

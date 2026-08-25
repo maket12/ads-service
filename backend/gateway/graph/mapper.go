@@ -49,6 +49,7 @@ func mapAdGRPCToGateway(ad *ad_v1.Ad) *model.Ad {
 		Title:       ad.Title,
 		Description: ad.Description,
 		Price:       float64(ad.Price),
+		Category:    ad.Category,
 		Status:      model.AdStatus(ad.Status),
 		Images:      ad.Images,
 		CreatedAt:   ad.CreatedAt.String(),

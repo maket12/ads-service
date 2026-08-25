@@ -18,6 +18,7 @@ func TestMapCreateAdPbToDTO(t *testing.T) {
 		Title:       "Test Title",
 		Description: &desc,
 		Price:       1500,
+		Category:    "food",
 		Images:      []string{"img1.jpg"},
 	}
 
@@ -27,6 +28,7 @@ func TestMapCreateAdPbToDTO(t *testing.T) {
 	assert.Equal(t, req.Title, result.Title)
 	assert.Equal(t, req.Description, result.Description)
 	assert.Equal(t, req.Price, result.Price)
+	assert.Equal(t, req.Category, result.Category)
 	assert.Equal(t, req.Images, result.Images)
 }
 
@@ -70,6 +72,7 @@ func TestMapUpdateAdPbToDTO(t *testing.T) {
 	adID := uuid.New()
 	title := "Updated Title"
 	desc := "Updated Desc"
+	category := "food"
 	var price int64 = 9999
 
 	req := &ad_v1.UpdateAdRequest{
@@ -77,6 +80,7 @@ func TestMapUpdateAdPbToDTO(t *testing.T) {
 		Title:       &title,
 		Description: &desc,
 		Price:       &price,
+		Category:    &category,
 		Images:      []string{"updated.jpg"},
 	}
 
@@ -87,6 +91,7 @@ func TestMapUpdateAdPbToDTO(t *testing.T) {
 	assert.Equal(t, req.Title, result.Title)
 	assert.Equal(t, req.Description, result.Description)
 	assert.Equal(t, req.Price, result.Price)
+	assert.Equal(t, req.Category, result.Category)
 	assert.Equal(t, req.Images, result.Images)
 }
 

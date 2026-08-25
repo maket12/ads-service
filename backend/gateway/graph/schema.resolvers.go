@@ -31,7 +31,6 @@ func requireAuth(ctx context.Context) (string, error) {
 	}
 	return accountID, nil
 }
-
 func requireRole(ctx context.Context, role string) (string, error) {
 	accountID, err := requireAuth(ctx)
 	if err != nil {
@@ -204,6 +203,7 @@ func (r *mutationResolver) CreateAd(ctx context.Context, input model.CreateAdInp
 		Title:       input.Title,
 		Description: input.Description,
 		Price:       int64(input.Price),
+		Category:    input.Category,
 		Images:      input.Images,
 	})
 	if err != nil {
@@ -224,6 +224,7 @@ func (r *mutationResolver) UpdateAd(ctx context.Context, input model.UpdateAdInp
 		Title:       input.Title,
 		Description: input.Description,
 		Price:       mapFloatPtrToInt(input.Price),
+		Category:    input.Category,
 		Images:      input.Images,
 	})
 	if err != nil {
@@ -386,40 +387,3 @@ type (
 	mutationResolver struct{ *Resolver }
 	queryResolver    struct{ *Resolver }
 )
-
-// !!! WARNING !!!
-// The code below was going to be deleted when updating resolvers. It has been copied here so you have
-// one last chance to move it out of harms way if you want. There are two reasons this happens:
-//  - When renaming or deleting a resolver the old code will be put in here. You can safely delete
-//    it when you're done.
-//  - You have helper methods in this file. Move them out to keep these resolver files clean.
-/*
-	var (
-	RoleUser  = "USER"
-	RoleAdmin = "ADMIN"
-)
-func requireAuth(ctx context.Context) (string, error) {
-	accountID, ok := authutils.GetAccountIDFromCtx(ctx)
-	if !ok || accountID == "" {
-		return "", &gqlerror.Error{
-			Message:    "authentication required",
-			Extensions: map[string]interface{}{"code": "UNAUTHENTICATED"},
-		}
-	}
-	return accountID, nil
-}
-func requireRole(ctx context.Context, role string) (string, error) {
-	accountID, err := requireAuth(ctx)
-	if err != nil {
-		return "", err
-	}
-	actualRole := authutils.GetAccountRoleFromCtx(ctx)
-	if actualRole != role {
-		return "", &gqlerror.Error{
-			Message:    "forbidden",
-			Extensions: map[string]interface{}{"code": "FORBIDDEN"},
-		}
-	}
-	return accountID, nil
-}
-*/
