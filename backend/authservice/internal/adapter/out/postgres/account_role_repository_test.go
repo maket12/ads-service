@@ -31,7 +31,7 @@ func (s *AccountRolesRepoSuite) SetupSuite() {
 }
 
 func (s *AccountRolesRepoSuite) SetupTest() {
-	err := s.pgContainer.TruncateTables(s.ctx, "account_roles")
+	err := s.pgContainer.TruncateTables(s.ctx, "account_roles", "accounts")
 	s.Require().NoError(err)
 
 	s.seedData()
