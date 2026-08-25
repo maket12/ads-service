@@ -1,7 +1,11 @@
+//go:build integration
+
 package mongodb_test
 
 import (
 	"context"
+	"log"
+	"os"
 	"testing"
 
 	adaptermongodb "github.com/maket12/ads-service/backend/adservice/internal/adapter/out/mongodb"
@@ -11,11 +15,40 @@ import (
 	"github.com/stretchr/testify/suite"
 )
 
+var (
+	globalContainer *pkgmongodb.TestContainer
+	globalClient    *pkgmongodb.Client
+)
+
+func TestMain(m *testing.M) {
+	ctx := context.Background()
+
+	mongoContainer, err := pkgmongodb.StartTestContainer(ctx)
+	if err != nil {
+		log.Fatalf("Could not start mongodb: %v", err)
+	}
+	globalContainer = mongoContainer
+
+	client, err := pkgmongodb.NewClient(ctx, mongoContainer.Config)
+	if err != nil {
+		log.Fatalf("Could not connect to mongodb: %v", err)
+	}
+	globalClient = client
+
+	code := m.Run()
+
+	_ = globalClient.Close(ctx)
+	_ = globalContainer.Close(ctx)
+
+	os.Exit(code)
+}
+
 type MediaRepoSuite struct {
 	suite.Suite
-	dbClient *pkgmongodb.Client
-	repo     *adaptermongodb.MediaRepository
-	ctx      context.Context
+	mongoContainer *pkgmongodb.TestContainer
+	dbClient       *pkgmongodb.Client
+	repo           *adaptermongodb.MediaRepository
+	ctx            context.Context
 }
 
 func TestMediaRepoSuite(t *testing.T) {
@@ -27,17 +60,8 @@ func TestMediaRepoSuite(t *testing.T) {
 
 func (s *MediaRepoSuite) SetupSuite() {
 	s.ctx = context.Background()
-
-	cfg := pkgmongodb.NewConfig(
-		"localhost", 27017,
-		"test", "test",
-		"test-mongo",
-	)
-
-	dbClient, err := pkgmongodb.NewClient(s.ctx, cfg)
-	s.Require().NoError(err)
-
-	s.dbClient = dbClient
+	s.mongoContainer = globalContainer
+	s.dbClient = globalClient
 
 	repoCfg := adaptermongodb.NewMediaRepositoryConfig(
 		s.dbClient, "test-images",
@@ -46,12 +70,7 @@ func (s *MediaRepoSuite) SetupSuite() {
 }
 
 func (s *MediaRepoSuite) SetupTest() {
-	err := s.dbClient.Database.Collection("test-images").Drop(s.ctx)
-	s.Require().NoError(err)
-}
-
-func (s *MediaRepoSuite) TearDownSuite() {
-	err := s.dbClient.Close(s.ctx)
+	err := s.mongoContainer.DropCollections(s.ctx, "test-images")
 	s.Require().NoError(err)
 }
 
