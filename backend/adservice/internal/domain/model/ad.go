@@ -17,6 +17,44 @@ var (
 	ErrAdCantBeUpdated   = errors.New("ad cannot be updated")
 )
 
+type Category string
+
+const (
+	CategoryElectronics Category = "electronics"
+	CategoryVehicles    Category = "vehicles"
+	CategoryRealEstate  Category = "real_estate"
+	CategoryClothes     Category = "clothes"
+	CategoryFood        Category = "food"
+	CategoryHome        Category = "home"
+	CategoryServices    Category = "services"
+	CategoryVideoGames  Category = "video_games"
+	CategoryMedicaments Category = "medicaments"
+	CategoryTravel      Category = "travel"
+)
+
+func (c Category) String() string { return string(c) }
+
+func (c Category) IsValid() bool {
+	switch c {
+	case CategoryElectronics, CategoryVehicles,
+		CategoryRealEstate, CategoryClothes,
+		CategoryFood, CategoryHome,
+		CategoryServices, CategoryVideoGames,
+		CategoryMedicaments, CategoryTravel:
+		return true
+	default:
+		return false
+	}
+}
+
+func NewCategory(val string) (Category, error) {
+	cat := Category(val)
+	if !cat.IsValid() {
+		return "", pkgerrs.NewValueInvalidError("category")
+	}
+	return cat, nil
+}
+
 type AdStatus string
 
 const (
@@ -42,6 +80,7 @@ type Ad struct {
 	title       string
 	description *string
 	price       int64 // in cents
+	category    Category
 	status      AdStatus
 	images      []string
 	createdAt   time.Time
@@ -53,6 +92,7 @@ func NewAd(
 	title string,
 	description *string,
 	price int64,
+	rawCategory string,
 	images []string,
 ) (*Ad, error) {
 	if sellerID == uuid.Nil {
@@ -72,9 +112,16 @@ func NewAd(
 			return nil, pkgerrs.NewValueInvalidError("description")
 		}
 	}
+
 	if price < 0 {
 		return nil, pkgerrs.NewValueInvalidError("price")
 	}
+
+	category, err := NewCategory(rawCategory)
+	if err != nil {
+		return nil, err
+	}
+
 	if images != nil {
 		if len(images) == 0 {
 			return nil, pkgerrs.NewValueInvalidError("images")
@@ -93,6 +140,7 @@ func NewAd(
 		title:       title,
 		description: description,
 		price:       price,
+		category:    category,
 		status:      AdOnModeration,
 		images:      imagesCopy,
 		createdAt:   time.Now(),
@@ -105,6 +153,7 @@ func RestoreAd(
 	title string,
 	description *string,
 	price int64,
+	category Category,
 	status AdStatus,
 	images []string,
 	createdAt time.Time,
@@ -121,6 +170,7 @@ func RestoreAd(
 		title:       title,
 		description: description,
 		price:       price,
+		category:    category,
 		status:      status,
 		images:      imagesCopy,
 		createdAt:   createdAt,
@@ -135,6 +185,7 @@ func (ad *Ad) SellerID() uuid.UUID  { return ad.sellerID }
 func (ad *Ad) Title() string        { return ad.title }
 func (ad *Ad) Description() *string { return ad.description }
 func (ad *Ad) Price() int64         { return ad.price }
+func (ad *Ad) Category() Category   { return ad.category }
 func (ad *Ad) Status() AdStatus     { return ad.status }
 func (ad *Ad) Images() []string {
 	if ad.images == nil {

@@ -21,17 +21,19 @@ func TestNewAd(t *testing.T) {
 		sellerID    uuid.UUID
 		title       string
 		description *string
+		category    string
 		price       int64
 		images      []string
 		expect      error
 	}
 
 	var (
-		testSelID  = uuid.New()
-		testTitle  = "Apartment in the center of Shanghai"
-		testDesc   = "We are selling an apartment in the center of Shanghai."
-		testPrice  = int64(1000000)
-		testImages = []string{"image1.png", "image2.png"}
+		testSelID    = uuid.New()
+		testTitle    = "Apartment in the center of Shanghai"
+		testDesc     = "We are selling an apartment in the center of Shanghai."
+		testCategory = model.CategoryRealEstate.String()
+		testPrice    = int64(1000000)
+		testImages   = []string{"image1.png", "image2.png"}
 	)
 
 	var tests = []testCase{
@@ -40,6 +42,7 @@ func TestNewAd(t *testing.T) {
 			sellerID:    testSelID,
 			title:       testTitle,
 			description: utils.VPtr(testDesc),
+			category:    testCategory,
 			price:       testPrice,
 			images:      testImages,
 			expect:      nil,
@@ -76,12 +79,19 @@ func TestNewAd(t *testing.T) {
 			expect:      pkgerrs.ErrValueIsInvalid,
 		},
 		{
-			name:        "invalid price",
-			sellerID:    testSelID,
-			title:       testTitle,
-			description: nil,
-			price:       testPrice * -1, // negative price
-			expect:      pkgerrs.ErrValueIsInvalid,
+			name:     "invalid price",
+			sellerID: testSelID,
+			title:    testTitle,
+			price:    testPrice * -1, // negative price
+			expect:   pkgerrs.ErrValueIsInvalid,
+		},
+		{
+			name:     "invalid category",
+			sellerID: testSelID,
+			title:    testTitle,
+			price:    testPrice, // negative price
+			category: "unknown",
+			expect:   pkgerrs.ErrValueIsInvalid,
 		},
 		{
 			name:        "invalid images",
@@ -89,6 +99,7 @@ func TestNewAd(t *testing.T) {
 			title:       testTitle,
 			description: nil,
 			price:       testPrice,
+			category:    testCategory,
 			images:      make([]string, 0),
 			expect:      pkgerrs.ErrValueIsInvalid,
 		},
@@ -99,7 +110,7 @@ func TestNewAd(t *testing.T) {
 			ad, err := model.NewAd(
 				tt.sellerID, tt.title,
 				tt.description, tt.price,
-				tt.images,
+				tt.category, tt.images,
 			)
 			if tt.expect == nil {
 				require.NoError(t, err)
@@ -107,6 +118,7 @@ func TestNewAd(t *testing.T) {
 				assert.Equal(t, tt.sellerID, ad.SellerID())
 				assert.Equal(t, tt.title, ad.Title())
 				assert.Equal(t, tt.price, ad.Price())
+				assert.Equal(t, ad.Category().String(), tt.category)
 				assert.Equal(t, ad.Status(), model.AdOnModeration)
 				assert.Equal(t, tt.images, ad.Images())
 				assert.NotNil(t, ad.CreatedAt())
@@ -123,7 +135,8 @@ func TestNewAd(t *testing.T) {
 func TestAd_Publish(t *testing.T) {
 	testAd := model.RestoreAd(
 		uuid.New(), uuid.New(), "Sell a car", nil,
-		int64(100000), model.AdOnModeration, nil,
+		int64(100000), model.CategoryVehicles,
+		model.AdOnModeration, nil,
 		time.Now(), utils.VPtr(time.Now()),
 	)
 
@@ -141,7 +154,8 @@ func TestAd_Publish(t *testing.T) {
 func TestAd_Reject(t *testing.T) {
 	testAd := model.RestoreAd(
 		uuid.New(), uuid.New(), "Sell a car", nil,
-		int64(100000), model.AdOnModeration, nil,
+		int64(100000), model.CategoryVehicles,
+		model.AdOnModeration, nil,
 		time.Now(), utils.VPtr(time.Now()),
 	)
 
@@ -159,7 +173,8 @@ func TestAd_Reject(t *testing.T) {
 func TestAd_Delete(t *testing.T) {
 	testAd := model.RestoreAd(
 		uuid.New(), uuid.New(), "Sell a car", nil,
-		int64(100000), model.AdPublished, nil,
+		int64(100000), model.CategoryVehicles,
+		model.AdPublished, nil,
 		time.Now(), utils.VPtr(time.Now()),
 	)
 
@@ -177,7 +192,8 @@ func TestAd_Delete(t *testing.T) {
 func TestAd_Update(t *testing.T) {
 	ad, _ := model.NewAd(
 		uuid.New(), gofakeit.ProductName(),
-		nil, 100, nil,
+		nil, 100,
+		model.CategoryFood.String(), nil,
 	)
 
 	// First case - ad is on moderation and can be updated
@@ -197,7 +213,8 @@ func TestAd_Update(t *testing.T) {
 	// Fourth case - ad is rejected and can't be updated
 	rejectedAd := model.RestoreAd(
 		uuid.New(), uuid.New(), gofakeit.ProductName(), nil,
-		int64(100000), model.AdRejected, nil,
+		int64(100000), model.CategoryVehicles,
+		model.AdRejected, nil,
 		time.Now(), utils.VPtr(time.Now()),
 	)
 	err = rejectedAd.Update(utils.VPtr(gofakeit.ProductName()), nil, nil, nil)
@@ -263,7 +280,7 @@ func TestAd_Update_Validation(t *testing.T) {
 			ad, _ := model.NewAd(
 				uuid.New(), "Shanghai night tour",
 				utils.VPtr("You will never forget it!"),
-				int64(1000), nil,
+				int64(1000), model.CategoryServices.String(), nil,
 			)
 
 			updAt := ad.UpdatedAt()
