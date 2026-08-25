@@ -20,7 +20,7 @@ func (s *BaseRepoSuite) SetupBase() {
 	s.ctx = context.Background()
 
 	var err error
-	s.redisContainer, err = pkgredis.StartTestContainer(s.ctx, nil)
+	s.redisContainer, err = pkgredis.StartTestContainer(s.ctx)
 	s.Require().NoError(err)
 
 	s.redisClient, err = pkgredis.NewClient(s.ctx, s.redisContainer.Config)

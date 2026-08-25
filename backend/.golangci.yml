@@ -4,19 +4,6 @@ run:
   timeout: 5m
   tests: true
 
-linters-settings:
-  revive:
-    rules:
-      - name: exported
-        disabled: true
-      - name: package-comments
-        disabled: true
-  staticcheck:
-    checks:
-      - "all"
-      - "-ST1000"
-      - "-ST1003"
-
 linters:
   enable:
     - errcheck
@@ -30,6 +17,15 @@ linters:
     staticcheck:
       checks:
         - all
+        - -ST1000
+        - -ST1003
+        - -QF1003
+    revive:
+      rules:
+        - name: exported
+          disabled: true
+        - name: package-comments
+          disabled: true
 
 formatters:
   enable:
