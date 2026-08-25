@@ -197,17 +197,17 @@ func TestAd_Update(t *testing.T) {
 	)
 
 	// First case - ad is on moderation and can be updated
-	err := ad.Update(nil, utils.VPtr(gofakeit.ProductDescription()), nil, nil)
+	err := ad.Update(nil, utils.VPtr(gofakeit.ProductDescription()), nil, nil, nil)
 	assert.NoError(t, err)
 
 	// Second case - ad is published and can be updated
 	_ = ad.Publish()
-	err = ad.Update(nil, nil, utils.VPtr(int64(200)), nil)
+	err = ad.Update(nil, nil, utils.VPtr(int64(200)), nil, nil)
 	assert.NoError(t, err)
 
 	// Third case - ad is deleted and can't be updated
 	_ = ad.Delete()
-	err = ad.Update(utils.VPtr(gofakeit.ProductName()), nil, nil, nil)
+	err = ad.Update(utils.VPtr(gofakeit.ProductName()), nil, nil, nil, nil)
 	assert.Error(t, err)
 
 	// Fourth case - ad is rejected and can't be updated
@@ -217,7 +217,7 @@ func TestAd_Update(t *testing.T) {
 		model.AdRejected, nil,
 		time.Now(), utils.VPtr(time.Now()),
 	)
-	err = rejectedAd.Update(utils.VPtr(gofakeit.ProductName()), nil, nil, nil)
+	err = rejectedAd.Update(utils.VPtr(gofakeit.ProductName()), nil, nil, nil, nil)
 	assert.Error(t, err)
 }
 
@@ -227,15 +227,17 @@ func TestAd_Update_Validation(t *testing.T) {
 		title       *string
 		description *string
 		price       *int64
+		category    *string
 		images      []string
 		expect      error
 	}
 
 	var (
-		testTitle  = "Apartment in the center of Shanghai"
-		testDesc   = "We are selling an apartment in the center of Shanghai."
-		testPrice  = int64(1000000)
-		testImages = []string{"image1.jpg", "image2.png"}
+		testTitle    = "Apartment in the center of Shanghai"
+		testDesc     = "We are selling an apartment in the center of Shanghai."
+		testPrice    = int64(1000000)
+		testCategory = utils.VPtr(model.CategoryRealEstate.String())
+		testImages   = []string{"image1.jpg", "image2.png"}
 	)
 
 	var tests = []testCase{
@@ -244,6 +246,7 @@ func TestAd_Update_Validation(t *testing.T) {
 			title:       utils.VPtr(testTitle),
 			description: utils.VPtr(testDesc),
 			price:       utils.VPtr(testPrice),
+			category:    testCategory,
 			images:      testImages,
 			expect:      nil,
 		},
@@ -252,6 +255,7 @@ func TestAd_Update_Validation(t *testing.T) {
 			title:       nil,
 			description: nil,
 			price:       nil,
+			category:    testCategory,
 			images:      nil,
 			expect:      nil,
 		},
@@ -267,11 +271,17 @@ func TestAd_Update_Validation(t *testing.T) {
 			expect:      pkgerrs.ErrValueIsInvalid,
 		},
 		{
-			name:        "invalid price",
-			title:       utils.VPtr(testTitle),
-			description: nil,
-			price:       utils.VPtr(testPrice * -1), // negative price
-			expect:      pkgerrs.ErrValueIsInvalid,
+			name:   "invalid price",
+			title:  utils.VPtr(testTitle),
+			price:  utils.VPtr(testPrice * -1), // negative price
+			expect: pkgerrs.ErrValueIsInvalid,
+		},
+		{
+			name:     "invalid category",
+			title:    utils.VPtr(testTitle),
+			price:    utils.VPtr(testPrice),
+			category: utils.VPtr("unknown"),
+			expect:   pkgerrs.ErrValueIsInvalid,
 		},
 	}
 
@@ -286,7 +296,10 @@ func TestAd_Update_Validation(t *testing.T) {
 			updAt := ad.UpdatedAt()
 			time.Sleep(time.Millisecond) // wait to change time
 
-			err := ad.Update(tt.title, tt.description, tt.price, tt.images)
+			err := ad.Update(
+				tt.title, tt.description,
+				tt.price, tt.category, tt.images,
+			)
 
 			if tt.expect == nil {
 				require.NoError(t, err)

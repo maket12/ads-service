@@ -14,6 +14,7 @@ type Ad struct {
 	Title       string
 	Description pgtype.Text
 	Price       int64
+	Category    string
 	Status      string
 	CreatedAt   pgtype.Timestamptz
 	UpdatedAt   pgtype.Timestamptz

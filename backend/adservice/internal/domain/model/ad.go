@@ -242,7 +242,11 @@ func (ad *Ad) Delete() error {
 	return nil
 }
 
-func (ad *Ad) Update(title, description *string, price *int64, images []string) error {
+func (ad *Ad) Update(
+	title, description *string,
+	price *int64, rawCategory *string,
+	images []string,
+) error {
 	if !ad.CanBeUpdated() {
 		return ErrAdCantBeUpdated
 	}
@@ -257,6 +261,15 @@ func (ad *Ad) Update(title, description *string, price *int64, images []string) 
 		return pkgerrs.NewValueInvalidError("price")
 	}
 
+	var category Category
+	if rawCategory != nil {
+		cat, err := NewCategory(*rawCategory)
+		if err != nil {
+			return err
+		}
+		category = cat
+	}
+
 	if title != nil {
 		ad.title = *title
 	}
@@ -265,6 +278,9 @@ func (ad *Ad) Update(title, description *string, price *int64, images []string) 
 	}
 	if price != nil {
 		ad.price = *price
+	}
+	if rawCategory != nil {
+		ad.category = category
 	}
 	if images != nil {
 		ad.images = make([]string, len(images))
