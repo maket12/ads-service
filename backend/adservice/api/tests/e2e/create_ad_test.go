@@ -30,7 +30,7 @@ func TestCreateAd_Success(t *testing.T) {
 	})
 
 	require.NoError(t, err)
-	require.NotEmpty(t, resp.GetAdId())
+	require.NotEmpty(t, resp.GetId())
 }
 
 func TestCreateAd_BadCases(t *testing.T) {
@@ -111,7 +111,7 @@ func TestCreateAd_BadCases(t *testing.T) {
 			})
 
 			require.Error(t, err)
-			assert.Empty(t, resp.GetAdId())
+			assert.Empty(t, resp.GetId())
 
 			st, ok := status.FromError(err)
 			require.True(t, ok, "expected a gRPC status error")

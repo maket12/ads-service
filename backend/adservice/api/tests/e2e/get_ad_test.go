@@ -28,10 +28,10 @@ func TestGetAd_Success(t *testing.T) {
 
 	ctx := utils.PackAccountIDForGRPC(context.Background(), sellerID)
 
-	resp, err := app.client.GetAd(ctx, &ad_v1.GetAdRequest{AdId: adID})
+	resp, err := app.client.GetAd(ctx, &ad_v1.GetAdRequest{Id: adID})
 	require.NoError(t, err)
 
-	require.NotEmpty(t, resp.GetAd().GetAdId())
+	require.NotEmpty(t, resp.GetAd().GetId())
 	require.Equal(t, sellerID, resp.GetAd().GetSellerId())
 	require.Equal(t, payload.GetTitle(), resp.GetAd().GetTitle())
 	require.Equal(t, payload.GetDescription(), resp.GetAd().GetDescription())
@@ -80,11 +80,11 @@ func TestGetAd_BadCases(t *testing.T) {
 			ctx := utils.PackAccountIDForGRPC(context.Background(), tt.sellerID)
 
 			resp, err := app.client.GetAd(ctx, &ad_v1.GetAdRequest{
-				AdId: tt.adID,
+				Id: tt.adID,
 			})
 
 			require.Error(t, err)
-			assert.Empty(t, resp.GetAd().GetAdId())
+			assert.Empty(t, resp.GetAd().GetId())
 			assert.Empty(t, resp.GetAd().GetSellerId())
 			assert.Empty(t, resp.GetAd().GetTitle())
 			assert.Empty(t, resp.GetAd().GetDescription())

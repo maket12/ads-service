@@ -24,8 +24,8 @@ func TestListAds_Success(t *testing.T) {
 	resp, err := app.client.ListAds(ctx, &ad_v1.ListAdsRequest{})
 	require.NoError(t, err)
 	require.Len(t, resp.GetAds(), 2)
-	require.Equal(t, fstAdID, resp.GetAds()[0].GetAdId())
-	require.Equal(t, sndAdID, resp.GetAds()[1].GetAdId())
+	require.Equal(t, fstAdID, resp.GetAds()[0].GetId())
+	require.Equal(t, sndAdID, resp.GetAds()[1].GetId())
 }
 
 func TestListAds_BadCases(t *testing.T) {

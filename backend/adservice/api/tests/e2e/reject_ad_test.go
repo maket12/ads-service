@@ -21,7 +21,7 @@ func TestRejectAd_Success(t *testing.T) {
 	adID, sellerID := app.createAd(t, nil, nil)
 	ctx := utils.PackAccountIDForGRPC(context.Background(), sellerID)
 
-	resp, err := app.client.RejectAd(ctx, &ad_v1.RejectAdRequest{AdId: adID})
+	resp, err := app.client.RejectAd(ctx, &ad_v1.RejectAdRequest{Id: adID})
 
 	require.NoError(t, err)
 	require.True(t, resp.GetSuccess())
@@ -71,7 +71,7 @@ func TestRejectAd_BadCases(t *testing.T) {
 			ctx := utils.PackAccountIDForGRPC(context.Background(), tt.sellerID)
 
 			resp, err := app.client.RejectAd(ctx, &ad_v1.RejectAdRequest{
-				AdId: tt.adID,
+				Id: tt.adID,
 			})
 
 			require.Error(t, err)

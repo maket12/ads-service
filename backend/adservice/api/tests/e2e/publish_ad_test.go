@@ -21,7 +21,7 @@ func TestPublishAd_Success(t *testing.T) {
 	adID, sellerID := app.createAd(t, nil, nil)
 	ctx := utils.PackAccountIDForGRPC(context.Background(), sellerID)
 
-	resp, err := app.client.PublishAd(ctx, &ad_v1.PublishAdRequest{AdId: adID})
+	resp, err := app.client.PublishAd(ctx, &ad_v1.PublishAdRequest{Id: adID})
 
 	require.NoError(t, err)
 	require.True(t, resp.GetSuccess())
@@ -71,7 +71,7 @@ func TestPublishAd_BadCases(t *testing.T) {
 			ctx := utils.PackAccountIDForGRPC(context.Background(), tt.sellerID)
 
 			resp, err := app.client.PublishAd(ctx, &ad_v1.PublishAdRequest{
-				AdId: tt.adID,
+				Id: tt.adID,
 			})
 
 			require.Error(t, err)

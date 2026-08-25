@@ -23,7 +23,7 @@ func TestUpdateAd_Success(t *testing.T) {
 	ctx := utils.PackAccountIDForGRPC(context.Background(), sellerID)
 
 	resp, err := app.client.UpdateAd(ctx, &ad_v1.UpdateAdRequest{
-		AdId:  adID,
+		Id:    adID,
 		Title: utils.VPtr(gofakeit.ProductName()),
 	})
 
@@ -110,7 +110,7 @@ func TestUpdateAd_BadCases(t *testing.T) {
 			ctx := utils.PackAccountIDForGRPC(context.Background(), tt.sellerID)
 
 			resp, err := app.client.UpdateAd(ctx, &ad_v1.UpdateAdRequest{
-				AdId:        tt.adID,
+				Id:          tt.adID,
 				Title:       tt.title,
 				Description: tt.description,
 				Price:       tt.price,

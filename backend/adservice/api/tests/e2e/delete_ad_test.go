@@ -21,7 +21,7 @@ func TestDeleteAd_Success(t *testing.T) {
 	adID, sellerID := app.createAd(t, nil, nil)
 	ctx := utils.PackAccountIDForGRPC(context.Background(), sellerID)
 
-	resp, err := app.client.DeleteAd(ctx, &ad_v1.DeleteAdRequest{AdId: adID})
+	resp, err := app.client.DeleteAd(ctx, &ad_v1.DeleteAdRequest{Id: adID})
 
 	require.NoError(t, err)
 	require.True(t, resp.GetSuccess())
@@ -79,7 +79,7 @@ func TestDeleteAd_BadCases(t *testing.T) {
 			ctx := utils.PackAccountIDForGRPC(context.Background(), tt.sellerID)
 
 			resp, err := app.client.DeleteAd(ctx, &ad_v1.DeleteAdRequest{
-				AdId: tt.adID,
+				Id: tt.adID,
 			})
 
 			require.Error(t, err)

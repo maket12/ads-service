@@ -117,17 +117,14 @@ func setupE2E(t *testing.T) *testApp {
 		deleteAdUC := usecase.NewDeleteAdUC(trManager, adRepo, mediaRepo)
 		deleteAllAdsUC := usecase.NewDeleteAllAdsUC(trManager, adRepo, mediaRepo)
 		listSellerAdsUC := usecase.NewListSellerAdsUC(adRepo)
+		listAllAdsUC := usecase.NewListAllAdsUC(adRepo)
 
 		handler := adaptergrpc.NewAdHandler(
-			logger,
-			createAdUC,
-			getAdUC,
-			updateAdUC,
-			publishAdUC,
-			rejectAdUC,
-			deleteAdUC,
-			deleteAllAdsUC,
-			listSellerAdsUC,
+			logger, createAdUC,
+			getAdUC, updateAdUC,
+			publishAdUC, rejectAdUC,
+			deleteAdUC, deleteAllAdsUC,
+			listSellerAdsUC, listAllAdsUC,
 		)
 
 		// --- in-memory gRPC server via bufconn ---
@@ -208,9 +205,9 @@ func (a *testApp) createAd(t *testing.T, sellerID *string, payload *ad_v1.Create
 
 	resp, err := a.client.CreateAd(ctx, req)
 	require.NoError(t, err)
-	require.NotEmpty(t, resp.GetAdId())
+	require.NotEmpty(t, resp.GetId())
 
-	return resp.GetAdId(), accID
+	return resp.GetId(), accID
 }
 
 // Helper for e2e tests.
@@ -219,7 +216,7 @@ func (a *testApp) createAd(t *testing.T, sellerID *string, payload *ad_v1.Create
 // Make sure you created the ad before and the owner has specified “seller id“.
 func (a *testApp) publishAd(t *testing.T, adID, sellerID string) {
 	ctx := utils.PackAccountIDForGRPC(context.Background(), sellerID)
-	resp, err := a.client.PublishAd(ctx, &ad_v1.PublishAdRequest{AdId: adID})
+	resp, err := a.client.PublishAd(ctx, &ad_v1.PublishAdRequest{Id: adID})
 	require.NoError(t, err)
 	require.True(t, resp.GetSuccess())
 }
@@ -230,7 +227,7 @@ func (a *testApp) publishAd(t *testing.T, adID, sellerID string) {
 // Make sure the ad is available and the owner has specified “seller id“.
 func (a *testApp) rejectAd(t *testing.T, adID, sellerID string) {
 	ctx := utils.PackAccountIDForGRPC(context.Background(), sellerID)
-	resp, err := a.client.RejectAd(ctx, &ad_v1.RejectAdRequest{AdId: adID})
+	resp, err := a.client.RejectAd(ctx, &ad_v1.RejectAdRequest{Id: adID})
 	require.NoError(t, err)
 	require.True(t, resp.GetSuccess())
 }
@@ -241,7 +238,7 @@ func (a *testApp) rejectAd(t *testing.T, adID, sellerID string) {
 // Make sure the ad isn't deleted and the owner has specified “seller id“.
 func (a *testApp) deleteAd(t *testing.T, adID, sellerID string) {
 	ctx := utils.PackAccountIDForGRPC(context.Background(), sellerID)
-	resp, err := a.client.DeleteAd(ctx, &ad_v1.DeleteAdRequest{AdId: adID})
+	resp, err := a.client.DeleteAd(ctx, &ad_v1.DeleteAdRequest{Id: adID})
 	require.NoError(t, err)
 	require.True(t, resp.GetSuccess())
 }
