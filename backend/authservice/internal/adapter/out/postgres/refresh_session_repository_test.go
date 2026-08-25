@@ -32,7 +32,7 @@ func (s *RefreshSessionsRepoSuite) SetupSuite() {
 }
 
 func (s *RefreshSessionsRepoSuite) SetupTest() {
-	err := s.pgContainer.TruncateTables(s.ctx, "refresh_sessions")
+	err := s.pgContainer.TruncateTables(s.ctx, "refresh_sessions", "accounts")
 	s.Require().NoError(err)
 
 	s.seedData()
@@ -159,10 +159,12 @@ func (s *RefreshSessionsRepoSuite) TestRevokeAllForAccount() {
 
 	// Ensure all sessions have been revoked
 	sess, _ := s.repo.GetByID(s.ctx, s.testSession.ID())
-	s.Require().Equal(reason, *sess.RevokeReason())
+	s.Require().NotNil(sess.RevokeReason())
+	s.Require().Equal(reason, sess.RevokeReason().String())
 
 	sess, _ = s.repo.GetByID(s.ctx, anotherSession.ID())
-	s.Require().Equal(reason, *sess.RevokeReason())
+	s.Require().NotNil(sess.RevokeReason())
+	s.Require().Equal(reason, sess.RevokeReason().String())
 }
 
 func (s *RefreshSessionsRepoSuite) TestRevokeDescendants() {
@@ -188,7 +190,8 @@ func (s *RefreshSessionsRepoSuite) TestRevokeDescendants() {
 
 	// Ensure the session has been revoked
 	session, _ := s.repo.GetByHash(s.ctx, anotherSession.RefreshTokenHash())
-	s.Require().Equal(reason, *session.RevokeReason())
+	s.Require().NotNil(session.RevokeReason())
+	s.Require().Equal(reason, session.RevokeReason().String())
 }
 
 func (s *RefreshSessionsRepoSuite) TestDeleteExpired() {

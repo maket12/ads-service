@@ -2,9 +2,6 @@ package errs
 
 import "errors"
 
-/*
-================ Validation failures ================
-*/
 var ErrInvalidInput = errors.New("invalid input") // for rich models
 
 /*
