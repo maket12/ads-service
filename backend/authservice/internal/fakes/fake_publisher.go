@@ -23,3 +23,10 @@ func (f *FakePublisher) PublishAccountCreate(_ context.Context, accountID uuid.U
 	f.mu.Unlock()
 	return nil
 }
+
+func (f *FakePublisher) PublishAccountDelete(_ context.Context, accountID uuid.UUID) error {
+	f.mu.Lock()
+	f.queue.PushBack(accountID)
+	f.mu.Unlock()
+	return nil
+}

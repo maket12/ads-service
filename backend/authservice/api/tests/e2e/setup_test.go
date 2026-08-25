@@ -1,4 +1,4 @@
-//go:build e2e
+///go:build e2e
 
 package e2e
 
@@ -47,6 +47,7 @@ type testApp struct {
 	pg          *pkgpostgres.TestContainer
 	redisC      *pkgredis.TestContainer
 	email       *fakes.FakeMailSender
+	publisher   *fakes.FakePublisher
 	accRepo     port.AccountRepository
 	accRoleRepo port.AccountRoleRepository
 	tokenRepo   port.VerificationTokenRepository
@@ -131,10 +132,14 @@ func setupE2E(t *testing.T) *testApp {
 		assignRoleUC := usecase.NewAssignRoleUC(accRoleRepo, rSessRepo)
 		sendVerificationUC := usecase.NewSendVerificationUC(accRepo, vTokenRepo, smtpClient, cfg.VerificationTTL)
 		verifyEmailUC := usecase.NewVerifyEmailUC(accRepo, vTokenRepo, smtpClient)
+		blockAccountUC := usecase.NewBlockAccountUC(accRepo, accRoleRepo)
+		deleteAccountUC := usecase.NewDeleteAccountUC(accRepo, accRoleRepo, accountPublisher)
 
 		handler := adaptergrpc.NewAuthHandler(
-			logger, registerUC, loginUC, logoutUC, refreshSessionUC,
-			validateAccessUC, assignRoleUC, sendVerificationUC, verifyEmailUC,
+			logger, registerUC, loginUC,
+			logoutUC, refreshSessionUC, validateAccessUC,
+			assignRoleUC, sendVerificationUC, verifyEmailUC,
+			blockAccountUC, deleteAccountUC,
 		)
 
 		// --- in-memory gRPC server via bufconn ---
@@ -163,6 +168,7 @@ func setupE2E(t *testing.T) *testApp {
 			pg:          pg,
 			redisC:      redisC,
 			email:       smtpClient,
+			publisher:   accountPublisher,
 			accRepo:     accRepo,
 			accRoleRepo: accRoleRepo,
 			tokenRepo:   vTokenRepo,
@@ -256,7 +262,7 @@ func (a *testApp) blockAccount(t *testing.T, accountID string) {
 }
 
 func (a *testApp) deleteAccount(t *testing.T, accountID string) {
-	uc := usecase.NewDeleteAccountUC(a.accRepo, a.accRoleRepo)
+	uc := usecase.NewDeleteAccountUC(a.accRepo, a.accRoleRepo, a.publisher)
 	out, err := uc.Execute(context.Background(), dto.DeleteAccountInput{AccountID: uuid.MustParse(accountID)})
 
 	require.NoError(t, err)

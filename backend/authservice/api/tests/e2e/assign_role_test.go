@@ -1,4 +1,4 @@
-//go:build e2e
+///go:build e2e
 
 package e2e
 
@@ -6,7 +6,9 @@ import (
 	"context"
 	"testing"
 
+	"github.com/brianvoe/gofakeit/v7"
 	"github.com/maket12/ads-service/backend/authservice/pkg/generated/auth_v1"
+	authutils "github.com/maket12/ads-service/backend/authservice/pkg/utils"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	"google.golang.org/grpc/codes"
@@ -15,7 +17,10 @@ import (
 
 func TestAssignRole_Success(t *testing.T) {
 	app := setupE2E(t)
-	ctx := context.Background()
+
+	ctx := authutils.PackAccountIDForGRPC(context.Background(), gofakeit.UUID())
+	ctx = authutils.PackAccountRoleForGRPC(ctx, "admin")
+
 	accountID, _, _ := app.createAccount(t, nil, nil, nil, nil, false)
 
 	t.Run("Successfully assigned to admin", func(t *testing.T) {
@@ -43,7 +48,10 @@ func TestAssignRole_Success(t *testing.T) {
 
 func TestAssignRole_BadCases(t *testing.T) {
 	app := setupE2E(t)
-	ctx := context.Background()
+
+	ctx := authutils.PackAccountIDForGRPC(context.Background(), gofakeit.UUID())
+	ctx = authutils.PackAccountRoleForGRPC(ctx, "admin")
+
 	accountID, _, _ := app.createAccount(t, nil, nil, nil, nil, false)
 
 	type testCase struct {
