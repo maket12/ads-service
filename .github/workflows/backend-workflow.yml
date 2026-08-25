@@ -27,9 +27,11 @@ jobs:
           cache-dependency-path: backend/**/go.sum
 
       - name: Run golangci-lint
-        # golangci-lint умеет корректно работать с ./... в контексте go.work
-        run: go run github.com/golangci/golangci-lint/cmd/golangci-lint@latest run ./...
-        working-directory: backend
+        uses: golangci/golangci-lint-action@v6
+        with:
+          version: v1.64.8
+          working-directory: backend
+          args: --timeout=5m ./adservice/... ./authservice/... ./gateway/... ./userservice/...
 
   tests:
     name: Run tests

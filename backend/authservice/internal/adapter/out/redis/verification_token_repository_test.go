@@ -7,6 +7,7 @@ import (
 	"time"
 
 	"github.com/google/uuid"
+	"github.com/maket12/ads-service/backend/authservice/internal/adapter/out/redis"
 	"github.com/maket12/ads-service/backend/authservice/internal/domain/model"
 	pkgerrs "github.com/maket12/ads-service/backend/authservice/pkg/errs"
 	"github.com/stretchr/testify/suite"
@@ -14,7 +15,7 @@ import (
 
 type VerificationTokenRepoSuite struct {
 	BaseRepoSuite
-	repo      *VerificationTokenRepository
+	repo      *redis.VerificationTokenRepository
 	testToken *model.VerificationToken
 }
 
@@ -22,7 +23,7 @@ func TestVerificationTokenRepoSuite(t *testing.T) { suite.Run(t, new(Verificatio
 
 func (s *VerificationTokenRepoSuite) SetupSuite() {
 	s.SetupBase()
-	s.repo = NewVerificationTokenRepository(s.redisClient)
+	s.repo = redis.NewVerificationTokenRepository(s.redisClient)
 }
 
 func (s *VerificationTokenRepoSuite) SetupTest() {
