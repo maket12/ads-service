@@ -122,6 +122,8 @@ func setupE2E(t *testing.T) *testApp {
 			_ = subscriber.Start(ctx)
 		}()
 
+		time.Sleep(1 * time.Second)
+
 		handler := adaptergrpc.NewUserHandler(
 			logger, getProfileUC, updateProfileUC,
 		)

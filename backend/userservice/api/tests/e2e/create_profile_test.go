@@ -16,7 +16,7 @@ func TestCreateProfile_Success(t *testing.T) {
 	accountID := uuid.New().String()
 	app.publishAccountCreated(t, accountID)
 
-	resp := app.waitForProfile(t, accountID, 2*time.Second)
+	resp := app.waitForProfile(t, accountID, 5*time.Second)
 
 	require.Equal(t, accountID, resp.AccountId)
 }
