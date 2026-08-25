@@ -213,9 +213,11 @@ func (a *testApp) createAd(t *testing.T, sellerID *string, payload *ad_v1.Create
 // Helper for e2e tests.
 // Publish ad by calling “PublishAd“ grpc method.
 //
-// Make sure you created the ad before and the owner has specified “seller id“.
-func (a *testApp) publishAd(t *testing.T, adID, sellerID string) {
-	ctx := utils.PackAccountIDForGRPC(context.Background(), sellerID)
+// Make sure you created the ad before.
+func (a *testApp) publishAd(t *testing.T, adID, adminID string) {
+	ctx := utils.PackAccountIDForGRPC(context.Background(), adminID)
+	ctx = utils.PackAccountRoleForGRPC(ctx, "admin")
+
 	resp, err := a.client.PublishAd(ctx, &ad_v1.PublishAdRequest{Id: adID})
 	require.NoError(t, err)
 	require.True(t, resp.GetSuccess())
@@ -224,9 +226,11 @@ func (a *testApp) publishAd(t *testing.T, adID, sellerID string) {
 // Helper for e2e tests.
 // Reject ad by calling “RejectAd“ grpc method.
 //
-// Make sure the ad is available and the owner has specified “seller id“.
-func (a *testApp) rejectAd(t *testing.T, adID, sellerID string) {
-	ctx := utils.PackAccountIDForGRPC(context.Background(), sellerID)
+// Make sure the ad is available.
+func (a *testApp) rejectAd(t *testing.T, adID, adminID string) {
+	ctx := utils.PackAccountIDForGRPC(context.Background(), adminID)
+	ctx = utils.PackAccountRoleForGRPC(ctx, "admin")
+
 	resp, err := a.client.RejectAd(ctx, &ad_v1.RejectAdRequest{Id: adID})
 	require.NoError(t, err)
 	require.True(t, resp.GetSuccess())

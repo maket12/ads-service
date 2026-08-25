@@ -18,8 +18,9 @@ import (
 func TestRejectAd_Success(t *testing.T) {
 	app := setupE2E(t)
 
-	adID, sellerID := app.createAd(t, nil, nil)
-	ctx := utils.PackAccountIDForGRPC(context.Background(), sellerID)
+	adID, _ := app.createAd(t, nil, nil)
+	ctx := utils.PackAccountIDForGRPC(context.Background(), gofakeit.UUID())
+	ctx = utils.PackAccountRoleForGRPC(ctx, "admin")
 
 	resp, err := app.client.RejectAd(ctx, &ad_v1.RejectAdRequest{Id: adID})
 
@@ -30,13 +31,14 @@ func TestRejectAd_Success(t *testing.T) {
 func TestRejectAd_BadCases(t *testing.T) {
 	app := setupE2E(t)
 
+	adminID := gofakeit.UUID()
 	adID, sellerID := app.createAd(t, nil, nil)
 	rejectedAdID, _ := app.createAd(t, &sellerID, nil)
-	app.rejectAd(t, rejectedAdID, sellerID)
+	app.rejectAd(t, rejectedAdID, adminID)
 
 	type testCase struct {
 		name          string
-		sellerID      string
+		adminID       string
 		adID          string
 		expectedCode  codes.Code
 		expectedError string
@@ -45,21 +47,21 @@ func TestRejectAd_BadCases(t *testing.T) {
 	var tests = []testCase{
 		{
 			name:          "Not Found - Ad Doesn't Exist",
-			sellerID:      sellerID,
+			adminID:       adminID,
 			adID:          gofakeit.UUID(),
 			expectedCode:  codes.NotFound,
 			expectedError: "ad not found",
 		},
 		{
 			name:          "Failed Precondition - Ad Has Been Rejected",
-			sellerID:      sellerID,
+			adminID:       adminID,
 			adID:          rejectedAdID,
 			expectedCode:  codes.FailedPrecondition,
 			expectedError: "ad has been already published or not available",
 		},
 		{
 			name:          "Unauthenticated",
-			sellerID:      "",
+			adminID:       "",
 			adID:          adID,
 			expectedCode:  codes.Unauthenticated,
 			expectedError: "you must be authenticated to make this request",
@@ -68,7 +70,8 @@ func TestRejectAd_BadCases(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			ctx := utils.PackAccountIDForGRPC(context.Background(), tt.sellerID)
+			ctx := utils.PackAccountIDForGRPC(context.Background(), tt.adminID)
+			ctx = utils.PackAccountRoleForGRPC(ctx, "admin")
 
 			resp, err := app.client.RejectAd(ctx, &ad_v1.RejectAdRequest{
 				Id: tt.adID,
