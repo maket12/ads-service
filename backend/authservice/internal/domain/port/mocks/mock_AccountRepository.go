@@ -5,7 +5,7 @@ package mocks
 import (
 	context "context"
 
-	model "github.com/maket12/ads-service/backend/authservice/internal/domain/model"
+	model "github.com/maket12/ads-service/backend/authservice/v2/internal/domain/model"
 	mock "github.com/stretchr/testify/mock"
 
 	uuid "github.com/google/uuid"

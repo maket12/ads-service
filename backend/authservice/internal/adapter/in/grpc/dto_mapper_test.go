@@ -5,9 +5,9 @@ import (
 
 	"github.com/brianvoe/gofakeit/v7"
 	"github.com/google/uuid"
-	"github.com/maket12/ads-service/backend/authservice/internal/app/dto"
-	"github.com/maket12/ads-service/backend/authservice/pkg/generated/auth_v1"
-	"github.com/maket12/ads-service/backend/authservice/pkg/utils"
+	"github.com/maket12/ads-service/backend/authservice/v2/internal/app/dto"
+	"github.com/maket12/ads-service/backend/authservice/v2/pkg/generated/auth_v1"
+	"github.com/maket12/ads-service/backend/authservice/v2/pkg/utils"
 	"github.com/stretchr/testify/require"
 )
 

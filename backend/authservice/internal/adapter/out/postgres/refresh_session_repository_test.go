@@ -8,9 +8,9 @@ import (
 
 	trmpgx "github.com/avito-tech/go-transaction-manager/drivers/pgxv5/v2"
 	"github.com/google/uuid"
-	adapterpg "github.com/maket12/ads-service/backend/authservice/internal/adapter/out/postgres"
-	"github.com/maket12/ads-service/backend/authservice/internal/domain/model"
-	pkgerrs "github.com/maket12/ads-service/backend/authservice/pkg/errs"
+	adapterpg "github.com/maket12/ads-service/backend/authservice/v2/internal/adapter/out/postgres"
+	"github.com/maket12/ads-service/backend/authservice/v2/internal/domain/model"
+	pkgerrs "github.com/maket12/ads-service/backend/authservice/v2/pkg/errs"
 	"github.com/stretchr/testify/suite"
 )
 

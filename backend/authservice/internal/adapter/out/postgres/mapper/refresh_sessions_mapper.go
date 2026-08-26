@@ -5,9 +5,9 @@ import (
 	"time"
 
 	"github.com/jackc/pgx/v5/pgtype"
-	"github.com/maket12/ads-service/backend/authservice/internal/adapter/out/postgres/sqlc"
-	"github.com/maket12/ads-service/backend/authservice/internal/domain/model"
-	"github.com/maket12/ads-service/backend/authservice/pkg/utils"
+	"github.com/maket12/ads-service/backend/authservice/v2/internal/adapter/out/postgres/sqlc"
+	"github.com/maket12/ads-service/backend/authservice/v2/internal/domain/model"
+	"github.com/maket12/ads-service/backend/authservice/v2/pkg/utils"
 
 	"github.com/google/uuid"
 )

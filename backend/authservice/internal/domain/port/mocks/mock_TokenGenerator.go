@@ -6,7 +6,7 @@ import (
 	context "context"
 
 	uuid "github.com/google/uuid"
-	port "github.com/maket12/ads-service/backend/authservice/internal/domain/port"
+	port "github.com/maket12/ads-service/backend/authservice/v2/internal/domain/port"
 	mock "github.com/stretchr/testify/mock"
 )
 

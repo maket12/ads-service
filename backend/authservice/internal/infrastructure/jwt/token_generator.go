@@ -8,8 +8,8 @@ import (
 
 	"github.com/golang-jwt/jwt/v5"
 	"github.com/google/uuid"
-	"github.com/maket12/ads-service/backend/authservice/internal/domain/port"
-	pkgerrs "github.com/maket12/ads-service/backend/authservice/pkg/errs"
+	"github.com/maket12/ads-service/backend/authservice/v2/internal/domain/port"
+	pkgerrs "github.com/maket12/ads-service/backend/authservice/v2/pkg/errs"
 )
 
 const leewayVal = 30 * time.Second

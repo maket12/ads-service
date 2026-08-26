@@ -6,7 +6,7 @@ import (
 	"fmt"
 
 	"github.com/google/uuid"
-	pkgrabbitmq "github.com/maket12/ads-service/backend/authservice/pkg/rabbitmq"
+	pkgrabbitmq "github.com/maket12/ads-service/backend/authservice/v2/pkg/rabbitmq"
 	amqp "github.com/rabbitmq/amqp091-go"
 )
 

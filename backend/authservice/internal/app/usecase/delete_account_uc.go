@@ -4,10 +4,10 @@ import (
 	"context"
 	"errors"
 
-	"github.com/maket12/ads-service/backend/authservice/internal/app/dto"
-	ucerrs "github.com/maket12/ads-service/backend/authservice/internal/app/errs"
-	"github.com/maket12/ads-service/backend/authservice/internal/domain/port"
-	pkgerrs "github.com/maket12/ads-service/backend/authservice/pkg/errs"
+	"github.com/maket12/ads-service/backend/authservice/v2/internal/app/dto"
+	ucerrs "github.com/maket12/ads-service/backend/authservice/v2/internal/app/errs"
+	"github.com/maket12/ads-service/backend/authservice/v2/internal/domain/port"
+	pkgerrs "github.com/maket12/ads-service/backend/authservice/v2/pkg/errs"
 )
 
 type DeleteAccountUC struct {

@@ -3,7 +3,7 @@ package redis
 import (
 	"time"
 
-	"github.com/maket12/ads-service/backend/authservice/internal/domain/model"
+	"github.com/maket12/ads-service/backend/authservice/v2/internal/domain/model"
 )
 
 func mapVerificationTokenToRedisDTO(vToken *model.VerificationToken) redisTokenDTO {
