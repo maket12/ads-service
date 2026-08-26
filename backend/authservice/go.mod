@@ -1,4 +1,4 @@
-module github.com/maket12/ads-service/backend/authservice
+module github.com/maket12/ads-service/backend/authservice/v2
 
 go 1.26.2
 
