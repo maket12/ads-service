@@ -48,7 +48,7 @@ func (uc *UpdateAdUC) Execute(ctx context.Context, in dto.UpdateAdInput) (dto.Up
 	}
 
 	// Update ad
-	err = ad.Update(in.Title, in.Description, in.Price, in.Images)
+	err = ad.Update(in.Title, in.Description, in.Price, in.Category, in.Images)
 	if err != nil {
 		if errors.Is(err, model.ErrAdCantBeUpdated) {
 			return dto.UpdateAdOutput{}, ucerrs.ErrCannotUpdate

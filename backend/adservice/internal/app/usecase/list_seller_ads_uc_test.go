@@ -29,7 +29,11 @@ func TestListSellerAdsUC_Execute(t *testing.T) {
 		{
 			name: "Success",
 			mockBehaviour: func(a *mocks.MockAdRepository, sellerID uuid.UUID) {
-				ad, _ := model.NewAd(sellerID, "title", nil, 100, nil)
+				ad, _ := model.NewAd(
+					sellerID, "title",
+					nil, 100,
+					model.CategoryFood.String(), nil,
+				)
 				a.EXPECT().
 					ListSellerAds(mock.Anything, sellerID).
 					Return([]*model.Ad{ad}, nil)

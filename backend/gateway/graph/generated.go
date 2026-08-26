@@ -38,6 +38,7 @@ type DirectiveRoot struct {
 
 type ComplexityRoot struct {
 	Ad struct {
+		Category    func(childComplexity int) int
 		CreatedAt   func(childComplexity int) int
 		Description func(childComplexity int) int
 		ID          func(childComplexity int) int
@@ -151,6 +152,12 @@ func (e *executableSchema) Complexity(ctx context.Context, typeName, field strin
 	_ = ec
 	switch typeName + "." + field {
 
+	case "Ad.category":
+		if e.ComplexityRoot.Ad.Category == nil {
+			break
+		}
+
+		return e.ComplexityRoot.Ad.Category(childComplexity), true
 	case "Ad.createdAt":
 		if e.ComplexityRoot.Ad.CreatedAt == nil {
 			break
@@ -638,6 +645,8 @@ func (ec *executionContext) childFields_Ad(ctx context.Context, field graphql.Co
 		return ec.fieldContext_Ad_description(ctx, field)
 	case "price":
 		return ec.fieldContext_Ad_price(ctx, field)
+	case "category":
+		return ec.fieldContext_Ad_category(ctx, field)
 	case "status":
 		return ec.fieldContext_Ad_status(ctx, field)
 	case "images":
@@ -1287,6 +1296,29 @@ func (ec *executionContext) _Ad_price(ctx context.Context, field graphql.Collect
 }
 func (ec *executionContext) fieldContext_Ad_price(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
 	return graphql.NewScalarFieldContext("Ad", field, false, false, errors.New("field of type Float does not have child fields"))
+}
+
+func (ec *executionContext) _Ad_category(ctx context.Context, field graphql.CollectedField, obj *model.Ad) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return ec.fieldContext_Ad_category(ctx, field)
+		},
+		func(ctx context.Context) (any, error) {
+			return obj.Category, nil
+		},
+		nil,
+		func(ctx context.Context, selections ast.SelectionSet, v string) graphql.Marshaler {
+			return ec.marshalNString2string(ctx, selections, v)
+		},
+		true,
+		true,
+	)
+}
+func (ec *executionContext) fieldContext_Ad_category(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	return graphql.NewScalarFieldContext("Ad", field, false, false, errors.New("field of type String does not have child fields"))
 }
 
 func (ec *executionContext) _Ad_status(ctx context.Context, field graphql.CollectedField, obj *model.Ad) (ret graphql.Marshaler) {
@@ -3749,7 +3781,7 @@ func (ec *executionContext) unmarshalInputCreateAdInput(ctx context.Context, obj
 		asMap[k] = v
 	}
 
-	fieldsInOrder := [...]string{"title", "description", "price", "images"}
+	fieldsInOrder := [...]string{"title", "description", "price", "category", "images"}
 	for _, k := range fieldsInOrder {
 		v, ok := asMap[k]
 		if !ok {
@@ -3777,6 +3809,13 @@ func (ec *executionContext) unmarshalInputCreateAdInput(ctx context.Context, obj
 				return it, err
 			}
 			it.Price = data
+		case "category":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("category"))
+			data, err := ec.unmarshalNString2string(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.Category = data
 		case "images":
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("images"))
 			data, err := ec.unmarshalOString2ᚕstringᚄ(ctx, v)
@@ -3932,7 +3971,7 @@ func (ec *executionContext) unmarshalInputUpdateAdInput(ctx context.Context, obj
 		asMap[k] = v
 	}
 
-	fieldsInOrder := [...]string{"adId", "title", "description", "price", "images"}
+	fieldsInOrder := [...]string{"adId", "title", "description", "price", "category", "images"}
 	for _, k := range fieldsInOrder {
 		v, ok := asMap[k]
 		if !ok {
@@ -3967,6 +4006,13 @@ func (ec *executionContext) unmarshalInputUpdateAdInput(ctx context.Context, obj
 				return it, err
 			}
 			it.Price = data
+		case "category":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("category"))
+			data, err := ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.Category = data
 		case "images":
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("images"))
 			data, err := ec.unmarshalOString2ᚕstringᚄ(ctx, v)
@@ -4079,6 +4125,11 @@ func (ec *executionContext) _Ad(ctx context.Context, sel ast.SelectionSet, obj *
 			}
 		case "price":
 			out.Values[i] = ec._Ad_price(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		case "category":
+			out.Values[i] = ec._Ad_category(ctx, field, obj)
 			if out.Values[i] == graphql.Null {
 				out.Invalids++
 			}

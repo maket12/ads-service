@@ -1,4 +1,4 @@
-//go:build e2e
+///go:build e2e
 
 package e2e
 
@@ -197,6 +197,7 @@ func (a *testApp) createAd(t *testing.T, sellerID *string, payload *ad_v1.Create
 			Title:       gofakeit.ProductName(),
 			Description: utils.VPtr(gofakeit.ProductDescription()),
 			Price:       int64(gofakeit.Price(10000, 50000)),
+			Category:    "food",
 			Images:      nil,
 		}
 	}

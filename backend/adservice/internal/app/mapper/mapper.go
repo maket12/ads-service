@@ -12,6 +12,7 @@ func mapDomainToAdDTO(ad *model.Ad) dto.Ad {
 		Title:       ad.Title(),
 		Description: ad.Description(),
 		Price:       ad.Price(),
+		Category:    ad.Category().String(),
 		Status:      ad.Status().String(),
 		Images:      ad.Images(),
 		CreatedAt:   ad.CreatedAt(),

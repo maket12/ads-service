@@ -20,6 +20,8 @@ func TestMapSQLCToAd(t *testing.T) {
 	sellerID := uuid.New()
 	description := gofakeit.Bio()
 	price := int64(gofakeit.Price(1000, 1000000))
+	category := model.CategoryServices
+	status := model.AdPublished
 	createdAt := gofakeit.Date()
 	updatedAt := gofakeit.Date()
 
@@ -31,8 +33,9 @@ func TestMapSQLCToAd(t *testing.T) {
 			String: description,
 			Valid:  true,
 		},
-		Price:  price,
-		Status: model.AdPublished.String(),
+		Price:    price,
+		Category: category.String(),
+		Status:   status.String(),
 		CreatedAt: pgtype.Timestamptz{
 			Time:  createdAt,
 			Valid: true,
@@ -44,15 +47,11 @@ func TestMapSQLCToAd(t *testing.T) {
 	}
 
 	expected := model.RestoreAd(
-		id,
-		sellerID,
-		raw.Title,
-		&description,
-		price,
-		model.AdPublished,
-		nil,
-		createdAt,
-		&updatedAt,
+		id, sellerID,
+		raw.Title, &description,
+		price, category,
+		status, nil,
+		createdAt, &updatedAt,
 	)
 
 	ad := mapper.MapSQLCToAd(raw)
@@ -66,6 +65,8 @@ func TestMapSQLCToAd_NilDescriptionAndUpdatedAt(t *testing.T) {
 	sellerID := uuid.New()
 	title := gofakeit.ProductName()
 	price := int64(gofakeit.Price(1000, 1000000))
+	category := model.CategoryServices
+	status := model.AdOnModeration
 	createdAt := gofakeit.Date()
 
 	raw := sqlc.Ad{
@@ -74,7 +75,8 @@ func TestMapSQLCToAd_NilDescriptionAndUpdatedAt(t *testing.T) {
 		Title:       title,
 		Description: pgtype.Text{Valid: false},
 		Price:       price,
-		Status:      model.AdOnModeration.String(),
+		Category:    category.String(),
+		Status:      status.String(),
 		CreatedAt: pgtype.Timestamptz{
 			Time:  createdAt,
 			Valid: true,
@@ -88,7 +90,8 @@ func TestMapSQLCToAd_NilDescriptionAndUpdatedAt(t *testing.T) {
 		title,
 		nil,
 		price,
-		model.AdOnModeration,
+		category,
+		status,
 		nil,
 		createdAt,
 		nil,
@@ -109,6 +112,7 @@ func TestMapAdToSQLCCreate(t *testing.T) {
 		gofakeit.ProductName(),
 		&testDesc,
 		testPrice,
+		model.CategoryServices.String(),
 		nil,
 	)
 	require.NoError(t, err)
@@ -127,8 +131,9 @@ func TestMapAdToSQLCCreate(t *testing.T) {
 			String: testDesc,
 			Valid:  true,
 		},
-		Price:  ad.Price(),
-		Status: string(ad.Status()),
+		Price:    ad.Price(),
+		Category: ad.Category().String(),
+		Status:   string(ad.Status()),
 		CreatedAt: pgtype.Timestamptz{
 			Time:  ad.CreatedAt(),
 			Valid: true,
@@ -150,6 +155,7 @@ func TestMapAdToSQLCUpdate(t *testing.T) {
 		gofakeit.ProductName(),
 		&testDesc,
 		testPrice,
+		model.CategoryServices.String(),
 		nil,
 	)
 	require.NoError(t, err)
@@ -168,8 +174,9 @@ func TestMapAdToSQLCUpdate(t *testing.T) {
 			String: testDesc,
 			Valid:  true,
 		},
-		Price:  ad.Price(),
-		Status: string(ad.Status()),
+		Price:    ad.Price(),
+		Category: ad.Category().String(),
+		Status:   string(ad.Status()),
 		CreatedAt: pgtype.Timestamptz{
 			Time:  ad.CreatedAt(),
 			Valid: true,
@@ -204,7 +211,8 @@ func TestMapSQLCToAdsList(t *testing.T) {
 			Title:       gofakeit.ProductName(),
 			Description: pgtype.Text{},
 			Price:       int64(gofakeit.Price(1000, 1000000)),
-			Status:      "deleted",
+			Category:    model.CategoryFood.String(),
+			Status:      model.AdDeleted.String(),
 			CreatedAt:   pgtype.Timestamptz{Time: gofakeit.Date(), Valid: true},
 			UpdatedAt:   pgtype.Timestamptz{},
 		},
@@ -214,7 +222,8 @@ func TestMapSQLCToAdsList(t *testing.T) {
 			Title:       gofakeit.ProductName(),
 			Description: pgtype.Text{},
 			Price:       int64(gofakeit.Price(1000, 1000000)),
-			Status:      "rejected",
+			Category:    model.CategoryMedicaments.String(),
+			Status:      model.AdRejected.String(),
 			CreatedAt:   pgtype.Timestamptz{Time: gofakeit.Date(), Valid: true},
 			UpdatedAt:   pgtype.Timestamptz{},
 		},
@@ -228,6 +237,7 @@ func TestMapSQLCToAdsList(t *testing.T) {
 			raw.Title,
 			nil,
 			raw.Price,
+			model.Category(raw.Category),
 			model.AdStatus(raw.Status),
 			nil,
 			raw.CreatedAt.Time,

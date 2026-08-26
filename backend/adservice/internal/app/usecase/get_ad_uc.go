@@ -50,7 +50,7 @@ func (uc *GetAdUC) Execute(ctx context.Context, in dto.GetAdInput) (dto.GetAdOut
 
 	if !ad.IsDeleted() && !ad.IsRejected() {
 		// Add images into rich model
-		err = ad.Update(nil, nil, nil, images)
+		err = ad.Update(nil, nil, nil, nil, images)
 		if err != nil {
 			return dto.GetAdOutput{}, ucerrs.Wrap(
 				ucerrs.ErrInvalidInput, err,

@@ -28,6 +28,7 @@ func MapSQLCToAd(rawAd sqlc.Ad) *model.Ad {
 		rawAd.Title,
 		description,
 		rawAd.Price,
+		model.Category(rawAd.Category),
 		model.AdStatus(rawAd.Status),
 		nil,
 		rawAd.CreatedAt.Time,
@@ -67,6 +68,7 @@ func MapAdToSQLCCreate(ad *model.Ad) sqlc.CreateAdParams {
 		Title:       ad.Title(),
 		Description: description,
 		Price:       ad.Price(),
+		Category:    ad.Category().String(),
 		Status:      ad.Status().String(),
 		CreatedAt: pgtype.Timestamptz{
 			Time:  ad.CreatedAt(),
@@ -108,6 +110,7 @@ func MapAdToSQLCUpdate(ad *model.Ad) sqlc.UpdateAdParams {
 		Title:       ad.Title(),
 		Description: description,
 		Price:       ad.Price(),
+		Category:    ad.Category().String(),
 		Status:      ad.Status().String(),
 		CreatedAt: pgtype.Timestamptz{
 			Time:  ad.CreatedAt(),

@@ -32,6 +32,7 @@ func (s *AdRepoSuite) SetupSuite() {
 		"Lamborghini X5",
 		nil,
 		int64(1000000),
+		model.CategoryVehicles.String(),
 		[]string{"overview.png", "salon.png", "circles.jpeg"},
 	)
 }
@@ -76,7 +77,8 @@ func (s *AdRepoSuite) TestUpdate() {
 	)
 
 	_ = updatedAd.Update(
-		&testTitle, nil, &testPrice, nil,
+		&testTitle, nil,
+		&testPrice, nil, nil,
 	)
 
 	// Update
@@ -112,6 +114,7 @@ func (s *AdRepoSuite) TestDeleteAllAds() {
 		"New car",
 		nil,
 		int64(300000),
+		model.CategoryVehicles.String(),
 		nil,
 	)
 
@@ -139,6 +142,7 @@ func (s *AdRepoSuite) TestListAds() {
 		"New car",
 		nil,
 		int64(300000),
+		model.CategoryVehicles.String(),
 		nil,
 	)
 
@@ -185,6 +189,7 @@ func (s *AdRepoSuite) TestListSellerAds() {
 		"New car",
 		nil,
 		int64(300000),
+		model.CategoryVehicles.String(),
 		nil,
 	)
 	anotherAd2, _ := model.NewAd(
@@ -192,6 +197,7 @@ func (s *AdRepoSuite) TestListSellerAds() {
 		"New car",
 		nil,
 		int64(300000),
+		model.CategoryVehicles.String(),
 		nil,
 	)
 

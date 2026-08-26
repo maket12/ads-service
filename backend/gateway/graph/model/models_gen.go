@@ -16,6 +16,7 @@ type Ad struct {
 	Title       string   `json:"title"`
 	Description *string  `json:"description,omitempty"`
 	Price       float64  `json:"price"`
+	Category    string   `json:"category"`
 	Status      AdStatus `json:"status"`
 	Images      []string `json:"images,omitempty"`
 	CreatedAt   string   `json:"createdAt"`
@@ -26,6 +27,7 @@ type CreateAdInput struct {
 	Title       string   `json:"title"`
 	Description *string  `json:"description,omitempty"`
 	Price       float64  `json:"price"`
+	Category    string   `json:"category"`
 	Images      []string `json:"images,omitempty"`
 }
 
@@ -70,6 +72,7 @@ type UpdateAdInput struct {
 	Title       *string  `json:"title,omitempty"`
 	Description *string  `json:"description,omitempty"`
 	Price       *float64 `json:"price,omitempty"`
+	Category    *string  `json:"category,omitempty"`
 	Images      []string `json:"images,omitempty"`
 }
 

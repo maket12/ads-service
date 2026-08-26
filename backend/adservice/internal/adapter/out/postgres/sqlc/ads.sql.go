@@ -18,11 +18,12 @@ INSERT INTO ads (
     title,
     description,
     price,
+    category,
     status,
     created_at,
     updated_at
 ) VALUES (
-    $1, $2, $3, $4, $5, $6, $7, $8
+    $1, $2, $3, $4, $5, $6, $7, $8, $9
 )
 `
 
@@ -32,6 +33,7 @@ type CreateAdParams struct {
 	Title       string
 	Description pgtype.Text
 	Price       int64
+	Category    string
 	Status      string
 	CreatedAt   pgtype.Timestamptz
 	UpdatedAt   pgtype.Timestamptz
@@ -44,6 +46,7 @@ func (q *Queries) CreateAd(ctx context.Context, db DBTX, arg CreateAdParams) err
 		arg.Title,
 		arg.Description,
 		arg.Price,
+		arg.Category,
 		arg.Status,
 		arg.CreatedAt,
 		arg.UpdatedAt,
@@ -78,6 +81,7 @@ SELECT
     title,
     description,
     price,
+    category,
     status,
     created_at,
     updated_at
@@ -94,6 +98,7 @@ func (q *Queries) GetAd(ctx context.Context, db DBTX, id pgtype.UUID) (Ad, error
 		&i.Title,
 		&i.Description,
 		&i.Price,
+		&i.Category,
 		&i.Status,
 		&i.CreatedAt,
 		&i.UpdatedAt,
@@ -108,6 +113,7 @@ SELECT
     title,
     description,
     price,
+    category,
     status,
     created_at,
     updated_at
@@ -136,6 +142,7 @@ func (q *Queries) ListAds(ctx context.Context, db DBTX, arg ListAdsParams) ([]Ad
 			&i.Title,
 			&i.Description,
 			&i.Price,
+			&i.Category,
 			&i.Status,
 			&i.CreatedAt,
 			&i.UpdatedAt,
@@ -157,6 +164,7 @@ SELECT
     title,
     description,
     price,
+    category,
     status,
     created_at,
     updated_at
@@ -179,6 +187,7 @@ func (q *Queries) ListSellerAds(ctx context.Context, db DBTX, sellerID pgtype.UU
 			&i.Title,
 			&i.Description,
 			&i.Price,
+			&i.Category,
 			&i.Status,
 			&i.CreatedAt,
 			&i.UpdatedAt,
@@ -200,9 +209,10 @@ SET
     title = $3,
     description = $4,
     price = $5,
-    status = $6,
-    created_at = $7,
-    updated_at = $8
+    category = $6,
+    status = $7,
+    created_at = $8,
+    updated_at = $9
 WHERE id = $1
 `
 
@@ -212,6 +222,7 @@ type UpdateAdParams struct {
 	Title       string
 	Description pgtype.Text
 	Price       int64
+	Category    string
 	Status      string
 	CreatedAt   pgtype.Timestamptz
 	UpdatedAt   pgtype.Timestamptz
@@ -224,6 +235,7 @@ func (q *Queries) UpdateAd(ctx context.Context, db DBTX, arg UpdateAdParams) err
 		arg.Title,
 		arg.Description,
 		arg.Price,
+		arg.Category,
 		arg.Status,
 		arg.CreatedAt,
 		arg.UpdatedAt,

@@ -36,7 +36,12 @@ func TestGetAdUC_Execute(t *testing.T) {
 	images := []string{"img1.png"}
 
 	newAd := func() *model.Ad {
-		ad, _ := model.NewAd(sellerID, "title", nil, 100, nil)
+		ad, _ := model.NewAd(
+			sellerID, "title",
+			nil, 100,
+			model.CategoryServices.String(),
+			nil,
+		)
 		return ad
 	}
 	publishedAd := func() *model.Ad {

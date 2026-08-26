@@ -1,4 +1,4 @@
-//go:build e2e
+///go:build e2e
 
 package e2e
 
@@ -26,6 +26,7 @@ func TestCreateAd_Success(t *testing.T) {
 		Title:       gofakeit.BookTitle(),
 		Description: utils.VPtr(gofakeit.ProductDescription()),
 		Price:       gofakeit.Int64(),
+		Category:    "food",
 		Images:      []string{gofakeit.URL(), gofakeit.URL()},
 	})
 
@@ -42,6 +43,7 @@ func TestCreateAd_BadCases(t *testing.T) {
 		title         string
 		description   *string
 		price         int64
+		category      string
 		images        []string
 		expectedCode  codes.Code
 		expectedError string
@@ -54,6 +56,7 @@ func TestCreateAd_BadCases(t *testing.T) {
 			title:         gofakeit.ProductName(),
 			description:   utils.VPtr(gofakeit.ProductDescription()),
 			price:         10000,
+			category:      "food",
 			images:        nil,
 			expectedCode:  codes.InvalidArgument,
 			expectedError: "invalid input",
@@ -64,6 +67,7 @@ func TestCreateAd_BadCases(t *testing.T) {
 			title:         "",
 			description:   utils.VPtr(gofakeit.ProductDescription()),
 			price:         20000,
+			category:      "food",
 			images:        nil,
 			expectedCode:  codes.InvalidArgument,
 			expectedError: "invalid input",
@@ -74,6 +78,7 @@ func TestCreateAd_BadCases(t *testing.T) {
 			title:         gofakeit.ProductName(),
 			description:   utils.VPtr(strings.Repeat(gofakeit.ProductDescription(), 100)),
 			price:         300,
+			category:      "food",
 			images:        nil,
 			expectedCode:  codes.InvalidArgument,
 			expectedError: "invalid input",
@@ -84,6 +89,18 @@ func TestCreateAd_BadCases(t *testing.T) {
 			title:         gofakeit.ProductName(),
 			description:   utils.VPtr(gofakeit.ProductDescription()),
 			price:         -100,
+			category:      "food",
+			images:        nil,
+			expectedCode:  codes.InvalidArgument,
+			expectedError: "invalid input",
+		},
+		{
+			name:          "Invalid Argument - Unknown Category",
+			sellerID:      gofakeit.UUID(),
+			title:         gofakeit.ProductName(),
+			description:   utils.VPtr(gofakeit.ProductDescription()),
+			price:         100,
+			category:      "unsupported",
 			images:        nil,
 			expectedCode:  codes.InvalidArgument,
 			expectedError: "invalid input",
@@ -94,6 +111,7 @@ func TestCreateAd_BadCases(t *testing.T) {
 			title:         gofakeit.ProductName(),
 			description:   utils.VPtr(gofakeit.ProductDescription()),
 			price:         10000,
+			category:      "food",
 			images:        nil,
 			expectedCode:  codes.Unauthenticated,
 			expectedError: "you must be authenticated to make this request",

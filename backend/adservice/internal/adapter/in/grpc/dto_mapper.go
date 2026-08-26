@@ -14,6 +14,7 @@ func MapCreateAdPbToDTO(req *ad_v1.CreateAdRequest, sellerID uuid.UUID) dto.Crea
 		Title:       req.GetTitle(),
 		Description: req.Description,
 		Price:       req.GetPrice(),
+		Category:    req.Category,
 		Images:      req.GetImages(),
 	}
 }
@@ -42,6 +43,7 @@ func mapAdDTOToPB(ad dto.Ad) *ad_v1.Ad {
 		Title:       ad.Title,
 		Description: ad.Description,
 		Price:       ad.Price,
+		Category:    ad.Category,
 		Status:      ad.Status,
 		Images:      ad.Images,
 		CreatedAt:   timestamppb.New(ad.CreatedAt),
@@ -61,6 +63,7 @@ func MapUpdateAdPbToDTO(req *ad_v1.UpdateAdRequest, sellerID uuid.UUID) dto.Upda
 		Title:       req.Title,
 		Description: req.Description,
 		Price:       req.Price,
+		Category:    req.Category,
 		Images:      req.Images,
 	}
 }
