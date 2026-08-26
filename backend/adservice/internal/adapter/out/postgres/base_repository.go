@@ -5,8 +5,8 @@ import (
 
 	trmpgx "github.com/avito-tech/go-transaction-manager/drivers/pgxv5/v2"
 	"github.com/jackc/pgx/v5/pgxpool"
-	"github.com/maket12/ads-service/backend/adservice/internal/adapter/out/postgres/sqlc"
-	pkgpostgres "github.com/maket12/ads-service/backend/adservice/pkg/postgres"
+	"github.com/maket12/ads-service/backend/adservice/v2/internal/adapter/out/postgres/sqlc"
+	pkgpostgres "github.com/maket12/ads-service/backend/adservice/v2/pkg/postgres"
 )
 
 type BaseRepository struct {

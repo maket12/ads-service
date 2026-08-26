@@ -9,9 +9,9 @@ import (
 	trmpgx "github.com/avito-tech/go-transaction-manager/drivers/pgxv5/v2"
 	_ "github.com/golang-migrate/migrate/v4/database/postgres"
 	"github.com/google/uuid"
-	adapterpostgres "github.com/maket12/ads-service/backend/adservice/internal/adapter/out/postgres"
-	"github.com/maket12/ads-service/backend/adservice/internal/domain/model"
-	pkgerrs "github.com/maket12/ads-service/backend/adservice/pkg/errs"
+	adapterpostgres "github.com/maket12/ads-service/backend/adservice/v2/internal/adapter/out/postgres"
+	"github.com/maket12/ads-service/backend/adservice/v2/internal/domain/model"
+	pkgerrs "github.com/maket12/ads-service/backend/adservice/v2/pkg/errs"
 	"github.com/stretchr/testify/suite"
 )
 

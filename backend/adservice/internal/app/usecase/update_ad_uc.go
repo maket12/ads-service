@@ -5,11 +5,11 @@ import (
 	"errors"
 
 	"github.com/avito-tech/go-transaction-manager/trm/v2"
-	"github.com/maket12/ads-service/backend/adservice/internal/app/dto"
-	ucerrs "github.com/maket12/ads-service/backend/adservice/internal/app/errs"
-	"github.com/maket12/ads-service/backend/adservice/internal/domain/model"
-	"github.com/maket12/ads-service/backend/adservice/internal/domain/port"
-	pkgerrs "github.com/maket12/ads-service/backend/adservice/pkg/errs"
+	"github.com/maket12/ads-service/backend/adservice/v2/internal/app/dto"
+	ucerrs "github.com/maket12/ads-service/backend/adservice/v2/internal/app/errs"
+	"github.com/maket12/ads-service/backend/adservice/v2/internal/domain/model"
+	"github.com/maket12/ads-service/backend/adservice/v2/internal/domain/port"
+	pkgerrs "github.com/maket12/ads-service/backend/adservice/v2/pkg/errs"
 )
 
 type UpdateAdUC struct {

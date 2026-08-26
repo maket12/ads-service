@@ -7,8 +7,8 @@ import (
 	"testing"
 
 	"github.com/brianvoe/gofakeit/v7"
-	"github.com/maket12/ads-service/backend/adservice/pkg/generated/ad_v1"
-	"github.com/maket12/ads-service/backend/adservice/pkg/utils"
+	"github.com/maket12/ads-service/backend/adservice/v2/pkg/generated/ad_v1"
+	"github.com/maket12/ads-service/backend/adservice/v2/pkg/utils"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	"google.golang.org/grpc/codes"

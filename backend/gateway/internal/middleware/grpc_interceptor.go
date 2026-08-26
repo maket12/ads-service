@@ -3,7 +3,7 @@ package middleware
 import (
 	"context"
 
-	"github.com/maket12/ads-service/backend/authservice/pkg/utils"
+	"github.com/maket12/ads-service/backend/authservice/v2/pkg/utils"
 	"google.golang.org/grpc"
 )
 

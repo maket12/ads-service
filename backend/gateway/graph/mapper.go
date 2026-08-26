@@ -1,8 +1,8 @@
 package graph
 
 import (
-	"github.com/maket12/ads-service/backend/adservice/pkg/generated/ad_v1"
-	authutils "github.com/maket12/ads-service/backend/authservice/pkg/utils"
+	"github.com/maket12/ads-service/backend/adservice/v2/pkg/generated/ad_v1"
+	authutils "github.com/maket12/ads-service/backend/authservice/v2/pkg/utils"
 	"github.com/maket12/ads-service/backend/gateway/graph/model"
 	"github.com/vektah/gqlparser/v2/gqlerror"
 	"google.golang.org/grpc/codes"

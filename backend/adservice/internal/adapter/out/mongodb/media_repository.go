@@ -5,7 +5,7 @@ import (
 	"errors"
 	"time"
 
-	pkgmongo "github.com/maket12/ads-service/backend/adservice/pkg/mongodb"
+	pkgmongo "github.com/maket12/ads-service/backend/adservice/v2/pkg/mongodb"
 
 	"github.com/google/uuid"
 	"go.mongodb.org/mongo-driver/v2/bson"
