@@ -1,8 +1,8 @@
 package mapper
 
 import (
-	"github.com/maket12/ads-service/backend/userservice/internal/app/dto"
-	"github.com/maket12/ads-service/backend/userservice/internal/domain/model"
+	"github.com/maket12/ads-service/backend/userservice/v2/internal/app/dto"
+	"github.com/maket12/ads-service/backend/userservice/v2/internal/domain/model"
 )
 
 func MapProfileToGetProfileDTO(p *model.Profile) dto.GetProfileOutput {

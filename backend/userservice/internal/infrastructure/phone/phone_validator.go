@@ -3,7 +3,7 @@ package phone
 import (
 	"context"
 
-	pkgerrs "github.com/maket12/ads-service/backend/userservice/pkg/errs"
+	pkgerrs "github.com/maket12/ads-service/backend/userservice/v2/pkg/errs"
 
 	"github.com/nyaruka/phonenumbers"
 )

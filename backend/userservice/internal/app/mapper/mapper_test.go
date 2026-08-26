@@ -6,9 +6,9 @@ import (
 
 	"github.com/brianvoe/gofakeit/v7"
 	"github.com/google/uuid"
-	"github.com/maket12/ads-service/backend/userservice/internal/app/mapper"
-	"github.com/maket12/ads-service/backend/userservice/internal/domain/model"
-	"github.com/maket12/ads-service/backend/userservice/pkg/utils"
+	"github.com/maket12/ads-service/backend/userservice/v2/internal/app/mapper"
+	"github.com/maket12/ads-service/backend/userservice/v2/internal/domain/model"
+	"github.com/maket12/ads-service/backend/userservice/v2/pkg/utils"
 	"github.com/stretchr/testify/assert"
 )
 

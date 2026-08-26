@@ -4,7 +4,7 @@ import (
 	"context"
 	"testing"
 
-	"github.com/maket12/ads-service/backend/userservice/internal/infrastructure/phone"
+	"github.com/maket12/ads-service/backend/userservice/v2/internal/infrastructure/phone"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
