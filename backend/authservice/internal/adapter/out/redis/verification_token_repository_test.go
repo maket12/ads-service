@@ -7,9 +7,9 @@ import (
 	"time"
 
 	"github.com/google/uuid"
-	"github.com/maket12/ads-service/backend/authservice/v2/internal/adapter/out/redis"
-	"github.com/maket12/ads-service/backend/authservice/v2/internal/domain/model"
-	pkgerrs "github.com/maket12/ads-service/backend/authservice/v2/pkg/errs"
+	"github.com/maket12/ads-service/backend/authservice/internal/adapter/out/redis"
+	"github.com/maket12/ads-service/backend/authservice/internal/domain/model"
+	pkgerrs "github.com/maket12/ads-service/backend/authservice/pkg/errs"
 	"github.com/stretchr/testify/suite"
 )
 

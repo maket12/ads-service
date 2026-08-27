@@ -5,9 +5,9 @@ import (
 	"testing"
 
 	"github.com/jackc/pgx/v5/pgtype"
-	"github.com/maket12/ads-service/backend/adservice/v2/internal/adapter/out/postgres/mapper"
-	"github.com/maket12/ads-service/backend/adservice/v2/internal/adapter/out/postgres/sqlc"
-	"github.com/maket12/ads-service/backend/adservice/v2/internal/domain/model"
+	"github.com/maket12/ads-service/backend/adservice/internal/adapter/out/postgres/mapper"
+	"github.com/maket12/ads-service/backend/adservice/internal/adapter/out/postgres/sqlc"
+	"github.com/maket12/ads-service/backend/adservice/internal/domain/model"
 
 	"github.com/brianvoe/gofakeit/v7"
 	"github.com/google/uuid"

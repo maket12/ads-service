@@ -8,6 +8,6 @@ outpkg: "mocks"
 
 
 packages:
-  github.com/maket12/ads-service/backend/userservice/v2/internal/domain/port:
+  github.com/maket12/ads-service/backend/userservice/internal/domain/port:
     config:
       all: true

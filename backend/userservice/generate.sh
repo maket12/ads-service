@@ -5,7 +5,7 @@ set -euo pipefail
 SERVICE_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
 # Go module path, must match the "module" line in the root go.mod
-MODULE_NAME="github.com/maket12/ads-service/backend/userservice/v2"
+MODULE_NAME="github.com/maket12/ads-service/backend/userservice"
 
 # Root of the go module (repo root), one level above the microservice
 MODULE_ROOT="$(cd "${SERVICE_ROOT}/.." && pwd)"

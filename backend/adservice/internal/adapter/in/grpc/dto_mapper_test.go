@@ -5,9 +5,9 @@ import (
 	"time"
 
 	"github.com/google/uuid"
-	"github.com/maket12/ads-service/backend/adservice/v2/internal/adapter/in/grpc"
-	"github.com/maket12/ads-service/backend/adservice/v2/internal/app/dto"
-	"github.com/maket12/ads-service/backend/adservice/v2/pkg/generated/ad_v1"
+	"github.com/maket12/ads-service/backend/adservice/internal/adapter/in/grpc"
+	"github.com/maket12/ads-service/backend/adservice/internal/app/dto"
+	"github.com/maket12/ads-service/backend/adservice/pkg/generated/ad_v1"
 	"github.com/stretchr/testify/assert"
 )
 

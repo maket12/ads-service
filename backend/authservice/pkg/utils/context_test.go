@@ -5,7 +5,7 @@ import (
 	"testing"
 
 	"github.com/google/uuid"
-	"github.com/maket12/ads-service/backend/authservice/v2/pkg/utils"
+	"github.com/maket12/ads-service/backend/authservice/pkg/utils"
 	"github.com/stretchr/testify/assert"
 	"google.golang.org/grpc/metadata"
 )

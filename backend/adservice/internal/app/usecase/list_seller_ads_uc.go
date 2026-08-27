@@ -3,10 +3,10 @@ package usecase
 import (
 	"context"
 
-	"github.com/maket12/ads-service/backend/adservice/v2/internal/app/dto"
-	ucerrs "github.com/maket12/ads-service/backend/adservice/v2/internal/app/errs"
-	"github.com/maket12/ads-service/backend/adservice/v2/internal/app/mapper"
-	"github.com/maket12/ads-service/backend/adservice/v2/internal/domain/port"
+	"github.com/maket12/ads-service/backend/adservice/internal/app/dto"
+	ucerrs "github.com/maket12/ads-service/backend/adservice/internal/app/errs"
+	"github.com/maket12/ads-service/backend/adservice/internal/app/mapper"
+	"github.com/maket12/ads-service/backend/adservice/internal/domain/port"
 )
 
 type ListSellerAdsUC struct{ ad port.AdRepository }

@@ -4,10 +4,10 @@ import (
 	"context"
 	"log/slog"
 
-	"github.com/maket12/ads-service/backend/userservice/v2/internal/app/dto"
-	"github.com/maket12/ads-service/backend/userservice/v2/internal/app/usecase"
-	"github.com/maket12/ads-service/backend/userservice/v2/pkg/generated/user_v1"
-	"github.com/maket12/ads-service/backend/userservice/v2/pkg/utils"
+	"github.com/maket12/ads-service/backend/userservice/internal/app/dto"
+	"github.com/maket12/ads-service/backend/userservice/internal/app/usecase"
+	"github.com/maket12/ads-service/backend/userservice/pkg/generated/user_v1"
+	"github.com/maket12/ads-service/backend/userservice/pkg/utils"
 	"google.golang.org/grpc/codes"
 
 	"github.com/google/uuid"

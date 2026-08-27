@@ -3,7 +3,7 @@ package model
 import (
 	"strings"
 
-	pkgerrs "github.com/maket12/ads-service/backend/authservice/v2/pkg/errs"
+	pkgerrs "github.com/maket12/ads-service/backend/authservice/pkg/errs"
 
 	"github.com/google/uuid"
 )

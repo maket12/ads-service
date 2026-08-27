@@ -1,6 +1,6 @@
 package model
 
-import pkgerrs "github.com/maket12/ads-service/backend/userservice/v2/pkg/errs"
+import pkgerrs "github.com/maket12/ads-service/backend/authservice/pkg/errs"
 
 type Category string
 

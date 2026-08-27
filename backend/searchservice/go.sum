@@ -1,7 +1,7 @@
 github.com/google/go-cmp v0.7.0 h1:wk8382ETsv4JYUZwIsn6YpYiWiBsYLSJiTsyBybVuN8=
 github.com/google/go-cmp v0.7.0/go.mod h1:pXiqmnSA92OHEEa9HXL2W4E7lf9JzCmGVUdgjX3N/iU=
-github.com/maket12/ads-service/backend/authservice/v2 v2.2.1 h1:gngWso6guHgXJrQgZaaG+2h3fSw6Z+9TozftyFLg55A=
-github.com/maket12/ads-service/backend/authservice/v2 v2.2.1/go.mod h1:i6CS1/SY7N647qS4D9owKdxxr1rgXQRVUevQt3uFW2A=
+github.com/maket12/ads-service/backend/authservice v2.2.1 h1:gngWso6guHgXJrQgZaaG+2h3fSw6Z+9TozftyFLg55A=
+github.com/maket12/ads-service/backend/authservice v2.2.1/go.mod h1:i6CS1/SY7N647qS4D9owKdxxr1rgXQRVUevQt3uFW2A=
 golang.org/x/sys v0.47.0 h1:o7XGOvZQCADBQQ4Y7VNq2dRWQR7JmOUW8Kxx4ZsNgWs=
 golang.org/x/sys v0.47.0/go.mod h1:4GL1E5IUh+htKOUEOaiffhrAeqysfVGipDYzABqnCmw=
 google.golang.org/genproto/googleapis/rpc v0.0.0-20260414002931-afd174a4e478 h1:RmoJA1ujG+/lRGNfUnOMfhCy5EipVMyvUE+KNbPbTlw=

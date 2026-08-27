@@ -1,4 +1,4 @@
-///go:build e2e
+//go:build e2e
 
 package e2e
 
@@ -6,8 +6,8 @@ import (
 	"context"
 	"testing"
 
-	"github.com/maket12/ads-service/backend/adservice/v2/pkg/generated/ad_v1"
-	"github.com/maket12/ads-service/backend/adservice/v2/pkg/utils"
+	"github.com/maket12/ads-service/backend/adservice/pkg/generated/ad_v1"
+	"github.com/maket12/ads-service/backend/adservice/pkg/utils"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	"google.golang.org/grpc/codes"

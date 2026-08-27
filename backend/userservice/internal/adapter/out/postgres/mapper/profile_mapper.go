@@ -4,8 +4,8 @@ import (
 	"time"
 
 	"github.com/jackc/pgx/v5/pgtype"
-	"github.com/maket12/ads-service/backend/userservice/v2/internal/adapter/out/postgres/sqlc"
-	"github.com/maket12/ads-service/backend/userservice/v2/internal/domain/model"
+	"github.com/maket12/ads-service/backend/userservice/internal/adapter/out/postgres/sqlc"
+	"github.com/maket12/ads-service/backend/userservice/internal/domain/model"
 )
 
 func MapProfileToSQLCCreate(profile *model.Profile) sqlc.CreateProfileParams {

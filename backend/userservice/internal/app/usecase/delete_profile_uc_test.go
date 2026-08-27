@@ -6,10 +6,10 @@ import (
 	"testing"
 
 	"github.com/google/uuid"
-	"github.com/maket12/ads-service/backend/userservice/v2/internal/app/dto"
-	ucerrs "github.com/maket12/ads-service/backend/userservice/v2/internal/app/errs"
-	"github.com/maket12/ads-service/backend/userservice/v2/internal/app/usecase"
-	"github.com/maket12/ads-service/backend/userservice/v2/internal/domain/port/mocks"
+	"github.com/maket12/ads-service/backend/userservice/internal/app/dto"
+	ucerrs "github.com/maket12/ads-service/backend/userservice/internal/app/errs"
+	"github.com/maket12/ads-service/backend/userservice/internal/app/usecase"
+	"github.com/maket12/ads-service/backend/userservice/internal/domain/port/mocks"
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"

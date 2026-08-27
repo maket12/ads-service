@@ -7,8 +7,8 @@ import (
 
 	"github.com/brianvoe/gofakeit/v7"
 	"github.com/maket12/ads-service/backend/adservice/internal/domain/model"
-	pkgerrs "github.com/maket12/ads-service/backend/adservice/v2/pkg/errs"
-	"github.com/maket12/ads-service/backend/adservice/v2/pkg/utils"
+	pkgerrs "github.com/maket12/ads-service/backend/adservice/pkg/errs"
+	"github.com/maket12/ads-service/backend/adservice/pkg/utils"
 
 	"github.com/google/uuid"
 	"github.com/stretchr/testify/assert"

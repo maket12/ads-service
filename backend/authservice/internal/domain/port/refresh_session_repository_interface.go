@@ -4,7 +4,7 @@ import (
 	"context"
 	"time"
 
-	"github.com/maket12/ads-service/backend/authservice/v2/internal/domain/model"
+	"github.com/maket12/ads-service/backend/authservice/internal/domain/model"
 
 	"github.com/google/uuid"
 )

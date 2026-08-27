@@ -6,11 +6,11 @@ import (
 
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5/pgtype"
-	"github.com/maket12/ads-service/backend/authservice/v2/internal/adapter/out/postgres/mapper"
+	"github.com/maket12/ads-service/backend/authservice/internal/adapter/out/postgres/mapper"
 	"github.com/stretchr/testify/require"
 
-	"github.com/maket12/ads-service/backend/authservice/v2/internal/adapter/out/postgres/sqlc"
-	"github.com/maket12/ads-service/backend/authservice/v2/internal/domain/model"
+	"github.com/maket12/ads-service/backend/authservice/internal/adapter/out/postgres/sqlc"
+	"github.com/maket12/ads-service/backend/authservice/internal/domain/model"
 )
 
 func TestMapAccountToSQLCCreate(t *testing.T) {

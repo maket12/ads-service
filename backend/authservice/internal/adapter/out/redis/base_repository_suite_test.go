@@ -5,7 +5,7 @@ package redis_test
 import (
 	"context"
 
-	pkgredis "github.com/maket12/ads-service/backend/authservice/v2/pkg/redis"
+	pkgredis "github.com/maket12/ads-service/backend/authservice/pkg/redis"
 	"github.com/stretchr/testify/suite"
 )
 

@@ -4,7 +4,7 @@ import (
 	"context"
 	"errors"
 
-	pkgerrs "github.com/maket12/ads-service/backend/userservice/v2/pkg/errs"
+	pkgerrs "github.com/maket12/ads-service/backend/userservice/pkg/errs"
 
 	"github.com/google/uuid"
 	"google.golang.org/grpc/metadata"

@@ -3,9 +3,9 @@ package usecase
 import (
 	"context"
 
-	"github.com/maket12/ads-service/backend/userservice/v2/internal/app/dto"
-	ucerrs "github.com/maket12/ads-service/backend/userservice/v2/internal/app/errs"
-	"github.com/maket12/ads-service/backend/userservice/v2/internal/domain/port"
+	"github.com/maket12/ads-service/backend/userservice/internal/app/dto"
+	ucerrs "github.com/maket12/ads-service/backend/userservice/internal/app/errs"
+	"github.com/maket12/ads-service/backend/userservice/internal/domain/port"
 )
 
 type DeleteProfileUC struct {

@@ -4,8 +4,8 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/maket12/ads-service/backend/authservice/v2/internal/domain/model"
-	pkgerrs "github.com/maket12/ads-service/backend/authservice/v2/pkg/errs"
+	"github.com/maket12/ads-service/backend/authservice/internal/domain/model"
+	pkgerrs "github.com/maket12/ads-service/backend/authservice/pkg/errs"
 
 	"github.com/google/uuid"
 	"github.com/stretchr/testify/assert"
