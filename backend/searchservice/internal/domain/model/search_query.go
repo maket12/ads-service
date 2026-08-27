@@ -1,6 +1,10 @@
 package model
 
-import pkgerrs "github.com/maket12/ads-service/backend/authservice/pkg/errs"
+import (
+	"strings"
+
+	pkgerrs "github.com/maket12/ads-service/backend/authservice/pkg/errs"
+)
 
 type SortOption string
 
@@ -35,6 +39,7 @@ func NewSortOption(val string) (SortOption, error) {
 }
 
 const (
+	maxTextLen   int   = 128
 	defaultLimit int32 = 20
 	maxLimit     int32 = 100
 )
@@ -58,6 +63,11 @@ func NewSearchQuery(
 	limit, offset int32,
 	sortBy string,
 ) (*SearchQuery, error) {
+	if len(text) > maxTextLen {
+		text = text[:maxTextLen]
+	}
+	text = strings.TrimSpace(text)
+
 	var categoryPtr *Category
 	if rawCategory != nil && *rawCategory != "" {
 		cat, err := NewCategory(*rawCategory)
