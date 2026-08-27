@@ -4,16 +4,14 @@ import (
 	"bytes"
 	"context"
 	"encoding/json"
-	"errors"
 	"fmt"
 	"net/http"
 
 	"github.com/elastic/go-elasticsearch/v8/esapi"
+	pkgerrs "github.com/maket12/ads-service/backend/authservice/pkg/errs"
 	"github.com/maket12/ads-service/backend/searchservice/internal/domain/model"
 	pkgelasticsearch "github.com/maket12/ads-service/backend/searchservice/pkg/elasticsearch"
 )
-
-var ErrAdIndexNotFound = errors.New("ad index not found")
 
 type AdIndexRepository struct {
 	client    *pkgelasticsearch.Client
@@ -68,7 +66,7 @@ func (r *AdIndexRepository) Delete(ctx context.Context, id string) error {
 
 	if res.IsError() {
 		if res.StatusCode == http.StatusNotFound {
-			return ErrAdIndexNotFound
+			return pkgerrs.NewObjectNotFoundError("ad_index", id)
 		}
 		return fmt.Errorf("error deleting document ID=%s: %s", id, res.String())
 	}
