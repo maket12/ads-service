@@ -12,3 +12,16 @@ func mapAdIndexToEsDTO(adIndex *model.AdIndex) esAdDTO {
 		MainImage:   adIndex.MainImage(),
 	}
 }
+
+func mapEsDTOToAdIndex(dto esAdDTO) *model.AdIndex {
+	category, _ := model.NewCategory(dto.Category)
+
+	return model.RestoreAdIndex(
+		dto.ID,
+		dto.Title,
+		dto.Description,
+		dto.Price,
+		category,
+		dto.MainImage,
+	)
+}
