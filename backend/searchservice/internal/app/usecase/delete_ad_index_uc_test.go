@@ -6,11 +6,11 @@ import (
 	"testing"
 
 	"github.com/brianvoe/gofakeit/v7"
+	pkgerrs "github.com/maket12/ads-service/backend/adservice/pkg/errs"
 	"github.com/maket12/ads-service/backend/searchservice/internal/app/dto"
 	ucerrs "github.com/maket12/ads-service/backend/searchservice/internal/app/errs"
 	"github.com/maket12/ads-service/backend/searchservice/internal/app/usecase"
 	"github.com/maket12/ads-service/backend/searchservice/internal/domain/port/mocks"
-	pkgerrs "github.com/maket12/ads-service/backend/searchservice/pkg/errs"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
 )

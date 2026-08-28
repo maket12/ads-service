@@ -137,7 +137,7 @@ syntax = "proto3";
 
 package search.v1;
 
-option go_package = "github.com/maket12/ads-service/backend/searchservice/pkg/generated/search_v1;search_v1";
+option go_package = "github.com/maket12/ads-service/backend/adservice/pkg/generated/search_v1;search_v1";
 
 import "google/protobuf/timestamp.proto";
 

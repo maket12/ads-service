@@ -15,7 +15,6 @@ func mapAdIndexToEsDTO(adIndex *model.AdIndex) esAdDTO {
 
 func mapEsDTOToAdIndex(dto esAdDTO) *model.AdIndex {
 	category, _ := model.NewCategory(dto.Category)
-
 	return model.RestoreAdIndex(
 		dto.ID,
 		dto.Title,

@@ -3,7 +3,7 @@ package model
 import (
 	"strings"
 
-	pkgerrs "github.com/maket12/ads-service/backend/searchservice/pkg/errs"
+	pkgerrs "github.com/maket12/ads-service/backend/adservice/pkg/errs"
 )
 
 type SortOption string

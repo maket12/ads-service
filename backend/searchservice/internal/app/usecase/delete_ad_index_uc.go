@@ -4,10 +4,10 @@ import (
 	"context"
 	"errors"
 
+	pkgerrs "github.com/maket12/ads-service/backend/adservice/pkg/errs"
 	"github.com/maket12/ads-service/backend/searchservice/internal/app/dto"
 	ucerrs "github.com/maket12/ads-service/backend/searchservice/internal/app/errs"
 	"github.com/maket12/ads-service/backend/searchservice/internal/domain/port"
-	pkgerrs "github.com/maket12/ads-service/backend/searchservice/pkg/errs"
 )
 
 type DeleteAdIndexUC struct {

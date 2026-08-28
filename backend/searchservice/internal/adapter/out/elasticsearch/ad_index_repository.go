@@ -8,9 +8,9 @@ import (
 	"net/http"
 
 	"github.com/elastic/go-elasticsearch/v8/esapi"
+	pkgerrs "github.com/maket12/ads-service/backend/adservice/pkg/errs"
 	"github.com/maket12/ads-service/backend/searchservice/internal/domain/model"
 	pkgelasticsearch "github.com/maket12/ads-service/backend/searchservice/pkg/elasticsearch"
-	pkgerrs "github.com/maket12/ads-service/backend/searchservice/pkg/errs"
 )
 
 type AdIndexRepository struct {
