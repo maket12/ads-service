@@ -22,6 +22,7 @@ import (
 
 	_ "github.com/golang-migrate/migrate/v4/database/postgres"
 
+	"github.com/maket12/ads-service/backend/adservice/api/proto/generated/ad_v1"
 	"github.com/maket12/ads-service/backend/adservice/cmd/app/config"
 	adaptergrpc "github.com/maket12/ads-service/backend/adservice/internal/adapter/in/grpc"
 	adaptermongo "github.com/maket12/ads-service/backend/adservice/internal/adapter/out/mongodb"
@@ -29,7 +30,6 @@ import (
 	"github.com/maket12/ads-service/backend/adservice/internal/app/usecase"
 	"github.com/maket12/ads-service/backend/adservice/internal/domain/port"
 	"github.com/maket12/ads-service/backend/adservice/migrations"
-	"github.com/maket12/ads-service/backend/adservice/pkg/generated/ad_v1"
 	pkgmongodb "github.com/maket12/ads-service/backend/adservice/pkg/mongodb"
 	pkgpostgres "github.com/maket12/ads-service/backend/authservice/pkg/postgres"
 )

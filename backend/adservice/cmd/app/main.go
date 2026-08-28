@@ -12,12 +12,12 @@ import (
 
 	trmpgx "github.com/avito-tech/go-transaction-manager/drivers/pgxv5/v2"
 	"github.com/avito-tech/go-transaction-manager/trm/v2/manager"
+	"github.com/maket12/ads-service/backend/adservice/api/proto/generated/ad_v1"
 	"github.com/maket12/ads-service/backend/adservice/cmd/app/config"
 	adaptergrpc "github.com/maket12/ads-service/backend/adservice/internal/adapter/in/grpc"
 	adaptermongo "github.com/maket12/ads-service/backend/adservice/internal/adapter/out/mongodb"
 	adapterpg "github.com/maket12/ads-service/backend/adservice/internal/adapter/out/postgres"
 	"github.com/maket12/ads-service/backend/adservice/internal/app/usecase"
-	"github.com/maket12/ads-service/backend/adservice/pkg/generated/ad_v1"
 	pkgmongodb "github.com/maket12/ads-service/backend/adservice/pkg/mongodb"
 	pkgpostgres "github.com/maket12/ads-service/backend/authservice/pkg/postgres"
 

@@ -1083,7 +1083,7 @@ const file_adservice_proto_rawDesc = "" +
 	"\fDeleteAllAds\x12\x17.ad.DeleteAllAdsRequest\x1a\x18.ad.DeleteAllAdsResponse\x122\n" +
 	"\aListAds\x12\x12.ad.ListAdsRequest\x1a\x13.ad.ListAdsResponse\x12;\n" +
 	"\n" +
-	"ListAllAds\x12\x15.ad.ListAllAdsRequest\x1a\x16.ad.ListAllAdsResponseBLZJgithub.com/maket12/ads-service/backend/adservice/pkg/generated/ad_v1;ad_v1b\x06proto3"
+	"ListAllAds\x12\x15.ad.ListAllAdsRequest\x1a\x16.ad.ListAllAdsResponseBRZPgithub.com/maket12/ads-service/backend/adservice/api/proto/generated/ad_v1;ad_v1b\x06proto3"
 
 var (
 	file_adservice_proto_rawDescOnce sync.Once
