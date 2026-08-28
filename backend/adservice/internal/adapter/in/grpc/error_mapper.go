@@ -4,7 +4,7 @@ import (
 	"errors"
 
 	ucerrs "github.com/maket12/ads-service/backend/adservice/internal/app/errs"
-	pkgerrs "github.com/maket12/ads-service/backend/adservice/pkg/errs"
+	pkgerrs "github.com/maket12/ads-service/backend/authservice/pkg/errs"
 
 	"google.golang.org/grpc/codes"
 )
@@ -27,7 +27,11 @@ func gRPCError(err error) *pkgerrs.OutErr {
 			return pkgerrs.NewOutError(codes.Internal, w.Public.Error(), w.Reason)
 
 		case errors.Is(w.Public, ucerrs.ErrInvalidInput):
-			return pkgerrs.NewOutError(codes.InvalidArgument, w.Public.Error(), w.Reason)
+			return pkgerrs.NewOutError(
+				codes.InvalidArgument,
+				w.Public.Error()+": "+w.Reason.Error(),
+				w.Reason,
+			)
 
 		default:
 			return pkgerrs.NewOutError(codes.Internal, "internal error", w.Reason)

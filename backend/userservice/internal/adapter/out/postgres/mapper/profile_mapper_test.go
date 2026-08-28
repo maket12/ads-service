@@ -7,10 +7,10 @@ import (
 
 	"github.com/brianvoe/gofakeit/v7"
 	"github.com/jackc/pgx/v5/pgtype"
+	"github.com/maket12/ads-service/backend/authservice/pkg/utils"
 	"github.com/maket12/ads-service/backend/userservice/internal/adapter/out/postgres/mapper"
 	"github.com/maket12/ads-service/backend/userservice/internal/adapter/out/postgres/sqlc"
 	"github.com/maket12/ads-service/backend/userservice/internal/domain/model"
-	"github.com/maket12/ads-service/backend/userservice/pkg/utils"
 
 	"github.com/google/uuid"
 	"github.com/stretchr/testify/assert"

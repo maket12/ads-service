@@ -4,7 +4,7 @@ import (
 	"errors"
 
 	pkgerrs "github.com/maket12/ads-service/backend/authservice/pkg/errs"
-	ucerrs "github.com/maket12/ads-service/backend/userservice/internal/app/errs"
+	ucerrs "github.com/maket12/ads-service/backend/searchservice/internal/app/errs"
 
 	"google.golang.org/grpc/codes"
 )
@@ -14,10 +14,9 @@ func gRPCError(err error) *pkgerrs.OutErr {
 	var w *ucerrs.WrappedError
 	if errors.As(err, &w) {
 		switch {
-		case errors.Is(w.Public, ucerrs.ErrCreateProfileDB),
-			errors.Is(w.Public, ucerrs.ErrGetProfileDB),
-			errors.Is(w.Public, ucerrs.ErrUpdateProfileDB),
-			errors.Is(w.Public, ucerrs.ErrDeleteProfileDB):
+		case errors.Is(w.Public, ucerrs.ErrIndexAdES),
+			errors.Is(w.Public, ucerrs.ErrDeleteAdIndexES),
+			errors.Is(w.Public, ucerrs.ErrSearchAdIndexesES):
 			return pkgerrs.NewOutError(codes.Internal, w.Public.Error(), w.Reason)
 
 		case errors.Is(w.Public, ucerrs.ErrInvalidInput):
@@ -33,7 +32,10 @@ func gRPCError(err error) *pkgerrs.OutErr {
 	}
 
 	switch {
-	case errors.Is(err, ucerrs.ErrProfileNotFound):
+	case errors.Is(err, ucerrs.ErrInvalidAdIndex):
+		return pkgerrs.NewOutError(codes.InvalidArgument, err.Error(), nil)
+
+	case errors.Is(err, ucerrs.ErrAdIndexNotFound):
 		return pkgerrs.NewOutError(codes.NotFound, err.Error(), nil)
 
 	case errors.Is(err, pkgerrs.ErrNotAuthenticated):

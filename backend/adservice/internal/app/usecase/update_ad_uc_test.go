@@ -11,7 +11,7 @@ import (
 	"github.com/maket12/ads-service/backend/adservice/internal/app/usecase"
 	"github.com/maket12/ads-service/backend/adservice/internal/domain/model"
 	"github.com/maket12/ads-service/backend/adservice/internal/domain/port/mocks"
-	pkgerrs "github.com/maket12/ads-service/backend/adservice/pkg/errs"
+	pkgerrs "github.com/maket12/ads-service/backend/authservice/pkg/errs"
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"

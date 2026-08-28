@@ -12,7 +12,7 @@ import (
 	"github.com/maket12/ads-service/backend/adservice/internal/app/usecase"
 	"github.com/maket12/ads-service/backend/adservice/internal/domain/model"
 	"github.com/maket12/ads-service/backend/adservice/internal/domain/port/mocks"
-	"github.com/maket12/ads-service/backend/adservice/pkg/utils"
+	"github.com/maket12/ads-service/backend/authservice/pkg/utils"
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"

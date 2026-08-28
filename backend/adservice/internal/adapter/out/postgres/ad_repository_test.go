@@ -11,7 +11,7 @@ import (
 	"github.com/google/uuid"
 	adapterpostgres "github.com/maket12/ads-service/backend/adservice/internal/adapter/out/postgres"
 	"github.com/maket12/ads-service/backend/adservice/internal/domain/model"
-	pkgerrs "github.com/maket12/ads-service/backend/adservice/pkg/errs"
+	pkgerrs "github.com/maket12/ads-service/backend/authservice/pkg/errs"
 	"github.com/stretchr/testify/suite"
 )
 

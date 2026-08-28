@@ -6,9 +6,9 @@ import (
 	"time"
 
 	"github.com/brianvoe/gofakeit/v7"
+	"github.com/maket12/ads-service/backend/userservice/api/proto/generated/user_v1"
 	"github.com/maket12/ads-service/backend/userservice/internal/adapter/in/grpc"
 	"github.com/maket12/ads-service/backend/userservice/internal/app/dto"
-	"github.com/maket12/ads-service/backend/userservice/pkg/generated/user_v1"
 
 	"github.com/google/uuid"
 	"google.golang.org/protobuf/types/known/timestamppb"

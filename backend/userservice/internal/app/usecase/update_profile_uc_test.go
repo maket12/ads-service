@@ -7,12 +7,12 @@ import (
 
 	"github.com/brianvoe/gofakeit/v7"
 	"github.com/google/uuid"
+	pkgerrs "github.com/maket12/ads-service/backend/authservice/pkg/errs"
 	"github.com/maket12/ads-service/backend/userservice/internal/app/dto"
 	ucerrs "github.com/maket12/ads-service/backend/userservice/internal/app/errs"
 	"github.com/maket12/ads-service/backend/userservice/internal/app/usecase"
 	"github.com/maket12/ads-service/backend/userservice/internal/domain/model"
 	"github.com/maket12/ads-service/backend/userservice/internal/domain/port/mocks"
-	pkgerrs "github.com/maket12/ads-service/backend/userservice/pkg/errs"
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"

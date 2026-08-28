@@ -14,7 +14,7 @@ import (
 	"github.com/avito-tech/go-transaction-manager/trm/v2/manager"
 	"github.com/brianvoe/gofakeit/v7"
 	"github.com/google/uuid"
-	"github.com/maket12/ads-service/backend/adservice/pkg/utils"
+	"github.com/maket12/ads-service/backend/authservice/pkg/utils"
 	"github.com/stretchr/testify/require"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"
@@ -31,7 +31,7 @@ import (
 	"github.com/maket12/ads-service/backend/adservice/migrations"
 	"github.com/maket12/ads-service/backend/adservice/pkg/generated/ad_v1"
 	pkgmongodb "github.com/maket12/ads-service/backend/adservice/pkg/mongodb"
-	pkgpostgres "github.com/maket12/ads-service/backend/adservice/pkg/postgres"
+	pkgpostgres "github.com/maket12/ads-service/backend/authservice/pkg/postgres"
 )
 
 const bufSize = 1024 * 1024

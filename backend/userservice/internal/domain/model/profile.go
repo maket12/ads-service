@@ -6,8 +6,8 @@ import (
 	"unicode/utf8"
 
 	"github.com/google/uuid"
-	pkgerrs "github.com/maket12/ads-service/backend/userservice/pkg/errs"
-	"github.com/maket12/ads-service/backend/userservice/pkg/utils"
+	pkgerrs "github.com/maket12/ads-service/backend/authservice/pkg/errs"
+	"github.com/maket12/ads-service/backend/authservice/pkg/utils"
 )
 
 // ================ Rich model for Profile ================

@@ -9,8 +9,8 @@ import (
 
 	"github.com/brianvoe/gofakeit/v7"
 	"github.com/google/uuid"
-	"github.com/maket12/ads-service/backend/userservice/pkg/generated/user_v1"
-	"github.com/maket12/ads-service/backend/userservice/pkg/utils"
+	"github.com/maket12/ads-service/backend/authservice/pkg/utils"
+	"github.com/maket12/ads-service/backend/userservice/api/proto/generated/user_v1"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	"google.golang.org/grpc/codes"

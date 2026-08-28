@@ -11,15 +11,15 @@ import (
 	"syscall"
 
 	trmpgx "github.com/avito-tech/go-transaction-manager/drivers/pgxv5/v2"
+	pkgpostgres "github.com/maket12/ads-service/backend/authservice/pkg/postgres"
+	pkgrabbitmq "github.com/maket12/ads-service/backend/authservice/pkg/rabbitmq"
+	"github.com/maket12/ads-service/backend/userservice/api/proto/generated/user_v1"
 	"github.com/maket12/ads-service/backend/userservice/cmd/app/config"
 	adaptergrpc "github.com/maket12/ads-service/backend/userservice/internal/adapter/in/grpc"
 	adapterrabbitmq "github.com/maket12/ads-service/backend/userservice/internal/adapter/in/rabbitmq"
 	adapterpostgres "github.com/maket12/ads-service/backend/userservice/internal/adapter/out/postgres"
 	"github.com/maket12/ads-service/backend/userservice/internal/app/usecase"
 	adapterphone "github.com/maket12/ads-service/backend/userservice/internal/infrastructure/phone"
-	"github.com/maket12/ads-service/backend/userservice/pkg/generated/user_v1"
-	pkgpostgres "github.com/maket12/ads-service/backend/userservice/pkg/postgres"
-	pkgrabbitmq "github.com/maket12/ads-service/backend/userservice/pkg/rabbitmq"
 
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/reflection"

@@ -4,8 +4,8 @@ import (
 	"testing"
 
 	"github.com/brianvoe/gofakeit/v7"
-	pkgerrs "github.com/maket12/ads-service/backend/adservice/pkg/errs"
-	"github.com/maket12/ads-service/backend/adservice/pkg/utils"
+	pkgerrs "github.com/maket12/ads-service/backend/authservice/pkg/errs"
+	"github.com/maket12/ads-service/backend/authservice/pkg/utils"
 	"github.com/maket12/ads-service/backend/searchservice/internal/domain/model"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"

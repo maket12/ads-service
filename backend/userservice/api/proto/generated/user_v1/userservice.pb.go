@@ -313,7 +313,7 @@ const file_userservice_proto_rawDesc = "" +
 	"\vUserService\x12?\n" +
 	"\n" +
 	"GetProfile\x12\x17.user.GetProfileRequest\x1a\x18.user.GetProfileResponse\x12H\n" +
-	"\rUpdateProfile\x12\x1a.user.UpdateProfileRequest\x1a\x1b.user.UpdateProfileResponseBRZPgithub.com/maket12/ads-service/backend/userservice/pkg/generated/user_v1;user_v1b\x06proto3"
+	"\rUpdateProfile\x12\x1a.user.UpdateProfileRequest\x1a\x1b.user.UpdateProfileResponseBXZVgithub.com/maket12/ads-service/backend/userservice/api/proto/generated/user_v1;user_v1b\x06proto3"
 
 var (
 	file_userservice_proto_rawDescOnce sync.Once

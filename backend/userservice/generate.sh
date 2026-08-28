@@ -1,19 +1,13 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-# Directory where the script itself is located == microservice root
 SERVICE_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
-# Go module path, must match the "module" line in the root go.mod
 MODULE_NAME="github.com/maket12/ads-service/backend/userservice"
 
-# Root of the go module (repo root), one level above the microservice
-MODULE_ROOT="$(cd "${SERVICE_ROOT}/.." && pwd)"
-
 PROTO_DIR="${SERVICE_ROOT}/api/proto"
-OUT_DIR="${MODULE_ROOT}"
+OUT_DIR="${SERVICE_ROOT}"
 
-# Check required tools
 command -v protoc >/dev/null 2>&1 || { echo "protoc not found. Install protobuf-compiler."; exit 1; }
 command -v protoc-gen-go >/dev/null 2>&1 || { echo "protoc-gen-go not found. Run: go install google.golang.org/protobuf/cmd/protoc-gen-go@latest"; exit 1; }
 command -v protoc-gen-go-grpc >/dev/null 2>&1 || { echo "protoc-gen-go-grpc not found. Run: go install google.golang.org/grpc/cmd/protoc-gen-go-grpc@latest"; exit 1; }

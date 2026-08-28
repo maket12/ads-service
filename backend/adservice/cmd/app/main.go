@@ -19,7 +19,7 @@ import (
 	"github.com/maket12/ads-service/backend/adservice/internal/app/usecase"
 	"github.com/maket12/ads-service/backend/adservice/pkg/generated/ad_v1"
 	pkgmongodb "github.com/maket12/ads-service/backend/adservice/pkg/mongodb"
-	pkgpostgres "github.com/maket12/ads-service/backend/adservice/pkg/postgres"
+	pkgpostgres "github.com/maket12/ads-service/backend/authservice/pkg/postgres"
 
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/reflection"

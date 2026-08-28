@@ -6,7 +6,7 @@ import (
 	"testing"
 
 	"github.com/brianvoe/gofakeit/v7"
-	pkgerrs "github.com/maket12/ads-service/backend/adservice/pkg/errs"
+	pkgerrs "github.com/maket12/ads-service/backend/authservice/pkg/errs"
 	"github.com/maket12/ads-service/backend/searchservice/internal/app/dto"
 	ucerrs "github.com/maket12/ads-service/backend/searchservice/internal/app/errs"
 	"github.com/maket12/ads-service/backend/searchservice/internal/app/usecase"

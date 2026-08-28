@@ -8,7 +8,7 @@ import (
 	ucerrs "github.com/maket12/ads-service/backend/adservice/internal/app/errs"
 	"github.com/maket12/ads-service/backend/adservice/internal/app/mapper"
 	"github.com/maket12/ads-service/backend/adservice/internal/domain/port"
-	pkgerrs "github.com/maket12/ads-service/backend/adservice/pkg/errs"
+	pkgerrs "github.com/maket12/ads-service/backend/authservice/pkg/errs"
 )
 
 type GetAdUC struct {

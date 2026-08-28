@@ -10,7 +10,7 @@ import (
 	"github.com/maket12/ads-service/backend/gateway/cmd/app/config"
 	"github.com/maket12/ads-service/backend/gateway/graph"
 	"github.com/maket12/ads-service/backend/gateway/internal/middleware"
-	"github.com/maket12/ads-service/backend/userservice/pkg/generated/user_v1"
+	"github.com/maket12/ads-service/backend/userservice/api/proto/generated/user_v1"
 
 	"github.com/99designs/gqlgen/graphql/handler"
 	"github.com/99designs/gqlgen/graphql/playground"

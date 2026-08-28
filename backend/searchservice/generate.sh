@@ -5,10 +5,9 @@ SERVICE_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
 MODULE_NAME="github.com/maket12/ads-service/backend/searchservice"
 
-MODULE_ROOT="$(cd "${SERVICE_ROOT}/.." && pwd)"
-
 PROTO_DIR="${SERVICE_ROOT}/api/proto"
-OUT_DIR="${MODULE_ROOT}"
+
+OUT_DIR="${SERVICE_ROOT}"
 
 command -v protoc >/dev/null 2>&1 || { echo "protoc not found. Install protobuf-compiler."; exit 1; }
 command -v protoc-gen-go >/dev/null 2>&1 || { echo "protoc-gen-go not found. Run: go install google.golang.org/protobuf/cmd/protoc-gen-go@latest"; exit 1; }
