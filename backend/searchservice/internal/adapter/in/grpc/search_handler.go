@@ -2,13 +2,11 @@ package grpc
 
 import (
 	"context"
-	"fmt"
 	"log/slog"
 
-	"github.com/google/uuid"
 	"github.com/maket12/ads-service/backend/authservice/pkg/utils"
+	"github.com/maket12/ads-service/backend/searchservice/api/proto/generated/search_v1"
 	"github.com/maket12/ads-service/backend/searchservice/internal/app/usecase"
-	"github.com/maket12/ads-service/backend/searchservice/pkg/generated/search_v1"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 )
@@ -37,7 +35,7 @@ func (h *SearchHandler) SearchAds(ctx context.Context, req *search_v1.SearchAdsR
 		return nil, status.Error(code, msg)
 	}
 
-	return
+	return MapSearchAdsDTOToPb(ucResp), nil
 }
 
 func (h *SearchHandler) authorize(ctx context.Context) error {

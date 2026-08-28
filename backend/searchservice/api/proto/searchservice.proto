@@ -2,7 +2,7 @@ syntax = "proto3";
 
 package search;
 
-option go_package = "github.com/maket12/ads-service/backend/searchservice/pkg/generated/search_v1;search_v1";
+option go_package = "github.com/maket12/ads-service/backend/searchservice/api/proto/generated/search_v1;search_v1";
 
 service SearchService {
   rpc SearchAds(SearchAdsRequest) returns (SearchAdsResponse);
