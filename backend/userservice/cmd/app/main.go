@@ -111,7 +111,8 @@ func newRabbitMQSubscriber(cfg *config.Config, logger *slog.Logger,
 	subConfig := adapterrabbitmq.NewSubscriberConfig(
 		cfg.AccountExchange,
 		cfg.AccountQueue,
-		cfg.AccountRoutingKeys...,
+		cfg.AccountCreatedRoutingKey,
+		cfg.AccountDeletedRoutingKey,
 	)
 
 	sub := adapterrabbitmq.NewAccountSubscriber(

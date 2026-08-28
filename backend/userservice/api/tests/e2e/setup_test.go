@@ -20,7 +20,9 @@ import (
 	amqp "github.com/rabbitmq/amqp091-go"
 	"github.com/stretchr/testify/require"
 	"google.golang.org/grpc"
+	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/credentials/insecure"
+	"google.golang.org/grpc/status"
 	"google.golang.org/grpc/test/bufconn"
 
 	_ "github.com/golang-migrate/migrate/v4/database/postgres"
@@ -112,7 +114,10 @@ func setupE2E(t *testing.T) *testApp {
 
 		// rabbitmq subscriber, wired the same way as in main.go
 		subConfig := adapterrabbitmq.NewSubscriberConfig(
-			cfg.ExchangeName, cfg.QueueName, cfg.RoutingKey,
+			cfg.AccountExchange,
+			cfg.AccountQueue,
+			cfg.AccountCreatedRoutingKey,
+			cfg.AccountDeletedRoutingKey,
 		)
 		subscriber := adapterrabbitmq.NewAccountSubscriber(
 			subConfig, logger, rabbitClient,
@@ -222,7 +227,7 @@ func (a *testApp) publishAccountCreated(t *testing.T, accountID string) {
 	defer ch.Close()
 
 	err = ch.ExchangeDeclare(
-		a.cfg.ExchangeName,
+		a.cfg.AccountExchange,
 		"topic",
 		true,
 		false,
@@ -238,8 +243,8 @@ func (a *testApp) publishAccountCreated(t *testing.T, accountID string) {
 
 	err = ch.PublishWithContext(
 		context.Background(),
-		a.cfg.ExchangeName,
-		a.cfg.RoutingKey,
+		a.cfg.AccountExchange,
+		a.cfg.AccountCreatedRoutingKey,
 		false,
 		false,
 		amqp.Publishing{
@@ -253,7 +258,7 @@ func (a *testApp) publishAccountCreated(t *testing.T, accountID string) {
 // Helper for e2e tests.
 // Polls GetProfile until the profile appears (or the timeout elapses),
 // since consumption of the published event is asynchronous.
-func (a *testApp) waitForProfile(t *testing.T, accountID string, timeout time.Duration) *user_v1.GetProfileResponse {
+func (a *testApp) waitForProfileCreated(t *testing.T, accountID string, timeout time.Duration) *user_v1.GetProfileResponse {
 	deadline := time.Now().Add(timeout)
 	ctx := utils.PackAccountIDForGRPC(context.Background(), accountID)
 
@@ -267,4 +272,63 @@ func (a *testApp) waitForProfile(t *testing.T, accountID string, timeout time.Du
 
 	t.Fatalf("timed out waiting for profile %s to be created", accountID)
 	return nil
+}
+
+// Helper for e2e tests.
+// Publishes an account.created event to RabbitMQ the same way authservice's
+// AccountPublisher does, so the AccountSubscriber -> CreateProfileUC path is
+// exercised for real instead of being bypassed.
+func (a *testApp) publishAccountDeleted(t *testing.T, accountID string) {
+	ch, err := a.rabbitClient.Conn.Channel()
+	require.NoError(t, err)
+	defer ch.Close()
+
+	err = ch.ExchangeDeclare(
+		a.cfg.AccountExchange,
+		"topic",
+		true,
+		false,
+		false,
+		false,
+		nil,
+	)
+	require.NoError(t, err)
+
+	event := adapterrabbitmq.AccountDeletedEvent{AccountID: uuid.MustParse(accountID)}
+	body, err := json.Marshal(event)
+	require.NoError(t, err)
+
+	err = ch.PublishWithContext(
+		context.Background(),
+		a.cfg.AccountExchange,
+		a.cfg.AccountDeletedRoutingKey,
+		false,
+		false,
+		amqp.Publishing{
+			ContentType: "application/json",
+			Body:        body,
+		},
+	)
+	require.NoError(t, err)
+}
+
+// Helper for e2e tests.
+// Polls GetProfile until the profile disappears (or the timeout elapses),
+// since consumption of the published event is asynchronous.
+func (a *testApp) waitForProfileDeleted(t *testing.T, accountID string, timeout time.Duration) {
+	deadline := time.Now().Add(timeout)
+	ctx := utils.PackAccountIDForGRPC(context.Background(), accountID)
+
+	for time.Now().Before(deadline) {
+		_, err := a.client.GetProfile(ctx, &user_v1.GetProfileRequest{})
+
+		st, ok := status.FromError(err)
+		if err != nil && ok && st.Code() == codes.NotFound {
+			return
+		}
+
+		time.Sleep(100 * time.Millisecond)
+	}
+
+	t.Fatalf("timed out waiting for profile %s to be deleted", accountID)
 }

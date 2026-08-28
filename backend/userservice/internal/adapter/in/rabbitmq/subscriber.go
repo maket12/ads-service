@@ -14,16 +14,18 @@ import (
 )
 
 type SubscriberConfig struct {
-	Exchange    string
-	Queue       string
-	RoutingKeys []string
+	Exchange       string
+	Queue          string
+	AccCreatedRKey string
+	AccDeletedRKey string
 }
 
-func NewSubscriberConfig(exchange, queue string, routingKey ...string) *SubscriberConfig {
+func NewSubscriberConfig(exchange, queue, accCreatedRKey, accDeletedRKey string) *SubscriberConfig {
 	return &SubscriberConfig{
-		Exchange:    exchange,
-		Queue:       queue,
-		RoutingKeys: routingKey,
+		Exchange:       exchange,
+		Queue:          queue,
+		AccCreatedRKey: accCreatedRKey,
+		AccDeletedRKey: accDeletedRKey,
 	}
 }
 
@@ -84,14 +86,21 @@ func (s *AccountSubscriber) Start(ctx context.Context) error {
 	}
 
 	// Bind queues
-	for _, rk := range s.cfg.RoutingKeys {
-		if err = ch.QueueBind(q.Name, rk,
-			s.cfg.Exchange,
-			false,
-			nil,
-		); err != nil {
-			return fmt.Errorf("failed to bind queue to %s: %w", rk, err)
-		}
+	if err = ch.QueueBind(q.Name,
+		s.cfg.AccCreatedRKey,
+		s.cfg.Exchange,
+		false,
+		nil,
+	); err != nil {
+		return fmt.Errorf("failed to bind queue to %s: %w", s.cfg.AccCreatedRKey, err)
+	}
+	if err = ch.QueueBind(q.Name,
+		s.cfg.AccDeletedRKey,
+		s.cfg.Exchange,
+		false,
+		nil,
+	); err != nil {
+		return fmt.Errorf("failed to bind queue to %s: %w", s.cfg.AccDeletedRKey, err)
 	}
 
 	// Define consumer
@@ -121,9 +130,9 @@ func (s *AccountSubscriber) Start(ctx context.Context) error {
 
 func (s *AccountSubscriber) handleMessage(ctx context.Context, d *amqp.Delivery) {
 	switch d.RoutingKey {
-	case RoutingKeyAccountCreated:
+	case s.cfg.AccCreatedRKey:
 		s.handleAccountCreated(ctx, d)
-	case RoutingKeyAccountDeleted:
+	case s.cfg.AccDeletedRKey:
 		s.handleAccountDeleted(ctx, d)
 	default:
 		s.log.WarnContext(ctx, "unknown routing key",

@@ -16,7 +16,7 @@ func TestCreateProfile_Success(t *testing.T) {
 	accountID := uuid.New().String()
 	app.publishAccountCreated(t, accountID)
 
-	resp := app.waitForProfile(t, accountID, 5*time.Second)
+	resp := app.waitForProfileCreated(t, accountID, 5*time.Second)
 
 	require.Equal(t, accountID, resp.AccountId)
 }
@@ -28,13 +28,13 @@ func TestCreateProfile_Idempotent(t *testing.T) {
 
 	// publish the same event twice; creation should not error/duplicate
 	app.publishAccountCreated(t, accountID)
-	app.waitForProfile(t, accountID, 5*time.Second)
+	app.waitForProfileCreated(t, accountID, 5*time.Second)
 
 	app.publishAccountCreated(t, accountID)
 
 	// give the second (redundant) event a moment to be processed/dropped,
 	// then confirm the profile is still fetchable and unique.
 	time.Sleep(500 * time.Millisecond)
-	resp := app.waitForProfile(t, accountID, 5*time.Second)
+	resp := app.waitForProfileCreated(t, accountID, 5*time.Second)
 	require.Equal(t, accountID, resp.AccountId)
 }
