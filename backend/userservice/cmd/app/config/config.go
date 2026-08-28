@@ -30,9 +30,9 @@ type Config struct {
 	RabbitWaitTime time.Duration `env:"RABBIT_WAIT_TIME" envDefault:"30s"`
 	RabbitAttempts int           `env:"RABBIT_ATTEMPTS" envDefault:"5"`
 
-	ExchangeName string `env:"ACCOUNT_EXCHANGE" envDefault:"account_topic"`
-	QueueName    string `env:"USER_QUEUE" envDefault:"account_create"`
-	RoutingKey   string `env:"ACCOUNT_ROUTING_KEY,required"`
+	AccountExchange    string   `env:"ACCOUNT_EXCHANGE" envDefault:"account_topic"`
+	AccountQueue       string   `env:"ACCOUNT_QUEUE" envDefault:"account_events"`
+	AccountRoutingKeys []string `env:"ACCOUNT_ACCOUNT_ROUTING_KEYS,required"`
 
 	// Phone validator
 	PhoneDefaultRegion string `env:"PHONE_DEFAULT_REGION"`
@@ -66,9 +66,9 @@ type TestConfig struct {
 	RabbitWaitTime time.Duration `env:"TEST_RABBIT_WAIT_TIME" envDefault:"30s"`
 	RabbitAttempts int           `env:"TEST_RABBIT_ATTEMPTS" envDefault:"5"`
 
-	ExchangeName string `env:"TEST_ACCOUNT_EXCHANGE" envDefault:"account_topic"`
-	QueueName    string `env:"TEST_USER_QUEUE" envDefault:"account_create"`
-	RoutingKey   string `env:"TEST_ACCOUNT_ROUTING_KEY" envDefault:"account.created"`
+	AccountExchange    string   `env:"TEST_ACCOUNT_EXCHANGE" envDefault:"account_topic"`
+	AccountQueue       string   `env:"TEST_ACCOUNT_QUEUE" envDefault:"account_events"`
+	AccountRoutingKeys []string `env:"TEST_ACCOUNT_ACCOUNT_ROUTING_KEYS" envDefault:"account.created,account.deleted"`
 
 	// Phone validator
 	PhoneDefaultRegion string `env:"TEST_PHONE_DEFAULT_REGION"`

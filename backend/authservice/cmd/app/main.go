@@ -140,7 +140,7 @@ func closeRabbitMQClient(
 }
 
 func newAccountPublisher(cfg *config.Config, rabbitClient *pkgrabbitmq.Client) (*adaptermq.AccountPublisher, error) {
-	publisherConfig := adaptermq.NewPublisherConfig(cfg.ExchangeName)
+	publisherConfig := adaptermq.NewPublisherConfig(cfg.AccountExchange)
 
 	pub, err := adaptermq.NewAccountPublisher(publisherConfig, rabbitClient)
 	if err != nil {

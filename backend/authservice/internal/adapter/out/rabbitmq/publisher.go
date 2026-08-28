@@ -18,11 +18,6 @@ func NewPublisherConfig(exchange string) *PublisherConfig {
 	return &PublisherConfig{Exchange: exchange}
 }
 
-const (
-	RoutingKeyAccountCreated = "account.created"
-	RoutingKeyAccountDeleted = "account.deleted"
-)
-
 type AccountPublisher struct {
 	cfg     *PublisherConfig
 	client  *pkgrabbitmq.Client
@@ -73,24 +68,18 @@ func (p *AccountPublisher) publish(ctx context.Context, routingKey string, body 
 }
 
 func (p *AccountPublisher) PublishAccountCreate(ctx context.Context, accountID uuid.UUID) error {
-	event := pkgrabbitmq.AccountCreatedEvent{AccountID: accountID}
-
-	body, err := json.Marshal(event)
+	body, err := json.Marshal(AccountCreatedEvent{AccountID: accountID})
 	if err != nil {
 		return fmt.Errorf("failed to marshal event: %w", err)
 	}
-
 	return p.publish(ctx, RoutingKeyAccountCreated, body)
 }
 
 func (p *AccountPublisher) PublishAccountDelete(ctx context.Context, accountID uuid.UUID) error {
-	event := pkgrabbitmq.AccountDeletedEvent{AccountID: accountID}
-
-	body, err := json.Marshal(event)
+	body, err := json.Marshal(AccountDeletedEvent{AccountID: accountID})
 	if err != nil {
 		return fmt.Errorf("failed to marshal event: %w", err)
 	}
-
 	return p.publish(ctx, RoutingKeyAccountDeleted, body)
 }
 

@@ -109,17 +109,14 @@ func newRabbitMQSubscriber(cfg *config.Config, logger *slog.Logger,
 	deleteProfileUC *usecase.DeleteProfileUC,
 ) *adapterrabbitmq.AccountSubscriber {
 	subConfig := adapterrabbitmq.NewSubscriberConfig(
-		cfg.ExchangeName,
-		cfg.QueueName,
-		cfg.RoutingKey,
+		cfg.AccountExchange,
+		cfg.AccountQueue,
+		cfg.AccountRoutingKeys...,
 	)
 
 	sub := adapterrabbitmq.NewAccountSubscriber(
-		subConfig,
-		logger,
-		rabbitClient,
-		createProfileUC,
-		deleteProfileUC,
+		subConfig, logger, rabbitClient,
+		createProfileUC, deleteProfileUC,
 	)
 
 	return sub

@@ -27,11 +27,6 @@ func NewSubscriberConfig(exchange, queue string, routingKey ...string) *Subscrib
 	}
 }
 
-const (
-	RoutingKeyAccountCreated = "account.created"
-	RoutingKeyAccountDeleted = "account.deleted"
-)
-
 type AccountSubscriber struct {
 	cfg      *SubscriberConfig
 	log      *slog.Logger
@@ -100,7 +95,7 @@ func (s *AccountSubscriber) Start(ctx context.Context) error {
 	}
 
 	// Define consumer
-	msgs, err := ch.ConsumeWithContext(
+	messages, err := ch.ConsumeWithContext(
 		ctx,
 		q.Name,
 		"",
@@ -116,7 +111,7 @@ func (s *AccountSubscriber) Start(ctx context.Context) error {
 
 	// Listening to queue
 	go func() {
-		for d := range msgs {
+		for d := range messages {
 			s.handleMessage(ctx, &d)
 		}
 	}()
@@ -139,8 +134,7 @@ func (s *AccountSubscriber) handleMessage(ctx context.Context, d *amqp.Delivery)
 }
 
 func (s *AccountSubscriber) handleAccountCreated(ctx context.Context, d *amqp.Delivery) {
-	// Deserialisation json to DTO
-	var event pkgrabbitmq.AccountCreatedEvent
+	var event AccountCreatedEvent
 	if err := json.Unmarshal(d.Body, &event); err != nil {
 		s.log.ErrorContext(ctx, "failed to unmarshal account event",
 			slog.String("body", string(d.Body)),
@@ -150,11 +144,10 @@ func (s *AccountSubscriber) handleAccountCreated(ctx context.Context, d *amqp.De
 		return
 	}
 
-	// Calling UC
 	if err := s.createUC.Execute(
 		ctx, dto.CreateProfileInput{AccountID: event.AccountID},
 	); err != nil {
-		s.log.ErrorContext(ctx, "failed to create profile from event",
+		s.log.ErrorContext(ctx, "failed to create profile (caused by rabbitmq)",
 			slog.String("account_id", event.AccountID.String()),
 			slog.Any("reason", err),
 		)
@@ -162,15 +155,14 @@ func (s *AccountSubscriber) handleAccountCreated(ctx context.Context, d *amqp.De
 		return
 	}
 
-	// Notify queue about success
-	s.log.InfoContext(ctx, "created profile from event",
+	s.log.InfoContext(ctx, "created profile (caused by rabbitmq)",
 		slog.String("account_id", event.AccountID.String()),
 	)
 	_ = d.Ack(false)
 }
 
 func (s *AccountSubscriber) handleAccountDeleted(ctx context.Context, d *amqp.Delivery) {
-	var event pkgrabbitmq.AccountDeletedEvent
+	var event AccountDeletedEvent
 	if err := json.Unmarshal(d.Body, &event); err != nil {
 		s.log.ErrorContext(ctx, "failed to unmarshal account deleted event",
 			slog.String("body", string(d.Body)), slog.Any("reason", err))
@@ -181,7 +173,7 @@ func (s *AccountSubscriber) handleAccountDeleted(ctx context.Context, d *amqp.De
 	if _, err := s.deleteUC.Execute(ctx,
 		dto.DeleteProfileInput{AccountID: event.AccountID},
 	); err != nil {
-		s.log.ErrorContext(ctx, "failed to delete profile from event",
+		s.log.ErrorContext(ctx, "failed to delete profile (caused by rabbitmq)",
 			slog.String("account_id", event.AccountID.String()),
 			slog.Any("reason", err),
 		)
@@ -189,6 +181,8 @@ func (s *AccountSubscriber) handleAccountDeleted(ctx context.Context, d *amqp.De
 		return
 	}
 
-	s.log.InfoContext(ctx, "deleted profile from event", slog.String("account_id", event.AccountID.String()))
+	s.log.InfoContext(ctx, "deleted profile (caused by rabbitmq)",
+		slog.String("account_id", event.AccountID.String()),
+	)
 	_ = d.Ack(false)
 }

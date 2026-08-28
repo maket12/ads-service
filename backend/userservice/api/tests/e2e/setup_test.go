@@ -232,7 +232,7 @@ func (a *testApp) publishAccountCreated(t *testing.T, accountID string) {
 	)
 	require.NoError(t, err)
 
-	event := pkgrabbitmq.AccountCreatedEvent{AccountID: uuid.MustParse(accountID)}
+	event := adapterrabbitmq.AccountCreatedEvent{AccountID: uuid.MustParse(accountID)}
 	body, err := json.Marshal(event)
 	require.NoError(t, err)
 

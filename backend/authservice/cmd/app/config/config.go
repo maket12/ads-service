@@ -52,8 +52,8 @@ type Config struct {
 	RabbitWaitTime time.Duration `env:"RABBIT_WAIT_TIME" envDefault:"30s"`
 	RabbitAttempts int           `env:"RABBIT_ATTEMPTS" envDefault:"5"`
 
-	ExchangeName string `env:"ACCOUNT_EXCHANGE" envDefault:"account_topic"`
-	RoutingKey   string `env:"ACCOUNT_ROUTING_KEY,required"`
+	AccountExchange    string   `env:"ACCOUNT_EXCHANGE" envDefault:"account_topic"`
+	AccountRoutingKeys []string `env:"ACCOUNT_ACCOUNT_ROUTING_KEYS,required"`
 
 	// SMTP Client
 	SMTPHost     string `env:"SMTP_HOST,required"`
@@ -115,8 +115,8 @@ type TestConfig struct {
 	RabbitWaitTime time.Duration `env:"TEST_RABBIT_WAIT_TIME"`
 	RabbitAttempts int           `env:"TEST_RABBIT_ATTEMPTS"`
 
-	ExchangeName string `env:"TEST_ACCOUNT_EXCHANGE" envDefault:"account_topic"`
-	RoutingKey   string `env:"TEST_ACCOUNT_ROUTING_KEY" envDefault:"account.created"`
+	AccountExchange    string   `env:"TEST_ACCOUNT_EXCHANGE" envDefault:"account_topic"`
+	AccountRoutingKeys []string `env:"TEST_ACCOUNT_ACCOUNT_ROUTING_KEYS" envDefault:"account.created,account.deleted"`
 
 	// SMTP Client
 	SMTPHost     string `env:"TEST_SMTP_HOST"`
