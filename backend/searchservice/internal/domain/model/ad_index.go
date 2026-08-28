@@ -1,7 +1,7 @@
 package model
 
 import (
-	pkgerrs "github.com/maket12/ads-service/backend/authservice/pkg/errs"
+	pkgerrs "github.com/maket12/ads-service/backend/searchservice/pkg/errs"
 )
 
 // ================ Rich model for Ad Index ================
