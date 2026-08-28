@@ -1059,7 +1059,7 @@ const file_authservice_proto_rawDesc = "" +
 	"\x10SendVerification\x12\x1d.auth.SendVerificationRequest\x1a\x1e.auth.SendVerificationResponse\x12B\n" +
 	"\vVerifyEmail\x12\x18.auth.VerifyEmailRequest\x1a\x19.auth.VerifyEmailResponse\x12E\n" +
 	"\fBlockAccount\x12\x19.auth.BlockAccountRequest\x1a\x1a.auth.BlockAccountResponse\x12H\n" +
-	"\rDeleteAccount\x12\x1a.auth.DeleteAccountRequest\x1a\x1b.auth.DeleteAccountResponseBRZPgithub.com/maket12/ads-service/backend/authservice/pkg/generated/auth_v1;auth_v1b\x06proto3"
+	"\rDeleteAccount\x12\x1a.auth.DeleteAccountRequest\x1a\x1b.auth.DeleteAccountResponseBXZVgithub.com/maket12/ads-service/backend/authservice/api/proto/generated/auth_v1;auth_v1b\x06proto3"
 
 var (
 	file_authservice_proto_rawDescOnce sync.Once

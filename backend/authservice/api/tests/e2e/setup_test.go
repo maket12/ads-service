@@ -27,6 +27,7 @@ import (
 
 	_ "github.com/golang-migrate/migrate/v4/database/postgres"
 
+	"github.com/maket12/ads-service/backend/authservice/api/proto/generated/auth_v1"
 	"github.com/maket12/ads-service/backend/authservice/cmd/app/config"
 	adaptergrpc "github.com/maket12/ads-service/backend/authservice/internal/adapter/in/grpc"
 	adapterpg "github.com/maket12/ads-service/backend/authservice/internal/adapter/out/postgres"
@@ -34,7 +35,6 @@ import (
 	"github.com/maket12/ads-service/backend/authservice/internal/app/usecase"
 	infrajwt "github.com/maket12/ads-service/backend/authservice/internal/infrastructure/jwt"
 	infrapassw "github.com/maket12/ads-service/backend/authservice/internal/infrastructure/password"
-	"github.com/maket12/ads-service/backend/authservice/pkg/generated/auth_v1"
 	pkgpostgres "github.com/maket12/ads-service/backend/authservice/pkg/postgres"
 	pkgredis "github.com/maket12/ads-service/backend/authservice/pkg/redis"
 )

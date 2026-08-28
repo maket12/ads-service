@@ -9,7 +9,7 @@ import (
 	"context"
 
 	"github.com/maket12/ads-service/backend/adservice/pkg/generated/ad_v1"
-	"github.com/maket12/ads-service/backend/authservice/pkg/generated/auth_v1"
+	"github.com/maket12/ads-service/backend/authservice/api/proto/generated/auth_v1"
 	authutils "github.com/maket12/ads-service/backend/authservice/pkg/utils"
 	"github.com/maket12/ads-service/backend/gateway/graph/model"
 	"github.com/maket12/ads-service/backend/userservice/api/proto/generated/user_v1"

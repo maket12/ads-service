@@ -4,7 +4,7 @@ import (
 	"net/http"
 	"strings"
 
-	"github.com/maket12/ads-service/backend/authservice/pkg/generated/auth_v1"
+	"github.com/maket12/ads-service/backend/authservice/api/proto/generated/auth_v1"
 	"github.com/maket12/ads-service/backend/authservice/pkg/utils"
 )
 

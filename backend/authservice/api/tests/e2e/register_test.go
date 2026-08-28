@@ -7,7 +7,7 @@ import (
 	"testing"
 
 	"github.com/brianvoe/gofakeit/v7"
-	"github.com/maket12/ads-service/backend/authservice/pkg/generated/auth_v1"
+	"github.com/maket12/ads-service/backend/authservice/api/proto/generated/auth_v1"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	"google.golang.org/grpc/codes"

@@ -6,8 +6,8 @@ import (
 	"log/slog"
 
 	"github.com/google/uuid"
+	"github.com/maket12/ads-service/backend/authservice/api/proto/generated/auth_v1"
 	"github.com/maket12/ads-service/backend/authservice/internal/app/usecase"
-	"github.com/maket12/ads-service/backend/authservice/pkg/generated/auth_v1"
 	"github.com/maket12/ads-service/backend/authservice/pkg/utils"
 	"google.golang.org/grpc/codes"
 

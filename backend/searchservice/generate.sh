@@ -6,7 +6,6 @@ SERVICE_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 MODULE_NAME="github.com/maket12/ads-service/backend/searchservice"
 
 PROTO_DIR="${SERVICE_ROOT}/api/proto"
-
 OUT_DIR="${SERVICE_ROOT}"
 
 command -v protoc >/dev/null 2>&1 || { echo "protoc not found. Install protobuf-compiler."; exit 1; }
