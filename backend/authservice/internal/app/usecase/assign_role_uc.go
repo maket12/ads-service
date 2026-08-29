@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 
+	"github.com/google/uuid"
 	"github.com/maket12/ads-service/backend/authservice/internal/app/dto"
 	ucerrs "github.com/maket12/ads-service/backend/authservice/internal/app/errs"
 	"github.com/maket12/ads-service/backend/authservice/internal/domain/model"
@@ -28,6 +29,11 @@ func NewAssignRoleUC(
 }
 
 func (uc *AssignRoleUC) Execute(ctx context.Context, in dto.AssignRoleInput) (dto.AssignRoleOutput, error) {
+	// Premier validation
+	if in.AccountID == uuid.Nil {
+		return dto.AssignRoleOutput{}, ucerrs.ErrInvalidAccountID
+	}
+
 	// Get role
 	accRole, err := uc.accountRole.Get(ctx, in.AccountID)
 	if err != nil {

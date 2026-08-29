@@ -3,12 +3,10 @@
 package e2e
 
 import (
-	"context"
 	"testing"
 
-	"github.com/brianvoe/gofakeit/v7"
+	"github.com/google/uuid"
 	"github.com/maket12/ads-service/backend/authservice/api/proto/generated/auth_v1"
-	authutils "github.com/maket12/ads-service/backend/authservice/pkg/utils"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	"google.golang.org/grpc/codes"
@@ -17,14 +15,10 @@ import (
 
 func TestAssignRole_Success(t *testing.T) {
 	app := setupE2E(t)
-
-	ctx := authutils.PackAccountIDForGRPC(context.Background(), gofakeit.UUID())
-	ctx = authutils.PackAccountRoleForGRPC(ctx, "admin")
-
 	accountID, _, _ := app.createAccount(t, nil, nil, nil, nil, false)
 
 	t.Run("Successfully assigned to admin", func(t *testing.T) {
-		resp, err := app.client.AssignRole(ctx,
+		resp, err := app.client.AssignRole(app.adminCtx(),
 			&auth_v1.AssignRoleRequest{
 				AccountId: accountID,
 				Role:      "admin",
@@ -35,7 +29,7 @@ func TestAssignRole_Success(t *testing.T) {
 	})
 
 	t.Run("Successfully assigned to user", func(t *testing.T) {
-		resp, err := app.client.AssignRole(ctx,
+		resp, err := app.client.AssignRole(app.adminCtx(),
 			&auth_v1.AssignRoleRequest{
 				AccountId: accountID,
 				Role:      "user",
@@ -48,10 +42,6 @@ func TestAssignRole_Success(t *testing.T) {
 
 func TestAssignRole_BadCases(t *testing.T) {
 	app := setupE2E(t)
-
-	ctx := authutils.PackAccountIDForGRPC(context.Background(), gofakeit.UUID())
-	ctx = authutils.PackAccountRoleForGRPC(ctx, "admin")
-
 	accountID, _, _ := app.createAccount(t, nil, nil, nil, nil, false)
 
 	type testCase struct {
@@ -64,17 +54,31 @@ func TestAssignRole_BadCases(t *testing.T) {
 
 	var tests = []testCase{
 		{
+			name:          "Invalid Argument - Account ID",
+			accountID:     uuid.Nil.String(),
+			role:          "admin",
+			expectedCode:  codes.InvalidArgument,
+			expectedError: "invalid account id",
+		},
+		{
 			name:          "Invalid Argument - Role Is Invalid",
 			accountID:     accountID,
 			role:          "hacker",
 			expectedCode:  codes.InvalidArgument,
 			expectedError: "account cannot be assigned to this role",
 		},
+		{
+			name:          "Not Found - Account Not Found",
+			accountID:     uuid.NewString(),
+			role:          "user",
+			expectedCode:  codes.NotFound,
+			expectedError: "account not found",
+		},
 	}
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			resp, err := app.client.AssignRole(ctx, &auth_v1.AssignRoleRequest{
+			resp, err := app.client.AssignRole(app.adminCtx(), &auth_v1.AssignRoleRequest{
 				AccountId: tt.accountID,
 				Role:      tt.role,
 			})

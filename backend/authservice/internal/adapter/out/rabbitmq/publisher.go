@@ -11,11 +11,17 @@ import (
 )
 
 type PublisherConfig struct {
-	Exchange string
+	Exchange       string
+	AccCreatedRKey string
+	AccDeletedRKey string
 }
 
-func NewPublisherConfig(exchange string) *PublisherConfig {
-	return &PublisherConfig{Exchange: exchange}
+func NewPublisherConfig(exchange, accCreatedRK, accDeletedRK string) *PublisherConfig {
+	return &PublisherConfig{
+		Exchange:       exchange,
+		AccCreatedRKey: accCreatedRK,
+		AccDeletedRKey: accDeletedRK,
+	}
 }
 
 type AccountPublisher struct {
@@ -54,8 +60,7 @@ func NewAccountPublisher(
 }
 
 func (p *AccountPublisher) publish(ctx context.Context, routingKey string, body []byte) error {
-	return p.channel.PublishWithContext(
-		ctx,
+	return p.channel.PublishWithContext(ctx,
 		p.cfg.Exchange,
 		routingKey,
 		false,
@@ -72,7 +77,7 @@ func (p *AccountPublisher) PublishAccountCreate(ctx context.Context, accountID u
 	if err != nil {
 		return fmt.Errorf("failed to marshal event: %w", err)
 	}
-	return p.publish(ctx, RoutingKeyAccountCreated, body)
+	return p.publish(ctx, p.cfg.AccCreatedRKey, body)
 }
 
 func (p *AccountPublisher) PublishAccountDelete(ctx context.Context, accountID uuid.UUID) error {
@@ -80,7 +85,7 @@ func (p *AccountPublisher) PublishAccountDelete(ctx context.Context, accountID u
 	if err != nil {
 		return fmt.Errorf("failed to marshal event: %w", err)
 	}
-	return p.publish(ctx, RoutingKeyAccountDeleted, body)
+	return p.publish(ctx, p.cfg.AccDeletedRKey, body)
 }
 
 func (p *AccountPublisher) Close() error {

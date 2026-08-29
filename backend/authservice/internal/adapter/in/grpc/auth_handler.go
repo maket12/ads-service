@@ -166,7 +166,6 @@ func (h *AuthHandler) AssignRole(
 	}
 
 	ucResp, err := h.assignRoleUC.Execute(ctx, MapAssignRolePbToDTO(req))
-
 	if err != nil {
 		code, msg := h.handleError(ctx, err, "failed to assign account role")
 		return nil, status.Error(code, msg)
@@ -221,7 +220,6 @@ func (h *AuthHandler) BlockAccount(
 	}
 
 	ucResp, err := h.blockAccountUC.Execute(ctx, MapBlockAccountPbToDTO(req))
-
 	if err != nil {
 		code, msg := h.handleError(ctx, err, "failed to block account")
 		return nil, status.Error(code, msg)

@@ -8,6 +8,7 @@ import "errors"
 var (
 	ErrInvalidCredentials  = errors.New("invalid email or password")
 	ErrInvalidRole         = errors.New("account cannot be assigned to this role")
+	ErrInvalidAccountID    = errors.New("invalid account id")
 	ErrCannotLogin         = errors.New("account is either blocked or not exists")
 	ErrCannotLogout        = errors.New("session is already expired or revoked")
 	ErrCannotBlock         = errors.New("account cannot be blocked due to its status or insufficient permissions")

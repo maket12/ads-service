@@ -20,6 +20,7 @@ import (
 	"github.com/maket12/ads-service/backend/authservice/internal/domain/port"
 	"github.com/maket12/ads-service/backend/authservice/internal/fakes"
 	"github.com/maket12/ads-service/backend/authservice/migrations"
+	"github.com/maket12/ads-service/backend/authservice/pkg/utils"
 	"github.com/stretchr/testify/require"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"
@@ -274,7 +275,20 @@ func (a *testApp) logout(t *testing.T, refreshToken string) {
 		RefreshToken: refreshToken,
 	})
 	require.NoError(t, err)
-	require.True(t, resp.GetLogout())
+	require.True(t, resp.Logout)
+}
+
+// Helper for e2e tests.
+// Assigns specified account to admin.
+//
+// Make sure you've created account before calling this method.
+func (a *testApp) assignToAdmin(t *testing.T, accountID string) {
+	resp, err := a.client.AssignRole(a.adminCtx(), &auth_v1.AssignRoleRequest{
+		AccountId: accountID,
+		Role:      "admin",
+	})
+	require.NoError(t, err)
+	require.True(t, resp.Assigned)
 }
 
 // Helper for e2e tests.
@@ -308,4 +322,12 @@ func (a *testApp) sendToken(t *testing.T, accountID, email string, shortLive boo
 	require.True(t, ok)
 
 	return token
+}
+
+// Helper for e2e tests.
+//
+// Returns `context.Context` contains admin auth data.
+func (a *testApp) adminCtx() context.Context {
+	withID := utils.PackAccountIDForGRPC(context.Background(), gofakeit.UUID())
+	return utils.PackAccountRoleForGRPC(withID, "admin")
 }

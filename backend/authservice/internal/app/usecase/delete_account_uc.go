@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 
+	"github.com/google/uuid"
 	"github.com/maket12/ads-service/backend/authservice/internal/app/dto"
 	ucerrs "github.com/maket12/ads-service/backend/authservice/internal/app/errs"
 	"github.com/maket12/ads-service/backend/authservice/internal/domain/port"
@@ -29,6 +30,11 @@ func NewDeleteAccountUC(
 }
 
 func (uc *DeleteAccountUC) Execute(ctx context.Context, in dto.DeleteAccountInput) (dto.DeleteAccountOutput, error) {
+	// Premier validation
+	if in.AccountID == uuid.Nil {
+		return dto.DeleteAccountOutput{}, ucerrs.ErrInvalidAccountID
+	}
+
 	// Find an account
 	account, err := uc.account.GetByID(ctx, in.AccountID)
 	if err != nil {

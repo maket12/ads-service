@@ -52,7 +52,8 @@ func gRPCError(err error) *pkgerrs.OutErr {
 	switch {
 	case errors.Is(err, ucerrs.ErrInvalidAccessToken),
 		errors.Is(err, ucerrs.ErrInvalidRefreshToken),
-		errors.Is(err, ucerrs.ErrInvalidRole):
+		errors.Is(err, ucerrs.ErrInvalidRole),
+		errors.Is(err, ucerrs.ErrInvalidAccountID):
 		return pkgerrs.NewOutError(codes.InvalidArgument, err.Error(), nil)
 
 	case errors.Is(err, ucerrs.ErrInvalidCredentials),
