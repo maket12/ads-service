@@ -23,7 +23,11 @@ func gRPCError(err error) *pkgerrs.OutErr {
 			errors.Is(w.Public, ucerrs.ErrDeleteAdDB),
 			errors.Is(w.Public, ucerrs.ErrDeleteAllAdsDB),
 			errors.Is(w.Public, ucerrs.ErrListAdsDB),
-			errors.Is(w.Public, ucerrs.ErrListSellerAdsDB):
+			errors.Is(w.Public, ucerrs.ErrListSellerAdsDB),
+			errors.Is(w.Public, ucerrs.ErrPublishAdPublishedEvent),
+			errors.Is(w.Public, ucerrs.ErrPublishAdUpdatedEvent),
+			errors.Is(w.Public, ucerrs.ErrPublishAdRejectedEvent),
+			errors.Is(w.Public, ucerrs.ErrPublishAdDeletedEvent):
 			return pkgerrs.NewOutError(codes.Internal, w.Public.Error(), w.Reason)
 
 		case errors.Is(w.Public, ucerrs.ErrInvalidInput):
