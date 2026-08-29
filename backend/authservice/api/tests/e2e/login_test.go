@@ -7,7 +7,7 @@ import (
 	"testing"
 
 	"github.com/brianvoe/gofakeit/v7"
-	"github.com/maket12/ads-service/backend/authservice/api/proto/generated/auth_v1"
+	"github.com/maket12/ads-service/backend/authservice/api/proto/generated/auth_v2"
 	"github.com/maket12/ads-service/backend/authservice/pkg/utils"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
@@ -27,7 +27,7 @@ func TestLogin_Success(t *testing.T) {
 		nil, nil, false,
 	)
 
-	resp, err := app.client.Login(ctx, &auth_v1.LoginRequest{
+	resp, err := app.client.Login(ctx, &auth_v2.LoginRequest{
 		Email:     email,
 		Password:  password,
 		Ip:        utils.VPtr(gofakeit.IPv4Address()),
@@ -100,7 +100,7 @@ func TestLogin_BadCases(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			resp, err := app.client.Login(ctx, &auth_v1.LoginRequest{
+			resp, err := app.client.Login(ctx, &auth_v2.LoginRequest{
 				Email:     tt.email,
 				Password:  tt.password,
 				Ip:        utils.VPtr(gofakeit.IPv4Address()),

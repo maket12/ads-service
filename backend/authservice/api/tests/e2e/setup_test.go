@@ -28,7 +28,7 @@ import (
 
 	_ "github.com/golang-migrate/migrate/v4/database/postgres"
 
-	"github.com/maket12/ads-service/backend/authservice/api/proto/generated/auth_v1"
+	"github.com/maket12/ads-service/backend/authservice/api/proto/generated/auth_v2"
 	"github.com/maket12/ads-service/backend/authservice/cmd/app/config"
 	adaptergrpc "github.com/maket12/ads-service/backend/authservice/internal/adapter/in/grpc"
 	adapterpg "github.com/maket12/ads-service/backend/authservice/internal/adapter/out/postgres"
@@ -43,7 +43,7 @@ import (
 const bufSize = 1024 * 1024
 
 type testApp struct {
-	client      auth_v1.AuthServiceClient
+	client      auth_v2.AuthServiceClient
 	conn        *grpc.ClientConn
 	pg          *pkgpostgres.TestContainer
 	redisC      *pkgredis.TestContainer
@@ -146,7 +146,7 @@ func setupE2E(t *testing.T) *testApp {
 		// --- in-memory gRPC server via bufconn ---
 		lis := bufconn.Listen(bufSize)
 		grpcServer := grpc.NewServer()
-		auth_v1.RegisterAuthServiceServer(grpcServer, handler)
+		auth_v2.RegisterAuthServiceServer(grpcServer, handler)
 
 		go func() {
 			_ = grpcServer.Serve(lis)
@@ -164,7 +164,7 @@ func setupE2E(t *testing.T) *testApp {
 		require.NoError(t, err)
 
 		appInstance = &testApp{
-			client:      auth_v1.NewAuthServiceClient(conn),
+			client:      auth_v2.NewAuthServiceClient(conn),
 			conn:        conn,
 			pg:          pg,
 			redisC:      redisC,
@@ -218,7 +218,7 @@ func (a *testApp) createAccount(t *testing.T,
 		regPassword = *password
 	}
 
-	regResp, err := a.client.Register(context.Background(), &auth_v1.RegisterRequest{
+	regResp, err := a.client.Register(context.Background(), &auth_v2.RegisterRequest{
 		Email:    regEmail,
 		Password: regPassword,
 	})
@@ -241,7 +241,7 @@ func (a *testApp) createAccount(t *testing.T,
 		loginUA = *ua
 	}
 
-	loginResp, err := a.client.Login(context.Background(), &auth_v1.LoginRequest{
+	loginResp, err := a.client.Login(context.Background(), &auth_v2.LoginRequest{
 		Email:     regEmail,
 		Password:  regPassword,
 		Ip:        &loginIP,
@@ -271,7 +271,7 @@ func (a *testApp) deleteAccount(t *testing.T, accountID string) {
 }
 
 func (a *testApp) logout(t *testing.T, refreshToken string) {
-	resp, err := a.client.Logout(context.Background(), &auth_v1.LogoutRequest{
+	resp, err := a.client.Logout(context.Background(), &auth_v2.LogoutRequest{
 		RefreshToken: refreshToken,
 	})
 	require.NoError(t, err)
@@ -283,7 +283,7 @@ func (a *testApp) logout(t *testing.T, refreshToken string) {
 //
 // Make sure you've created account before calling this method.
 func (a *testApp) assignToAdmin(t *testing.T, accountID string) {
-	resp, err := a.client.AssignRole(a.adminCtx(), &auth_v1.AssignRoleRequest{
+	resp, err := a.client.AssignRole(a.adminCtx(), &auth_v2.AssignRoleRequest{
 		AccountId: accountID,
 		Role:      "admin",
 	})
@@ -299,7 +299,7 @@ func (a *testApp) assignToAdmin(t *testing.T, accountID string) {
 // Returns the token.
 func (a *testApp) sendToken(t *testing.T, accountID, email string, shortLive bool) string {
 	if !shortLive {
-		resp, err := a.client.SendVerification(context.Background(), &auth_v1.SendVerificationRequest{AccountId: accountID})
+		resp, err := a.client.SendVerification(context.Background(), &auth_v2.SendVerificationRequest{AccountId: accountID})
 		require.NoError(t, err)
 		require.True(t, resp.Sent)
 	} else {

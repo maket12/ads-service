@@ -6,7 +6,7 @@ import (
 	"testing"
 
 	"github.com/google/uuid"
-	"github.com/maket12/ads-service/backend/authservice/api/proto/generated/auth_v1"
+	"github.com/maket12/ads-service/backend/authservice/api/proto/generated/auth_v2"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	"google.golang.org/grpc/codes"
@@ -18,7 +18,7 @@ func TestBlockAccount_Success(t *testing.T) {
 	accountID, _, _ := app.createAccount(t, nil, nil, nil, nil, false)
 
 	resp, err := app.client.BlockAccount(app.adminCtx(),
-		&auth_v1.BlockAccountRequest{
+		&auth_v2.BlockAccountRequest{
 			AccountId: accountID,
 		},
 	)
@@ -80,7 +80,7 @@ func TestBlockAccount_BadCases(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			resp, err := app.client.BlockAccount(app.adminCtx(), &auth_v1.BlockAccountRequest{
+			resp, err := app.client.BlockAccount(app.adminCtx(), &auth_v2.BlockAccountRequest{
 				AccountId: tt.accountID,
 			})
 			require.Error(t, err)

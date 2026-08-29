@@ -7,7 +7,7 @@ import (
 	"testing"
 
 	"github.com/brianvoe/gofakeit/v7"
-	"github.com/maket12/ads-service/backend/authservice/api/proto/generated/auth_v1"
+	"github.com/maket12/ads-service/backend/authservice/api/proto/generated/auth_v2"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	"google.golang.org/grpc/codes"
@@ -18,7 +18,7 @@ func TestRegister_Success(t *testing.T) {
 	app := setupE2E(t)
 	ctx := context.Background()
 
-	resp, err := app.client.Register(ctx, &auth_v1.RegisterRequest{
+	resp, err := app.client.Register(ctx, &auth_v2.RegisterRequest{
 		Email:    gofakeit.Email(),
 		Password: gofakeit.Password(true, true, true, true, true, 10),
 	})
@@ -79,7 +79,7 @@ func TestRegister_BadCases(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			resp, err := app.client.Register(ctx, &auth_v1.RegisterRequest{
+			resp, err := app.client.Register(ctx, &auth_v2.RegisterRequest{
 				Email:    tt.email,
 				Password: tt.password,
 			})

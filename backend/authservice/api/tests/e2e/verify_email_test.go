@@ -7,7 +7,7 @@ import (
 	"testing"
 
 	"github.com/brianvoe/gofakeit/v7"
-	"github.com/maket12/ads-service/backend/authservice/api/proto/generated/auth_v1"
+	"github.com/maket12/ads-service/backend/authservice/api/proto/generated/auth_v2"
 	"github.com/maket12/ads-service/backend/authservice/pkg/utils"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
@@ -25,7 +25,7 @@ func TestVerifyEmail_Success(t *testing.T) {
 
 	t.Run("Successfully verified", func(t *testing.T) {
 		resp, err := app.client.VerifyEmail(ctx,
-			&auth_v1.VerifyEmailRequest{
+			&auth_v2.VerifyEmailRequest{
 				Token: token,
 			},
 		)
@@ -67,7 +67,7 @@ func TestVerifyEmail_BadCases(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			resp, err := app.client.VerifyEmail(ctx,
-				&auth_v1.VerifyEmailRequest{Token: tt.token},
+				&auth_v2.VerifyEmailRequest{Token: tt.token},
 			)
 			require.Error(t, err)
 			assert.False(t, resp.GetVerified())

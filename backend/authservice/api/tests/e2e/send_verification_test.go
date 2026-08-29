@@ -7,7 +7,7 @@ import (
 	"testing"
 
 	"github.com/brianvoe/gofakeit/v7"
-	"github.com/maket12/ads-service/backend/authservice/api/proto/generated/auth_v1"
+	"github.com/maket12/ads-service/backend/authservice/api/proto/generated/auth_v2"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	"google.golang.org/grpc/codes"
@@ -21,7 +21,7 @@ func TestSendVerification_Success(t *testing.T) {
 
 	t.Run("Successfully sent", func(t *testing.T) {
 		resp, err := app.client.SendVerification(ctx,
-			&auth_v1.SendVerificationRequest{
+			&auth_v2.SendVerificationRequest{
 				AccountId: accountID,
 			},
 		)
@@ -79,7 +79,7 @@ func TestSendVerification_BadCases(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			resp, err := app.client.SendVerification(ctx,
-				&auth_v1.SendVerificationRequest{AccountId: tt.accountID},
+				&auth_v2.SendVerificationRequest{AccountId: tt.accountID},
 			)
 			require.Error(t, err)
 			assert.False(t, resp.GetSent())

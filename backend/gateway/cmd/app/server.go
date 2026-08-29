@@ -6,7 +6,7 @@ import (
 	"net/http"
 
 	"github.com/maket12/ads-service/backend/adservice/api/proto/generated/ad_v1"
-	"github.com/maket12/ads-service/backend/authservice/api/proto/generated/auth_v1"
+	"github.com/maket12/ads-service/backend/authservice/api/proto/generated/auth_v2"
 	"github.com/maket12/ads-service/backend/gateway/cmd/app/config"
 	"github.com/maket12/ads-service/backend/gateway/graph"
 	"github.com/maket12/ads-service/backend/gateway/internal/middleware"
@@ -65,7 +65,7 @@ func main() {
 	adConn := mustDial(cfg.AdGRPCAddr)
 	defer closeAdConnection(adConn)
 
-	authClient := auth_v1.NewAuthServiceClient(authConn)
+	authClient := auth_v2.NewAuthServiceClient(authConn)
 	userClient := user_v1.NewUserServiceClient(userConn)
 	adClient := ad_v1.NewAdServiceClient(adConn)
 

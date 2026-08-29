@@ -6,7 +6,7 @@ import (
 	"log/slog"
 
 	"github.com/google/uuid"
-	"github.com/maket12/ads-service/backend/authservice/api/proto/generated/auth_v1"
+	"github.com/maket12/ads-service/backend/authservice/api/proto/generated/auth_v2"
 	"github.com/maket12/ads-service/backend/authservice/internal/app/usecase"
 	"github.com/maket12/ads-service/backend/authservice/pkg/utils"
 	"google.golang.org/grpc/codes"
@@ -15,7 +15,7 @@ import (
 )
 
 type AuthHandler struct {
-	auth_v1.UnimplementedAuthServiceServer
+	auth_v2.UnimplementedAuthServiceServer
 	log                   *slog.Logger
 	registerUC            *usecase.RegisterUC
 	loginUC               *usecase.LoginUC
@@ -79,8 +79,8 @@ func (h *AuthHandler) extractRole(ctx context.Context) (string, error) {
 
 func (h *AuthHandler) Register(
 	ctx context.Context,
-	req *auth_v1.RegisterRequest,
-) (*auth_v1.RegisterResponse, error) {
+	req *auth_v2.RegisterRequest,
+) (*auth_v2.RegisterResponse, error) {
 	ucResp, err := h.registerUC.Execute(ctx, MapRegisterPbToDTO(req))
 
 	if err != nil {
@@ -97,8 +97,8 @@ func (h *AuthHandler) Register(
 
 func (h *AuthHandler) Login(
 	ctx context.Context,
-	req *auth_v1.LoginRequest,
-) (*auth_v1.LoginResponse, error) {
+	req *auth_v2.LoginRequest,
+) (*auth_v2.LoginResponse, error) {
 	ucResp, err := h.loginUC.Execute(ctx, MapLoginPbToDTO(req))
 
 	if err != nil {
@@ -117,8 +117,8 @@ func (h *AuthHandler) Login(
 
 func (h *AuthHandler) Logout(
 	ctx context.Context,
-	req *auth_v1.LogoutRequest,
-) (*auth_v1.LogoutResponse, error) {
+	req *auth_v2.LogoutRequest,
+) (*auth_v2.LogoutResponse, error) {
 	ucResp, err := h.logoutUC.Execute(ctx, MapLogoutPbToDTO(req))
 
 	if err != nil {
@@ -131,8 +131,8 @@ func (h *AuthHandler) Logout(
 
 func (h *AuthHandler) RefreshSession(
 	ctx context.Context,
-	req *auth_v1.RefreshSessionRequest,
-) (*auth_v1.RefreshSessionResponse, error) {
+	req *auth_v2.RefreshSessionRequest,
+) (*auth_v2.RefreshSessionResponse, error) {
 	ucResp, err := h.refreshSessionUC.Execute(ctx, MapRefreshSessionPbToDTO(req))
 
 	if err != nil {
@@ -145,8 +145,8 @@ func (h *AuthHandler) RefreshSession(
 
 func (h *AuthHandler) ValidateAccessToken(
 	ctx context.Context,
-	req *auth_v1.ValidateAccessTokenRequest,
-) (*auth_v1.ValidateAccessTokenResponse, error) {
+	req *auth_v2.ValidateAccessTokenRequest,
+) (*auth_v2.ValidateAccessTokenResponse, error) {
 	ucResp, err := h.validateAccessTokenUC.Execute(ctx, MapValidateAccessTokenPbToDTO(req))
 
 	if err != nil {
@@ -159,8 +159,8 @@ func (h *AuthHandler) ValidateAccessToken(
 
 func (h *AuthHandler) AssignRole(
 	ctx context.Context,
-	req *auth_v1.AssignRoleRequest,
-) (*auth_v1.AssignRoleResponse, error) {
+	req *auth_v2.AssignRoleRequest,
+) (*auth_v2.AssignRoleResponse, error) {
 	if err := h.authorize(ctx, "assign-role"); err != nil {
 		return nil, err
 	}
@@ -181,8 +181,8 @@ func (h *AuthHandler) AssignRole(
 
 func (h *AuthHandler) SendVerification(
 	ctx context.Context,
-	req *auth_v1.SendVerificationRequest,
-) (*auth_v1.SendVerificationResponse, error) {
+	req *auth_v2.SendVerificationRequest,
+) (*auth_v2.SendVerificationResponse, error) {
 	ucResp, err := h.sendVerificationUC.Execute(ctx, MapSendVerificationPbToDTO(req))
 
 	if err != nil {
@@ -199,8 +199,8 @@ func (h *AuthHandler) SendVerification(
 
 func (h *AuthHandler) VerifyEmail(
 	ctx context.Context,
-	req *auth_v1.VerifyEmailRequest,
-) (*auth_v1.VerifyEmailResponse, error) {
+	req *auth_v2.VerifyEmailRequest,
+) (*auth_v2.VerifyEmailResponse, error) {
 	ucResp, err := h.verifyEmailUC.Execute(ctx, MapVerifyEmailPbToDTO(req))
 
 	if err != nil {
@@ -213,8 +213,8 @@ func (h *AuthHandler) VerifyEmail(
 
 func (h *AuthHandler) BlockAccount(
 	ctx context.Context,
-	req *auth_v1.BlockAccountRequest,
-) (*auth_v1.BlockAccountResponse, error) {
+	req *auth_v2.BlockAccountRequest,
+) (*auth_v2.BlockAccountResponse, error) {
 	if err := h.authorize(ctx, "block-account"); err != nil {
 		return nil, err
 	}
@@ -234,8 +234,8 @@ func (h *AuthHandler) BlockAccount(
 
 func (h *AuthHandler) DeleteAccount(
 	ctx context.Context,
-	req *auth_v1.DeleteAccountRequest,
-) (*auth_v1.DeleteAccountResponse, error) {
+	req *auth_v2.DeleteAccountRequest,
+) (*auth_v2.DeleteAccountResponse, error) {
 	if err := h.authorize(ctx, "delete-account"); err != nil {
 		return nil, err
 	}

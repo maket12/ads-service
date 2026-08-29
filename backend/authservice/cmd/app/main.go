@@ -3,7 +3,7 @@ package main
 import (
 	trmpgx "github.com/avito-tech/go-transaction-manager/drivers/pgxv5/v2"
 	"github.com/avito-tech/go-transaction-manager/trm/v2/manager"
-	"github.com/maket12/ads-service/backend/authservice/api/proto/generated/auth_v1"
+	"github.com/maket12/ads-service/backend/authservice/api/proto/generated/auth_v2"
 	"github.com/maket12/ads-service/backend/authservice/cmd/app/config"
 	adaptergrpc "github.com/maket12/ads-service/backend/authservice/internal/adapter/in/grpc"
 	adapterpg "github.com/maket12/ads-service/backend/authservice/internal/adapter/out/postgres"
@@ -261,7 +261,7 @@ func runServer(ctx context.Context, cfg *config.Config, logger *slog.Logger) err
 
 	// gRPC server
 	gRPCServer := grpc.NewServer()
-	auth_v1.RegisterAuthServiceServer(gRPCServer, handler)
+	auth_v2.RegisterAuthServiceServer(gRPCServer, handler)
 	reflection.Register(gRPCServer)
 
 	address := fmt.Sprintf(":%d", cfg.GRPCPort)

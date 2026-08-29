@@ -4,11 +4,11 @@ import (
 	"net/http"
 	"strings"
 
-	"github.com/maket12/ads-service/backend/authservice/api/proto/generated/auth_v1"
+	"github.com/maket12/ads-service/backend/authservice/api/proto/generated/auth_v2"
 	"github.com/maket12/ads-service/backend/authservice/pkg/utils"
 )
 
-func WithAuth(authClient auth_v1.AuthServiceClient) func(handler http.Handler) http.Handler {
+func WithAuth(authClient auth_v2.AuthServiceClient) func(handler http.Handler) http.Handler {
 	return func(next http.Handler) http.Handler {
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 			ctx := r.Context()
@@ -17,7 +17,7 @@ func WithAuth(authClient auth_v1.AuthServiceClient) func(handler http.Handler) h
 			token := strings.TrimPrefix(authHandler, "Bearer ")
 
 			if token != "" {
-				resp, err := authClient.ValidateAccessToken(ctx, &auth_v1.ValidateAccessTokenRequest{
+				resp, err := authClient.ValidateAccessToken(ctx, &auth_v2.ValidateAccessTokenRequest{
 					AccessToken: token,
 				})
 				if err == nil && resp != nil {

@@ -6,7 +6,7 @@ import (
 	"testing"
 
 	"github.com/google/uuid"
-	"github.com/maket12/ads-service/backend/authservice/api/proto/generated/auth_v1"
+	"github.com/maket12/ads-service/backend/authservice/api/proto/generated/auth_v2"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	"google.golang.org/grpc/codes"
@@ -19,7 +19,7 @@ func TestAssignRole_Success(t *testing.T) {
 
 	t.Run("Successfully assigned to admin", func(t *testing.T) {
 		resp, err := app.client.AssignRole(app.adminCtx(),
-			&auth_v1.AssignRoleRequest{
+			&auth_v2.AssignRoleRequest{
 				AccountId: accountID,
 				Role:      "admin",
 			},
@@ -30,7 +30,7 @@ func TestAssignRole_Success(t *testing.T) {
 
 	t.Run("Successfully assigned to user", func(t *testing.T) {
 		resp, err := app.client.AssignRole(app.adminCtx(),
-			&auth_v1.AssignRoleRequest{
+			&auth_v2.AssignRoleRequest{
 				AccountId: accountID,
 				Role:      "user",
 			},
@@ -78,7 +78,7 @@ func TestAssignRole_BadCases(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			resp, err := app.client.AssignRole(app.adminCtx(), &auth_v1.AssignRoleRequest{
+			resp, err := app.client.AssignRole(app.adminCtx(), &auth_v2.AssignRoleRequest{
 				AccountId: tt.accountID,
 				Role:      tt.role,
 			})

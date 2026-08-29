@@ -7,7 +7,7 @@ import (
 	"testing"
 
 	"github.com/brianvoe/gofakeit/v7"
-	"github.com/maket12/ads-service/backend/authservice/api/proto/generated/auth_v1"
+	"github.com/maket12/ads-service/backend/authservice/api/proto/generated/auth_v2"
 	"github.com/maket12/ads-service/backend/authservice/pkg/utils"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
@@ -29,7 +29,7 @@ func TestRefreshSession_Success(t *testing.T) {
 		&ip, &ua, true,
 	)
 
-	resp, err := app.client.RefreshSession(ctx, &auth_v1.RefreshSessionRequest{
+	resp, err := app.client.RefreshSession(ctx, &auth_v2.RefreshSessionRequest{
 		OldRefreshToken: oldRefreshToken,
 		Ip:              utils.VPtr(ip),
 		UserAgent:       utils.VPtr(ua),
@@ -41,7 +41,7 @@ func TestRefreshSession_Success(t *testing.T) {
 	require.NotEqual(t, oldRefreshToken, resp.GetRefreshToken())
 
 	// The old token must now be rotated out — using it again should fail.
-	_, err = app.client.RefreshSession(ctx, &auth_v1.RefreshSessionRequest{
+	_, err = app.client.RefreshSession(ctx, &auth_v2.RefreshSessionRequest{
 		OldRefreshToken: oldRefreshToken,
 		Ip:              utils.VPtr(ip),
 		UserAgent:       utils.VPtr(ua),
@@ -80,7 +80,7 @@ func TestRefreshSession_BadCases(t *testing.T) {
 				_, _, oldToken := app.createAccount(t, &email, &password, &ip, &ua, true)
 
 				// Rotate once — this revokes oldToken and creates a new session.
-				refreshResp, err := app.client.RefreshSession(ctx, &auth_v1.RefreshSessionRequest{
+				refreshResp, err := app.client.RefreshSession(ctx, &auth_v2.RefreshSessionRequest{
 					OldRefreshToken: oldToken,
 					Ip:              utils.VPtr(ip),
 					UserAgent:       utils.VPtr(ua),
@@ -116,7 +116,7 @@ func TestRefreshSession_BadCases(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			token, ip, ua := tt.setup(t)
 
-			resp, err := app.client.RefreshSession(ctx, &auth_v1.RefreshSessionRequest{
+			resp, err := app.client.RefreshSession(ctx, &auth_v2.RefreshSessionRequest{
 				OldRefreshToken: token,
 				Ip:              utils.VPtr(ip),
 				UserAgent:       utils.VPtr(ua),
@@ -150,7 +150,7 @@ func TestRefreshSession_CompromisedReuse_RevokesDescendants(t *testing.T) {
 	_, _, oldToken := app.createAccount(t, &email, &password, &ip, &ua, true)
 
 	// Legitimate rotation.
-	refreshResp, err := app.client.RefreshSession(ctx, &auth_v1.RefreshSessionRequest{
+	refreshResp, err := app.client.RefreshSession(ctx, &auth_v2.RefreshSessionRequest{
 		OldRefreshToken: oldToken,
 		Ip:              utils.VPtr(ip),
 		UserAgent:       utils.VPtr(ua),
@@ -161,7 +161,7 @@ func TestRefreshSession_CompromisedReuse_RevokesDescendants(t *testing.T) {
 
 	// Attacker replays the old (already-rotated) token — should be rejected
 	// and should revoke the descendant chain as a side effect.
-	_, err = app.client.RefreshSession(ctx, &auth_v1.RefreshSessionRequest{
+	_, err = app.client.RefreshSession(ctx, &auth_v2.RefreshSessionRequest{
 		OldRefreshToken: oldToken,
 		Ip:              utils.VPtr(ip),
 		UserAgent:       utils.VPtr(ua),
@@ -170,7 +170,7 @@ func TestRefreshSession_CompromisedReuse_RevokesDescendants(t *testing.T) {
 
 	// The legitimate new token, issued by the first rotation, must now be
 	// unusable too, since its whole chain was revoked as compromised.
-	_, err = app.client.RefreshSession(ctx, &auth_v1.RefreshSessionRequest{
+	_, err = app.client.RefreshSession(ctx, &auth_v2.RefreshSessionRequest{
 		OldRefreshToken: newToken,
 		Ip:              utils.VPtr(ip),
 		UserAgent:       utils.VPtr(ua),

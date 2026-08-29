@@ -7,7 +7,7 @@ import (
 	"testing"
 
 	"github.com/brianvoe/gofakeit/v7"
-	"github.com/maket12/ads-service/backend/authservice/api/proto/generated/auth_v1"
+	"github.com/maket12/ads-service/backend/authservice/api/proto/generated/auth_v2"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	"google.golang.org/grpc/codes"
@@ -21,7 +21,7 @@ func TestValidateAccessToken_Success(t *testing.T) {
 	// Get account id and token
 	accountID, access, _ := app.createAccount(t, nil, nil, nil, nil, true)
 
-	resp, err := app.client.ValidateAccessToken(ctx, &auth_v1.ValidateAccessTokenRequest{
+	resp, err := app.client.ValidateAccessToken(ctx, &auth_v2.ValidateAccessTokenRequest{
 		AccessToken: access,
 	})
 	require.NoError(t, err)
@@ -78,7 +78,7 @@ func TestValidateAccessToken_BadCases(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			resp, err := app.client.ValidateAccessToken(ctx, &auth_v1.ValidateAccessTokenRequest{
+			resp, err := app.client.ValidateAccessToken(ctx, &auth_v2.ValidateAccessTokenRequest{
 				AccessToken: tt.accessToken,
 			})
 

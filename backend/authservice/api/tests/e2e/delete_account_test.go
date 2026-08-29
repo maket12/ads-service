@@ -6,7 +6,7 @@ import (
 	"testing"
 
 	"github.com/google/uuid"
-	"github.com/maket12/ads-service/backend/authservice/api/proto/generated/auth_v1"
+	"github.com/maket12/ads-service/backend/authservice/api/proto/generated/auth_v2"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	"google.golang.org/grpc/codes"
@@ -18,7 +18,7 @@ func TestDeleteAccount_Success(t *testing.T) {
 	accountID, _, _ := app.createAccount(t, nil, nil, nil, nil, false)
 
 	resp, err := app.client.DeleteAccount(app.adminCtx(),
-		&auth_v1.DeleteAccountRequest{
+		&auth_v2.DeleteAccountRequest{
 			AccountId: accountID,
 		},
 	)
@@ -72,7 +72,7 @@ func TestDeleteAccount_BadCases(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			resp, err := app.client.DeleteAccount(app.adminCtx(),
-				&auth_v1.DeleteAccountRequest{
+				&auth_v2.DeleteAccountRequest{
 					AccountId: tt.accountID,
 				})
 			require.Error(t, err)

@@ -9,7 +9,7 @@ import (
 	"context"
 
 	"github.com/maket12/ads-service/backend/adservice/api/proto/generated/ad_v1"
-	"github.com/maket12/ads-service/backend/authservice/api/proto/generated/auth_v1"
+	"github.com/maket12/ads-service/backend/authservice/api/proto/generated/auth_v2"
 	authutils "github.com/maket12/ads-service/backend/authservice/pkg/utils"
 	"github.com/maket12/ads-service/backend/gateway/graph/model"
 	"github.com/maket12/ads-service/backend/userservice/api/proto/generated/user_v1"
@@ -48,7 +48,7 @@ func requireRole(ctx context.Context, role string) (string, error) {
 
 // Register is the resolver for the register field.
 func (r *mutationResolver) Register(ctx context.Context, input model.RegisterInput) (string, error) {
-	resp, err := r.AuthClient.Register(ctx, &auth_v1.RegisterRequest{
+	resp, err := r.AuthClient.Register(ctx, &auth_v2.RegisterRequest{
 		Email:    input.Email,
 		Password: input.Password,
 	})
@@ -60,7 +60,7 @@ func (r *mutationResolver) Register(ctx context.Context, input model.RegisterInp
 
 // Login is the resolver for the login field.
 func (r *mutationResolver) Login(ctx context.Context, input model.LoginInput) (*model.LoginResponse, error) {
-	resp, err := r.AuthClient.Login(ctx, &auth_v1.LoginRequest{
+	resp, err := r.AuthClient.Login(ctx, &auth_v2.LoginRequest{
 		Email:     input.Email,
 		Password:  input.Password,
 		Ip:        input.IP,
@@ -78,7 +78,7 @@ func (r *mutationResolver) Login(ctx context.Context, input model.LoginInput) (*
 
 // Logout is the resolver for the logout field.
 func (r *mutationResolver) Logout(ctx context.Context, refreshToken string) (bool, error) {
-	resp, err := r.AuthClient.Logout(ctx, &auth_v1.LogoutRequest{
+	resp, err := r.AuthClient.Logout(ctx, &auth_v2.LogoutRequest{
 		RefreshToken: refreshToken,
 	})
 	if err != nil {
@@ -89,7 +89,7 @@ func (r *mutationResolver) Logout(ctx context.Context, refreshToken string) (boo
 
 // RefreshSession is the resolver for the refreshSession field.
 func (r *mutationResolver) RefreshSession(ctx context.Context, input model.RefreshSessionInput) (*model.RefreshSessionResponse, error) {
-	resp, err := r.AuthClient.RefreshSession(ctx, &auth_v1.RefreshSessionRequest{
+	resp, err := r.AuthClient.RefreshSession(ctx, &auth_v2.RefreshSessionRequest{
 		OldRefreshToken: input.OldRefreshToken,
 		Ip:              input.IP,
 		UserAgent:       input.UserAgent,
@@ -110,7 +110,7 @@ func (r *mutationResolver) AssignRole(ctx context.Context, accountID string, rol
 		return false, err
 	}
 
-	resp, err := r.AuthClient.AssignRole(ctx, &auth_v1.AssignRoleRequest{
+	resp, err := r.AuthClient.AssignRole(ctx, &auth_v2.AssignRoleRequest{
 		AccountId: accountID,
 		Role:      role.String(),
 	})
@@ -123,7 +123,7 @@ func (r *mutationResolver) AssignRole(ctx context.Context, accountID string, rol
 
 // SendVerification is the resolver for the sendVerification field.
 func (r *mutationResolver) SendVerification(ctx context.Context, accountID string) (bool, error) {
-	resp, err := r.AuthClient.SendVerification(ctx, &auth_v1.SendVerificationRequest{
+	resp, err := r.AuthClient.SendVerification(ctx, &auth_v2.SendVerificationRequest{
 		AccountId: accountID,
 	})
 	if err != nil {
@@ -134,7 +134,7 @@ func (r *mutationResolver) SendVerification(ctx context.Context, accountID strin
 
 // VerifyEmail is the resolver for the verifyEmail field.
 func (r *mutationResolver) VerifyEmail(ctx context.Context, token string) (bool, error) {
-	resp, err := r.AuthClient.VerifyEmail(ctx, &auth_v1.VerifyEmailRequest{Token: token})
+	resp, err := r.AuthClient.VerifyEmail(ctx, &auth_v2.VerifyEmailRequest{Token: token})
 	if err != nil {
 		return false, mapGRPCError(err)
 	}
@@ -147,7 +147,7 @@ func (r *mutationResolver) Block(ctx context.Context, accountID string) (bool, e
 		return false, err
 	}
 
-	resp, err := r.AuthClient.BlockAccount(ctx, &auth_v1.BlockAccountRequest{
+	resp, err := r.AuthClient.BlockAccount(ctx, &auth_v2.BlockAccountRequest{
 		AccountId: accountID,
 	})
 	if err != nil {
@@ -163,7 +163,7 @@ func (r *mutationResolver) Delete(ctx context.Context, accountID string) (bool, 
 		return false, err
 	}
 
-	resp, err := r.AuthClient.DeleteAccount(ctx, &auth_v1.DeleteAccountRequest{
+	resp, err := r.AuthClient.DeleteAccount(ctx, &auth_v2.DeleteAccountRequest{
 		AccountId: accountID,
 	})
 	if err != nil {
@@ -365,7 +365,7 @@ func (r *queryResolver) AllAds(ctx context.Context, limit int, offset int) ([]*m
 
 // ValidateAccessToken is the resolver for the validateAccessToken field.
 func (r *queryResolver) ValidateAccessToken(ctx context.Context, token string) (*model.ValidateAccessTokenResponse, error) {
-	resp, err := r.AuthClient.ValidateAccessToken(ctx, &auth_v1.ValidateAccessTokenRequest{
+	resp, err := r.AuthClient.ValidateAccessToken(ctx, &auth_v2.ValidateAccessTokenRequest{
 		AccessToken: token,
 	})
 	if err != nil {

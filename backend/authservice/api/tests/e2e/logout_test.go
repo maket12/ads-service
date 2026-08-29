@@ -6,7 +6,7 @@ import (
 	"context"
 	"testing"
 
-	"github.com/maket12/ads-service/backend/authservice/api/proto/generated/auth_v1"
+	"github.com/maket12/ads-service/backend/authservice/api/proto/generated/auth_v2"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	"google.golang.org/grpc/codes"
@@ -20,7 +20,7 @@ func TestLogout_Success(t *testing.T) {
 	// Get refresh token (login)
 	_, _, refreshToken := app.createAccount(t, nil, nil, nil, nil, true)
 
-	resp, err := app.client.Logout(ctx, &auth_v1.LogoutRequest{
+	resp, err := app.client.Logout(ctx, &auth_v2.LogoutRequest{
 		RefreshToken: refreshToken,
 	})
 	require.NoError(t, err)
@@ -59,7 +59,7 @@ func TestLogout_BadCases(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			resp, err := app.client.Logout(ctx, &auth_v1.LogoutRequest{
+			resp, err := app.client.Logout(ctx, &auth_v2.LogoutRequest{
 				RefreshToken: tt.refreshToken,
 			})
 
