@@ -62,6 +62,7 @@ type Config struct {
 	SMTPEmail    string `env:"SMTP_EMAIL,required"`
 	SMTPPassword string `env:"SMTP_PASSWORD,required"`
 
+	// Verification Token
 	VerificationBaseURL string        `env:"VERIFICATION_BASE_URL,required"`
 	VerificationTTL     time.Duration `env:"VERIFICATION_TTL" envDefault:"5m"`
 
@@ -126,6 +127,7 @@ type TestConfig struct {
 	SMTPEmail    string `env:"TEST_SMTP_EMAIL"`
 	SMTPPassword string `env:"TEST_SMTP_PASSWORD"`
 
+	// Verification Token
 	VerificationBaseURL string        `env:"TEST_VERIFICATION_BASE_URL"`
 	VerificationTTL     time.Duration `env:"TEST_VERIFICATION_TTL" envDefault:"1m"`
 

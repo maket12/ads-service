@@ -17,9 +17,11 @@ import (
 	adaptergrpc "github.com/maket12/ads-service/backend/adservice/internal/adapter/in/grpc"
 	adaptermongo "github.com/maket12/ads-service/backend/adservice/internal/adapter/out/mongodb"
 	adapterpg "github.com/maket12/ads-service/backend/adservice/internal/adapter/out/postgres"
+	adaptermq "github.com/maket12/ads-service/backend/adservice/internal/adapter/out/rabbitmq"
 	"github.com/maket12/ads-service/backend/adservice/internal/app/usecase"
 	pkgmongodb "github.com/maket12/ads-service/backend/adservice/pkg/mongodb"
 	pkgpostgres "github.com/maket12/ads-service/backend/authservice/pkg/postgres"
+	pkgrabbitmq "github.com/maket12/ads-service/backend/authservice/pkg/rabbitmq"
 
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/reflection"
@@ -99,6 +101,67 @@ func closeMongoClient(
 	}
 }
 
+func newRabbitMQClient(cfg *config.Config) (*pkgrabbitmq.Client, error) {
+	rabbitConfig := pkgrabbitmq.NewConfig(
+		cfg.RabbitHost,
+		cfg.RabbitPort,
+		cfg.RabbitUser,
+		cfg.RabbitPassword,
+		cfg.RabbitWaitTime,
+		cfg.RabbitAttempts,
+	)
+
+	rabbitClient, err := pkgrabbitmq.NewClient(rabbitConfig)
+	if err != nil {
+		return nil, err
+	}
+
+	return rabbitClient, nil
+}
+
+func closeRabbitMQClient(
+	ctx context.Context,
+	logger *slog.Logger,
+	rabbitClient *pkgrabbitmq.Client,
+) {
+	logger.InfoContext(ctx, "closing rabbitmq connection...")
+	if err := rabbitClient.Close(); err != nil {
+		logger.ErrorContext(ctx, "failed to close rabbitmq",
+			slog.Any("error", err),
+		)
+	}
+}
+
+func newAdPublisher(cfg *config.Config, rabbitClient *pkgrabbitmq.Client) (*adaptermq.AdPublisher, error) {
+	publisherConfig := adaptermq.NewPublisherConfig(
+		cfg.AdExchange,
+		cfg.AdPublishedRoutingKey,
+		cfg.AdUpdatedRoutingKey,
+		cfg.AdRejectedRoutingKey,
+		cfg.AdDeletedRoutingKey,
+	)
+
+	pub, err := adaptermq.NewAdPublisher(publisherConfig, rabbitClient)
+	if err != nil {
+		return nil, err
+	}
+
+	return pub, nil
+}
+
+func closeAdPublisher(
+	ctx context.Context,
+	logger *slog.Logger,
+	accountPublisher *adaptermq.AdPublisher,
+) {
+	logger.InfoContext(ctx, "closing ad publisher...")
+	if err := accountPublisher.Close(); err != nil {
+		logger.ErrorContext(ctx, "failed to close ad publisher",
+			slog.Any("error", err),
+		)
+	}
+}
+
 func runServer(ctx context.Context, cfg *config.Config, logger *slog.Logger) error {
 	// Postgres client
 	pgClient, err := newPostgresClient(ctx, cfg)
@@ -118,6 +181,15 @@ func runServer(ctx context.Context, cfg *config.Config, logger *slog.Logger) err
 	// Close Mongo
 	defer closeMongoClient(ctx, logger, mongoClient)
 
+	// RabbitMQ client
+	rabbitClient, err := newRabbitMQClient(cfg)
+	if err != nil {
+		return fmt.Errorf("failed to init rabbitmq client: %w", err)
+	}
+
+	// Close RabbitMQ
+	defer closeRabbitMQClient(ctx, logger, rabbitClient)
+
 	// Media repository config
 	mediaRepoCfg := adaptermongo.NewMediaRepositoryConfig(
 		mongoClient,
@@ -131,13 +203,20 @@ func runServer(ctx context.Context, cfg *config.Config, logger *slog.Logger) err
 	adRepo := adapterpg.NewAdRepository(pgClient, trmpgx.DefaultCtxGetter)
 	mediaRepo := adaptermongo.NewMediaRepository(mediaRepoCfg)
 
+	// RabbitMQ Publisher
+	adPublisher, err := newAdPublisher(cfg, rabbitClient)
+	if err != nil {
+		return fmt.Errorf("failed to init event publisher: %w", err)
+	}
+	defer closeAdPublisher(ctx, logger, adPublisher)
+
 	// Use-cases
 	createAdUC := usecase.NewCreateAdUC(trManager, adRepo, mediaRepo)
 	getAdUC := usecase.NewGetAdUC(adRepo, mediaRepo)
-	updateAdUC := usecase.NewUpdateAdUC(trManager, adRepo, mediaRepo)
-	publishAdUC := usecase.NewPublishAdUC(adRepo)
-	rejectAdUC := usecase.NewRejectAdUC(adRepo)
-	deleteAdUC := usecase.NewDeleteAdUC(trManager, adRepo, mediaRepo)
+	updateAdUC := usecase.NewUpdateAdUC(trManager, adRepo, mediaRepo, adPublisher)
+	publishAdUC := usecase.NewPublishAdUC(trManager, adRepo, adPublisher)
+	rejectAdUC := usecase.NewRejectAdUC(trManager, adRepo, adPublisher)
+	deleteAdUC := usecase.NewDeleteAdUC(trManager, adRepo, mediaRepo, adPublisher)
 	deleteAllAdsUC := usecase.NewDeleteAllAdsUC(trManager, adRepo, mediaRepo)
 	listSellerAdsUC := usecase.NewListSellerAdsUC(adRepo)
 	listAllAdsUC := usecase.NewListAllAdsUC(adRepo)
@@ -197,7 +276,7 @@ func main() {
 	ctx, stop := signal.NotifyContext(context.Background(), syscall.SIGINT, syscall.SIGTERM)
 	defer stop()
 
-	if err := runServer(ctx, cfg, logger); err != nil {
+	if err = runServer(ctx, cfg, logger); err != nil {
 		logger.ErrorContext(
 			ctx, "adservice failed", slog.Any("error", err),
 		)
