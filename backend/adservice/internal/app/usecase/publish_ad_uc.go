@@ -54,7 +54,7 @@ func (uc *PublishAdUC) Execute(ctx context.Context, in dto.PublishAdInput) (dto.
 		}
 
 		if publishErr := uc.publisher.PublishAdPublished(txCtx, ad); publishErr != nil {
-			return ucerrs.Wrap(ucerrs.ErrPublishAdPublishedEvent, publishErr)
+			return ucerrs.Wrap(ucerrs.ErrPublishAdPublished, publishErr)
 		}
 
 		return nil

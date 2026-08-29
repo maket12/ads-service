@@ -21,10 +21,10 @@ var (
 ================ Publisher failures ================
 */
 var (
-	ErrPublishAdPublishedEvent = errors.New("failed to publish ad published event")
-	ErrPublishAdUpdatedEvent   = errors.New("failed to publish ad updated event")
-	ErrPublishAdRejectedEvent  = errors.New("failed to publish ad rejected event")
-	ErrPublishAdDeletedEvent   = errors.New("failed to publish ad deleted event")
+	ErrPublishAdPublished = errors.New("failed to publish ad published event")
+	ErrPublishAdUpdated   = errors.New("failed to publish ad updated event")
+	ErrPublishAdRejected  = errors.New("failed to publish ad rejected event")
+	ErrPublishAdDeleted   = errors.New("failed to publish ad deleted event")
 )
 
 /*

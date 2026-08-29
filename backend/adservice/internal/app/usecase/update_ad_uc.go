@@ -73,7 +73,7 @@ func (uc *UpdateAdUC) Execute(ctx context.Context, in dto.UpdateAdInput) (dto.Up
 		}
 
 		if publishErr := uc.publisher.PublishAdUpdated(txCtx, ad); publishErr != nil {
-			return ucerrs.Wrap(ucerrs.ErrPublishAdUpdatedEvent, publishErr)
+			return ucerrs.Wrap(ucerrs.ErrPublishAdUpdated, publishErr)
 		}
 
 		return nil
