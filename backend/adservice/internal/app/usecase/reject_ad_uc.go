@@ -50,7 +50,7 @@ func (uc *RejectAdUC) Execute(ctx context.Context, in dto.RejectAdInput) (dto.Re
 	// Update in db and publish the event in the queue
 	if err = uc.trManager.Do(ctx, func(txCtx context.Context) error {
 		if updErr := uc.ad.Update(txCtx, ad); updErr != nil {
-			return ucerrs.Wrap(ucerrs.ErrUpdateAdDB, err)
+			return ucerrs.Wrap(ucerrs.ErrUpdateAdDB, updErr)
 		}
 
 		if publishErr := uc.publisher.PublishAdRejected(txCtx, ad.ID()); publishErr != nil {
