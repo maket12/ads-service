@@ -1,4 +1,4 @@
-//go:build e2e
+///go:build e2e
 
 package e2e
 
@@ -14,6 +14,7 @@ import (
 	"github.com/avito-tech/go-transaction-manager/trm/v2/manager"
 	"github.com/brianvoe/gofakeit/v7"
 	"github.com/google/uuid"
+	"github.com/maket12/ads-service/backend/adservice/internal/fakes"
 	"github.com/maket12/ads-service/backend/authservice/pkg/utils"
 	"github.com/stretchr/testify/require"
 	"google.golang.org/grpc"
@@ -41,6 +42,7 @@ type testApp struct {
 	conn      *grpc.ClientConn
 	pg        *pkgpostgres.TestContainer
 	mongoC    *pkgmongodb.TestContainer
+	publisher *fakes.FakePublisher
 	adRepo    port.AdRepository
 	mediaRepo port.MediaRepository
 	dbClient  *pkgpostgres.Client
@@ -95,6 +97,9 @@ func setupE2E(t *testing.T) *testApp {
 		))
 		require.NoError(t, err)
 
+		// event publisher
+		adPublisher := fakes.NewFakePublisher()
+
 		// media repository config
 		mediaRepoCfg := adaptermongo.NewMediaRepositoryConfig(
 			mongoClient,
@@ -111,10 +116,10 @@ func setupE2E(t *testing.T) *testApp {
 		// use-cases
 		createAdUC := usecase.NewCreateAdUC(trManager, adRepo, mediaRepo)
 		getAdUC := usecase.NewGetAdUC(adRepo, mediaRepo)
-		updateAdUC := usecase.NewUpdateAdUC(trManager, adRepo, mediaRepo)
-		publishAdUC := usecase.NewPublishAdUC(adRepo)
-		rejectAdUC := usecase.NewRejectAdUC(adRepo)
-		deleteAdUC := usecase.NewDeleteAdUC(trManager, adRepo, mediaRepo)
+		updateAdUC := usecase.NewUpdateAdUC(trManager, adRepo, mediaRepo, adPublisher)
+		publishAdUC := usecase.NewPublishAdUC(trManager, adRepo, adPublisher)
+		rejectAdUC := usecase.NewRejectAdUC(trManager, adRepo, adPublisher)
+		deleteAdUC := usecase.NewDeleteAdUC(trManager, adRepo, mediaRepo, adPublisher)
 		deleteAllAdsUC := usecase.NewDeleteAllAdsUC(trManager, adRepo, mediaRepo)
 		listSellerAdsUC := usecase.NewListSellerAdsUC(adRepo)
 		listAllAdsUC := usecase.NewListAllAdsUC(adRepo)
@@ -152,6 +157,7 @@ func setupE2E(t *testing.T) *testApp {
 			conn:      conn,
 			pg:        pg,
 			mongoC:    mongoC,
+			publisher: adPublisher,
 			adRepo:    adRepo,
 			mediaRepo: mediaRepo,
 			dbClient:  pgClient,
