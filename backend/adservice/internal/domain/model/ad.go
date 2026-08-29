@@ -287,6 +287,7 @@ func (ad *Ad) Update(
 		copy(ad.images, images)
 	}
 
+	ad.status = AdOnModeration
 	ad.updatedAt = utils.VPtr(time.Now())
 
 	return nil

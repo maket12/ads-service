@@ -204,7 +204,7 @@ func TestAd_Update(t *testing.T) {
 	_ = ad.Publish()
 	err = ad.Update(nil, nil, utils.VPtr(int64(200)), nil, nil)
 	assert.NoError(t, err)
-
+	assert.True(t, ad.IsOnModeration())
 	// Third case - ad is deleted and can't be updated
 	_ = ad.Delete()
 	err = ad.Update(utils.VPtr(gofakeit.ProductName()), nil, nil, nil, nil)
