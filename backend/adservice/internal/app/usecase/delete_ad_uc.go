@@ -55,10 +55,6 @@ func (uc *DeleteAdUC) Execute(ctx context.Context, in dto.DeleteAdInput) (dto.De
 		return dto.DeleteAdOutput{}, ucerrs.ErrCannotDelete
 	}
 
-	if err = ad.Delete(); err != nil {
-		return dto.DeleteAdOutput{}, ucerrs.ErrCannotDelete
-	}
-
 	// Scenario №1: Delete ad data in database (if not published yet)
 	if ad.IsOnModeration() && ad.UpdatedAt() == nil {
 		if err = uc.hardDelete(ctx, ad); err != nil {
@@ -78,6 +74,9 @@ func (uc *DeleteAdUC) Execute(ctx context.Context, in dto.DeleteAdInput) (dto.De
 // hardDelete removes the ad and its media completely from the database.
 // Used when the ad hasn't been published yet, so there's nothing to announce.
 func (uc *DeleteAdUC) hardDelete(ctx context.Context, ad *model.Ad) error {
+	if err := ad.Delete(); err != nil {
+		return ucerrs.ErrCannotDelete
+	}
 	return uc.trManager.Do(ctx, func(txCtx context.Context) error {
 		if err := uc.ad.Delete(txCtx, ad.ID()); err != nil {
 			return ucerrs.Wrap(ucerrs.ErrDeleteAdDB, err)
@@ -92,6 +91,9 @@ func (uc *DeleteAdUC) hardDelete(ctx context.Context, ad *model.Ad) error {
 // softDeleteAndPublish marks the ad as deleted, removes its media,
 // and publishes an event so other services can react.
 func (uc *DeleteAdUC) softDeleteAndPublish(ctx context.Context, ad *model.Ad) error {
+	if err := ad.Delete(); err != nil {
+		return ucerrs.ErrCannotDelete
+	}
 	return uc.trManager.Do(ctx, func(txCtx context.Context) error {
 		if err := uc.ad.Update(txCtx, ad); err != nil {
 			return ucerrs.Wrap(ucerrs.ErrUpdateAdDB, err)

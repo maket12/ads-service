@@ -18,11 +18,16 @@ import (
 )
 
 func TestPublishAdUC_Execute(t *testing.T) {
+	type adapter struct {
+		ad        *mocks.MockAdRepository
+		publisher *mocks.MockAdPublisher
+	}
+
 	type testCase struct {
 		name          string
 		buildAd       func() *model.Ad
 		input         func(adID uuid.UUID) dto.PublishAdInput
-		mockBehaviour func(a *mocks.MockAdRepository, adID uuid.UUID)
+		mockBehaviour func(a adapter, adID uuid.UUID)
 		expectErr     error
 	}
 
@@ -50,8 +55,9 @@ func TestPublishAdUC_Execute(t *testing.T) {
 			input: func(adID uuid.UUID) dto.PublishAdInput {
 				return dto.PublishAdInput{AdID: adID}
 			},
-			mockBehaviour: func(a *mocks.MockAdRepository, _ uuid.UUID) {
-				a.EXPECT().Update(mock.Anything, mock.AnythingOfType("*model.Ad")).Return(nil)
+			mockBehaviour: func(a adapter, _ uuid.UUID) {
+				a.ad.EXPECT().Update(mock.Anything, mock.AnythingOfType("*model.Ad")).Return(nil)
+				a.publisher.EXPECT().PublishAdPublished(mock.Anything, mock.AnythingOfType("*model.Ad")).Return(nil)
 			},
 			expectErr: nil,
 		},
@@ -61,7 +67,7 @@ func TestPublishAdUC_Execute(t *testing.T) {
 			input: func(adID uuid.UUID) dto.PublishAdInput {
 				return dto.PublishAdInput{AdID: adID}
 			},
-			mockBehaviour: func(_ *mocks.MockAdRepository, _ uuid.UUID) {},
+			mockBehaviour: func(_ adapter, _ uuid.UUID) {},
 			expectErr:     ucerrs.ErrAdNotFound,
 		},
 		{
@@ -70,7 +76,7 @@ func TestPublishAdUC_Execute(t *testing.T) {
 			input: func(adID uuid.UUID) dto.PublishAdInput {
 				return dto.PublishAdInput{AdID: adID}
 			},
-			mockBehaviour: func(_ *mocks.MockAdRepository, _ uuid.UUID) {},
+			mockBehaviour: func(_ adapter, _ uuid.UUID) {},
 			expectErr:     ucerrs.ErrGetAdDB,
 		},
 		{
@@ -79,7 +85,7 @@ func TestPublishAdUC_Execute(t *testing.T) {
 			input: func(adID uuid.UUID) dto.PublishAdInput {
 				return dto.PublishAdInput{AdID: adID}
 			},
-			mockBehaviour: func(_ *mocks.MockAdRepository, _ uuid.UUID) {},
+			mockBehaviour: func(_ adapter, _ uuid.UUID) {},
 			expectErr:     ucerrs.ErrCannotPublish,
 		},
 		{
@@ -88,16 +94,29 @@ func TestPublishAdUC_Execute(t *testing.T) {
 			input: func(adID uuid.UUID) dto.PublishAdInput {
 				return dto.PublishAdInput{AdID: adID}
 			},
-			mockBehaviour: func(a *mocks.MockAdRepository, _ uuid.UUID) {
-				a.EXPECT().Update(mock.Anything, mock.AnythingOfType("*model.Ad")).Return(errors.New("db error"))
+			mockBehaviour: func(a adapter, _ uuid.UUID) {
+				a.ad.EXPECT().Update(mock.Anything, mock.AnythingOfType("*model.Ad")).Return(errors.New("db error"))
 			},
 			expectErr: ucerrs.ErrUpdateAdDB,
+		},
+		{
+			name:    "Failure - publish ad published error",
+			buildAd: newAd,
+			input: func(adID uuid.UUID) dto.PublishAdInput {
+				return dto.PublishAdInput{AdID: adID}
+			},
+			mockBehaviour: func(a adapter, _ uuid.UUID) {
+				a.ad.EXPECT().Update(mock.Anything, mock.AnythingOfType("*model.Ad")).Return(nil)
+				a.publisher.EXPECT().PublishAdPublished(mock.Anything, mock.AnythingOfType("*model.Ad")).Return(errors.New("mq error"))
+			},
+			expectErr: ucerrs.ErrPublishAdPublished,
 		},
 	}
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			adRepo := mocks.NewMockAdRepository(t)
+			publisher := mocks.NewMockAdPublisher(t)
 
 			ad := tt.buildAd()
 			adID := uuid.New()
@@ -114,9 +133,9 @@ func TestPublishAdUC_Execute(t *testing.T) {
 				adRepo.EXPECT().Get(mock.Anything, adID).Return(ad, nil)
 			}
 
-			tt.mockBehaviour(adRepo, adID)
+			tt.mockBehaviour(adapter{ad: adRepo, publisher: publisher}, adID)
 
-			uc := usecase.NewPublishAdUC(adRepo)
+			uc := usecase.NewPublishAdUC(mocks.FakeTxManager{}, adRepo, publisher)
 
 			out, err := uc.Execute(context.Background(), tt.input(adID))
 

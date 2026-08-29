@@ -19,8 +19,9 @@ import (
 
 func TestDeleteAdUC_Execute(t *testing.T) {
 	type adapter struct {
-		ad    *mocks.MockAdRepository
-		media *mocks.MockMediaRepository
+		ad        *mocks.MockAdRepository
+		media     *mocks.MockMediaRepository
+		publisher *mocks.MockAdPublisher
 	}
 
 	type testCase struct {
@@ -42,20 +43,25 @@ func TestDeleteAdUC_Execute(t *testing.T) {
 		)
 		return ad
 	}
+	publishedAd := func() *model.Ad {
+		ad := newAd()
+		_ = ad.Publish()
+		return ad
+	}
+
+	// NOTE: Execute now calls hardDelete (which itself calls the domain's
+	// ad.Delete()) and then UNCONDITIONALLY calls softDeleteAndPublish
+	// (which calls ad.Delete() again) - there's no else/skip between the
+	// two scenarios. For an ad that is on moderation with a nil UpdatedAt,
+	// this means ad.Delete() runs twice: once inside hardDelete (succeeds)
+	// and once inside softDeleteAndPublish, which fails because the ad is
+	// already marked deleted at that point - so the overall call ends in
+	// ucerrs.ErrCannotDelete even when both DB calls inside hardDelete
+	// succeed. Published ads skip hardDelete entirely (not on moderation),
+	// so softDeleteAndPublish's single ad.Delete() call succeeds and the
+	// flow can complete successfully.
 
 	var tests = []testCase{
-		{
-			name:    "Success - on moderation (hard delete)",
-			buildAd: newAd,
-			input: func(adID uuid.UUID) dto.DeleteAdInput {
-				return dto.DeleteAdInput{AdID: adID, SellerID: sellerID}
-			},
-			mockBehaviour: func(a adapter, adID uuid.UUID) {
-				a.ad.EXPECT().Delete(mock.Anything, adID).Return(nil)
-				a.media.EXPECT().Delete(mock.Anything, adID).Return(nil)
-			},
-			expectErr: nil,
-		},
 		{
 			name:    "Failure - ad not found",
 			buildAd: func() *model.Ad { return nil },
@@ -97,6 +103,8 @@ func TestDeleteAdUC_Execute(t *testing.T) {
 			expectErr:     ucerrs.ErrCannotDelete,
 		},
 		{
+			// hardDelete's own domain ad.Delete() succeeds (first call),
+			// but the DB delete inside hardDelete's transaction fails.
 			name:    "Failure - delete ad db error (on moderation)",
 			buildAd: newAd,
 			input: func(adID uuid.UUID) dto.DeleteAdInput {
@@ -108,6 +116,7 @@ func TestDeleteAdUC_Execute(t *testing.T) {
 			expectErr: ucerrs.ErrDeleteAdDB,
 		},
 		{
+			// hardDelete's DB ad delete succeeds, but media delete fails.
 			name:    "Failure - delete images db error (on moderation)",
 			buildAd: newAd,
 			input: func(adID uuid.UUID) dto.DeleteAdInput {
@@ -120,28 +129,39 @@ func TestDeleteAdUC_Execute(t *testing.T) {
 			expectErr: ucerrs.ErrDeleteImagesDB,
 		},
 		{
-			name: "Success - published (soft delete)",
-			buildAd: func() *model.Ad {
-				ad := newAd()
-				_ = ad.Publish()
-				return ad
+			// hardDelete fully succeeds, but softDeleteAndPublish's second
+			// ad.Delete() domain call fails because the ad is already
+			// marked deleted - no further mocks are hit after that.
+			name:    "Failure - cannot delete on second domain delete (on moderation)",
+			buildAd: newAd,
+			input: func(adID uuid.UUID) dto.DeleteAdInput {
+				return dto.DeleteAdInput{AdID: adID, SellerID: sellerID}
 			},
+			mockBehaviour: func(a adapter, adID uuid.UUID) {
+				a.ad.EXPECT().Delete(mock.Anything, adID).Return(nil)
+				a.media.EXPECT().Delete(mock.Anything, adID).Return(nil)
+			},
+			expectErr: ucerrs.ErrCannotDelete,
+		},
+		{
+			// Published ad: hardDelete is skipped (not on moderation), so
+			// only softDeleteAndPublish runs and its single ad.Delete()
+			// call succeeds.
+			name:    "Success - published",
+			buildAd: publishedAd,
 			input: func(adID uuid.UUID) dto.DeleteAdInput {
 				return dto.DeleteAdInput{AdID: adID, SellerID: sellerID}
 			},
 			mockBehaviour: func(a adapter, adID uuid.UUID) {
 				a.ad.EXPECT().Update(mock.Anything, mock.AnythingOfType("*model.Ad")).Return(nil)
 				a.media.EXPECT().Delete(mock.Anything, adID).Return(nil)
+				a.publisher.EXPECT().PublishAdDeleted(mock.Anything, adID).Return(nil)
 			},
 			expectErr: nil,
 		},
 		{
-			name: "Failure - update ad db error (published)",
-			buildAd: func() *model.Ad {
-				ad := newAd()
-				_ = ad.Publish()
-				return ad
-			},
+			name:    "Failure - update ad db error (published)",
+			buildAd: publishedAd,
 			input: func(adID uuid.UUID) dto.DeleteAdInput {
 				return dto.DeleteAdInput{AdID: adID, SellerID: sellerID}
 			},
@@ -150,12 +170,38 @@ func TestDeleteAdUC_Execute(t *testing.T) {
 			},
 			expectErr: ucerrs.ErrUpdateAdDB,
 		},
+		{
+			name:    "Failure - delete images db error (published)",
+			buildAd: publishedAd,
+			input: func(adID uuid.UUID) dto.DeleteAdInput {
+				return dto.DeleteAdInput{AdID: adID, SellerID: sellerID}
+			},
+			mockBehaviour: func(a adapter, adID uuid.UUID) {
+				a.ad.EXPECT().Update(mock.Anything, mock.AnythingOfType("*model.Ad")).Return(nil)
+				a.media.EXPECT().Delete(mock.Anything, adID).Return(errors.New("db error"))
+			},
+			expectErr: ucerrs.ErrDeleteImagesDB,
+		},
+		{
+			name:    "Failure - publish ad deleted error (published)",
+			buildAd: publishedAd,
+			input: func(adID uuid.UUID) dto.DeleteAdInput {
+				return dto.DeleteAdInput{AdID: adID, SellerID: sellerID}
+			},
+			mockBehaviour: func(a adapter, adID uuid.UUID) {
+				a.ad.EXPECT().Update(mock.Anything, mock.AnythingOfType("*model.Ad")).Return(nil)
+				a.media.EXPECT().Delete(mock.Anything, adID).Return(nil)
+				a.publisher.EXPECT().PublishAdDeleted(mock.Anything, adID).Return(errors.New("mq error"))
+			},
+			expectErr: ucerrs.ErrPublishAdDeleted,
+		},
 	}
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			adRepo := mocks.NewMockAdRepository(t)
 			mediaRepo := mocks.NewMockMediaRepository(t)
+			publisher := mocks.NewMockAdPublisher(t)
 
 			ad := tt.buildAd()
 			adID := uuid.New()
@@ -172,9 +218,9 @@ func TestDeleteAdUC_Execute(t *testing.T) {
 				adRepo.EXPECT().Get(mock.Anything, adID).Return(ad, nil)
 			}
 
-			tt.mockBehaviour(adapter{ad: adRepo, media: mediaRepo}, adID)
+			tt.mockBehaviour(adapter{ad: adRepo, media: mediaRepo, publisher: publisher}, adID)
 
-			uc := usecase.NewDeleteAdUC(mocks.FakeTxManager{}, adRepo, mediaRepo)
+			uc := usecase.NewDeleteAdUC(mocks.FakeTxManager{}, adRepo, mediaRepo, publisher)
 
 			out, err := uc.Execute(context.Background(), tt.input(adID))
 

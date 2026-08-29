@@ -19,8 +19,9 @@ import (
 
 func TestUpdateAdUC_Execute(t *testing.T) {
 	type adapter struct {
-		ad    *mocks.MockAdRepository
-		media *mocks.MockMediaRepository
+		ad        *mocks.MockAdRepository
+		media     *mocks.MockMediaRepository
+		publisher *mocks.MockAdPublisher
 	}
 
 	type testCase struct {
@@ -70,6 +71,7 @@ func TestUpdateAdUC_Execute(t *testing.T) {
 			mockBehaviour: func(a adapter, adID uuid.UUID) {
 				a.ad.EXPECT().Update(mock.Anything, mock.AnythingOfType("*model.Ad")).Return(nil)
 				a.media.EXPECT().Save(mock.Anything, adID, newImages).Return(nil)
+				a.publisher.EXPECT().PublishAdUpdated(mock.Anything, mock.AnythingOfType("*model.Ad")).Return(nil)
 			},
 			expectErr: nil,
 		},
@@ -153,12 +155,33 @@ func TestUpdateAdUC_Execute(t *testing.T) {
 			},
 			expectErr: ucerrs.ErrSaveImagesDB,
 		},
+		{
+			name:    "Failure - publish ad updated error",
+			buildAd: newAd,
+			input: func(adID uuid.UUID) dto.UpdateAdInput {
+				return dto.UpdateAdInput{
+					AdID:        adID,
+					SellerID:    sellerID,
+					Title:       &newTitle,
+					Description: &newDescription,
+					Price:       &newPrice,
+					Images:      newImages,
+				}
+			},
+			mockBehaviour: func(a adapter, adID uuid.UUID) {
+				a.ad.EXPECT().Update(mock.Anything, mock.AnythingOfType("*model.Ad")).Return(nil)
+				a.media.EXPECT().Save(mock.Anything, adID, newImages).Return(nil)
+				a.publisher.EXPECT().PublishAdUpdated(mock.Anything, mock.AnythingOfType("*model.Ad")).Return(errors.New("mq error"))
+			},
+			expectErr: ucerrs.ErrPublishAdUpdated,
+		},
 	}
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			adRepo := mocks.NewMockAdRepository(t)
 			mediaRepo := mocks.NewMockMediaRepository(t)
+			publisher := mocks.NewMockAdPublisher(t)
 
 			ad := tt.buildAd()
 			adID := uuid.New()
@@ -175,9 +198,9 @@ func TestUpdateAdUC_Execute(t *testing.T) {
 				adRepo.EXPECT().Get(mock.Anything, adID).Return(ad, nil)
 			}
 
-			tt.mockBehaviour(adapter{ad: adRepo, media: mediaRepo}, adID)
+			tt.mockBehaviour(adapter{ad: adRepo, media: mediaRepo, publisher: publisher}, adID)
 
-			uc := usecase.NewUpdateAdUC(mocks.FakeTxManager{}, adRepo, mediaRepo)
+			uc := usecase.NewUpdateAdUC(mocks.FakeTxManager{}, adRepo, mediaRepo, publisher)
 
 			out, err := uc.Execute(context.Background(), tt.input(adID))
 
