@@ -49,11 +49,11 @@ func (uc *PublishAdUC) Execute(ctx context.Context, in dto.PublishAdInput) (dto.
 
 	// Update in db and publish in queue
 	if err = uc.trManager.Do(ctx, func(txCtx context.Context) error {
-		if updErr := uc.ad.Update(ctx, ad); updErr != nil {
+		if updErr := uc.ad.Update(txCtx, ad); updErr != nil {
 			return ucerrs.Wrap(ucerrs.ErrUpdateAdDB, err)
 		}
 
-		if publishErr := uc.publisher.PublishAdPublished(ctx, ad); publishErr != nil {
+		if publishErr := uc.publisher.PublishAdPublished(txCtx, ad); publishErr != nil {
 			return ucerrs.Wrap(ucerrs.ErrPublishAdPublishedEvent, publishErr)
 		}
 

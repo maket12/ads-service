@@ -16,17 +16,20 @@ type UpdateAdUC struct {
 	trManager trm.Manager
 	ad        port.AdRepository
 	media     port.MediaRepository
+	publisher port.AdPublisher
 }
 
 func NewUpdateAdUC(
 	trManager trm.Manager,
 	ad port.AdRepository,
 	media port.MediaRepository,
+	publisher port.AdPublisher,
 ) *UpdateAdUC {
 	return &UpdateAdUC{
 		trManager: trManager,
 		ad:        ad,
 		media:     media,
+		publisher: publisher,
 	}
 }
 
@@ -37,14 +40,14 @@ func (uc *UpdateAdUC) Execute(ctx context.Context, in dto.UpdateAdInput) (dto.Up
 		if errors.Is(err, pkgerrs.ErrObjectNotFound) {
 			return dto.UpdateAdOutput{Success: false}, ucerrs.ErrAdNotFound
 		}
-		return dto.UpdateAdOutput{Success: false}, ucerrs.Wrap(
+		return dto.UpdateAdOutput{}, ucerrs.Wrap(
 			ucerrs.ErrGetAdDB, err,
 		)
 	}
 
 	// Check if current user can update this ad
 	if ad.SellerID() != in.SellerID {
-		return dto.UpdateAdOutput{Success: false}, ucerrs.ErrAccessDenied
+		return dto.UpdateAdOutput{}, ucerrs.ErrAccessDenied
 	}
 
 	// Update ad
@@ -53,12 +56,12 @@ func (uc *UpdateAdUC) Execute(ctx context.Context, in dto.UpdateAdInput) (dto.Up
 		if errors.Is(err, model.ErrAdCantBeUpdated) {
 			return dto.UpdateAdOutput{}, ucerrs.ErrCannotUpdate
 		}
-		return dto.UpdateAdOutput{Success: false}, ucerrs.Wrap(
+		return dto.UpdateAdOutput{}, ucerrs.Wrap(
 			ucerrs.ErrInvalidInput, err,
 		)
 	}
 
-	// Update in databases
+	// Update in databases and publish in queue
 	if err = uc.trManager.Do(ctx, func(txCtx context.Context) error {
 		updErr := uc.ad.Update(txCtx, ad)
 		if updErr != nil {
@@ -69,9 +72,13 @@ func (uc *UpdateAdUC) Execute(ctx context.Context, in dto.UpdateAdInput) (dto.Up
 			return ucerrs.Wrap(ucerrs.ErrSaveImagesDB, updErr)
 		}
 
+		if publishErr := uc.publisher.PublishAdUpdated(txCtx, ad); publishErr != nil {
+			return ucerrs.Wrap(ucerrs.ErrPublishAdUpdatedEvent, publishErr)
+		}
+
 		return nil
 	}); err != nil {
-		return dto.UpdateAdOutput{Success: false}, err
+		return dto.UpdateAdOutput{}, err
 	}
 
 	// Response
