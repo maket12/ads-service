@@ -9,12 +9,10 @@ require (
 	github.com/golang-migrate/migrate/v4 v4.19.1
 	github.com/google/uuid v1.6.0
 	github.com/jackc/pgx/v5 v5.10.0
+	github.com/maket12/ads-service/backend/authservice v0.0.0-20260830032133-110f7dd873e8
 	github.com/nyaruka/phonenumbers v1.8.1
 	github.com/rabbitmq/amqp091-go v1.12.0
 	github.com/stretchr/testify v1.11.1
-	github.com/testcontainers/testcontainers-go v0.43.0
-	github.com/testcontainers/testcontainers-go/modules/postgres v0.43.0
-	github.com/testcontainers/testcontainers-go/modules/rabbitmq v0.43.0
 	google.golang.org/grpc v1.82.1
 	google.golang.org/protobuf v1.36.11
 )
@@ -60,10 +58,12 @@ require (
 	github.com/opencontainers/image-spec v1.1.1 // indirect
 	github.com/pmezard/go-difflib v1.0.1-0.20181226105442-5d4384ee4fb2 // indirect
 	github.com/power-devops/perfstat v0.0.0-20240221224432-82ca36839d55 // indirect
-	github.com/rogpeppe/go-internal v1.15.0 // indirect
 	github.com/shirou/gopsutil/v4 v4.26.5 // indirect
 	github.com/sirupsen/logrus v1.9.4 // indirect
 	github.com/stretchr/objx v0.5.3 // indirect
+	github.com/testcontainers/testcontainers-go v0.43.0 // indirect
+	github.com/testcontainers/testcontainers-go/modules/postgres v0.43.0 // indirect
+	github.com/testcontainers/testcontainers-go/modules/rabbitmq v0.43.0 // indirect
 	github.com/tklauser/go-sysconf v0.3.16 // indirect
 	github.com/tklauser/numcpus v0.11.0 // indirect
 	github.com/yusufpapurcu/wmi v1.2.4 // indirect

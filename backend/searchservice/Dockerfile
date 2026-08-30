@@ -12,15 +12,14 @@ COPY pkg ./pkg/
 COPY internal/ ./internal/
 COPY "cmd/" "./cmd/"
 
-RUN CGO_ENABLED=0 GOOS=linux go build -o /app/authservice ./cmd/app/main.go
+RUN CGO_ENABLED=0 GOOS=linux go build -o /app/searchservice ./cmd/app/main.go
 
 FROM alpine:latest
 WORKDIR /app
 
 RUN apk --no-cache add ca-certificates
+COPY --from=builder /app/searchservice /app/searchservice
 
-COPY --from=builder /app/authservice /app/authservice
+EXPOSE 50053
 
-EXPOSE 50051
-
-CMD ["/app/authservice"]
+CMD ["/app/searchservice"]

@@ -12,6 +12,7 @@ const (
 	CategoryFood        Category = "food"
 	CategoryHome        Category = "home"
 	CategoryServices    Category = "services"
+	CategoryBooks       Category = "books"
 	CategoryVideoGames  Category = "video_games"
 	CategoryMedicaments Category = "medicaments"
 	CategoryTravel      Category = "travel"
@@ -24,8 +25,9 @@ func (c Category) IsValid() bool {
 	case CategoryElectronics, CategoryVehicles,
 		CategoryRealEstate, CategoryClothes,
 		CategoryFood, CategoryHome,
-		CategoryServices, CategoryVideoGames,
-		CategoryMedicaments, CategoryTravel:
+		CategoryServices, CategoryBooks,
+		CategoryVideoGames, CategoryMedicaments,
+		CategoryTravel:
 		return true
 	default:
 		return false

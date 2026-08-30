@@ -18,7 +18,7 @@ type TestContainer struct {
 
 func StartTestContainer(ctx context.Context) (*TestContainer, error) {
 	esContainer, err := container.Run(ctx,
-		"bitnami/elasticsearch:8.11.0",
+		"elasticsearch:8.18.8",
 		testcontainers.WithEnv(map[string]string{
 			"xpack.security.enabled": "false",
 			"discovery.type":         "single-node",

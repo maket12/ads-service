@@ -7,7 +7,7 @@ WORKDIR /app
 COPY go.mod go.sum ./
 RUN go mod download
 
-COPY pkg ./pkg/
+COPY api/proto/generated ./api/proto/generated
 COPY internal/ ./internal/
 COPY "cmd/" "./cmd/"
 
