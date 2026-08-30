@@ -178,27 +178,51 @@ func (a *testApp) cleanData(t *testing.T, ctx context.Context) {
 }
 
 // Helper for e2e tests.
-// Creates a new ad index directly through the repository, since ad creation
-// in searchservice is triggered by a RabbitMQ event (AdSubscriber -> CreateAdIndexUC)
-// rather than by a gRPC call, unlike adservice's CreateAd.
-//
-// If ad id is not specified, then it uses random value instead.
-//
-// Returns the created ad index id.
-func (a *testApp) createAdIndex(t *testing.T, adID *string) string {
-	var id = uuid.NewString()
+// Creates a new ad index directly through the repository.
+// Any parameter passed as nil will be generated randomly.
+func (a *testApp) createAdIndex(t *testing.T,
+	adID, title, description *string,
+	price *int64,
+	category, mainImage *string,
+) string {
+	id := uuid.NewString()
 	if adID != nil {
 		id = *adID
+	}
+
+	tTitle := gofakeit.ProductName()
+	if title != nil {
+		tTitle = *title
+	}
+
+	tDesc := gofakeit.ProductDescription()
+	if description != nil {
+		tDesc = *description
+	}
+
+	tPrice := int64(gofakeit.Price(100, 10000))
+	if price != nil {
+		tPrice = *price
+	}
+
+	tCategory := gofakeit.RandomString([]string{"food", "video_games", "electronics"})
+	if category != nil {
+		tCategory = *category
+	}
+
+	tImage := gofakeit.URL()
+	if mainImage != nil {
+		tImage = *mainImage
 	}
 
 	uc := usecase.NewCreateAdIndexUC(a.adIdxRepo)
 	err := uc.Execute(context.Background(), dto.CreateAdIndexInput{
 		ID:          id,
-		Title:       gofakeit.ProductName(),
-		Description: gofakeit.ProductDescription(),
-		Price:       int64(gofakeit.Price(100, 10000)),
-		Category:    gofakeit.RandomString([]string{"food", "video_games", "electronics"}),
-		MainImage:   gofakeit.URL(),
+		Title:       tTitle,
+		Description: tDesc,
+		Price:       tPrice,
+		Category:    tCategory,
+		MainImage:   tImage,
 	})
 	require.NoError(t, err)
 

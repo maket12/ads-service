@@ -15,9 +15,95 @@ import (
 	"google.golang.org/grpc/status"
 )
 
-//func TestSearchAds_Success(t *testing.T) {
-//	app := setupE2E(t)
-//}
+func TestSearchAds_Success(t *testing.T) {
+	app := setupE2E(t)
+
+	id1 := app.createAdIndex(t, nil, utils.VPtr("Vintage Camera"), nil, utils.VPtr(int64(500)), utils.VPtr("electronics"), nil)
+	id2 := app.createAdIndex(t, nil, utils.VPtr("Digital Camera DSLR"), nil, utils.VPtr(int64(1500)), utils.VPtr("electronics"), nil)
+	id3 := app.createAdIndex(t, nil, utils.VPtr("Vegan Burger"), nil, utils.VPtr(int64(50)), utils.VPtr("food"), nil)
+	id4 := app.createAdIndex(t, nil, utils.VPtr("Gaming Console 5"), nil, utils.VPtr(int64(3000)), utils.VPtr("video_games"), nil)
+
+	type testCase struct {
+		name          string
+		req           *search_v1.SearchAdsRequest
+		expectedTotal int64
+		expectedIDs   []string
+	}
+
+	tests := []testCase{
+		{
+			name: "Full-text search by title - match 'Camera'",
+			req: &search_v1.SearchAdsRequest{
+				Text: "Camera",
+			},
+			expectedTotal: 2,
+			expectedIDs:   []string{id1, id2},
+		},
+		{
+			name: "Filter by exact category - 'food'",
+			req: &search_v1.SearchAdsRequest{
+				Category: utils.VPtr("food"),
+			},
+			expectedTotal: 1,
+			expectedIDs:   []string{id3},
+		},
+		{
+			name: "Filter by price range - 1000 to 4000",
+			req: &search_v1.SearchAdsRequest{
+				PriceFrom: utils.VPtr(int64(1000)),
+				PriceTo:   utils.VPtr(int64(4000)),
+			},
+			expectedTotal: 2,
+			expectedIDs:   []string{id2, id4},
+		},
+		{
+			name: "Pagination - limit 1 offset 0 in electronics",
+			req: &search_v1.SearchAdsRequest{
+				Category: utils.VPtr("electronics"),
+				Limit:    1,
+				Offset:   0,
+			},
+			expectedTotal: 2,
+		},
+		{
+			name: "Sort by price descending",
+			req: &search_v1.SearchAdsRequest{
+				SortBy: "price_desc",
+			},
+			expectedTotal: 4,
+			expectedIDs:   []string{id4, id2, id1, id3},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			resp, err := app.client.SearchAds(app.userCtx(), tt.req)
+
+			require.NoError(t, err)
+			require.NotNil(t, resp)
+			assert.Equal(t, tt.expectedTotal, resp.GetTotal())
+
+			if tt.req.Limit > 0 {
+				assert.LessOrEqual(t, int32(len(resp.GetItems())), tt.req.Limit)
+			}
+
+			if len(tt.expectedIDs) > 0 && tt.req.Limit == 0 {
+				require.Equal(t, len(tt.expectedIDs), len(resp.GetItems()))
+
+				actualIDs := make([]string, 0, len(resp.GetItems()))
+				for _, item := range resp.GetItems() {
+					actualIDs = append(actualIDs, item.GetId())
+				}
+
+				if tt.req.SortBy != "" {
+					assert.Equal(t, tt.expectedIDs, actualIDs)
+				} else {
+					assert.ElementsMatch(t, tt.expectedIDs, actualIDs)
+				}
+			}
+		})
+	}
+}
 
 func TestSearchAds_BadCases(t *testing.T) {
 	app := setupE2E(t)
