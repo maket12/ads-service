@@ -68,7 +68,7 @@ func (tc *TestContainer) ClearIndices(ctx context.Context, indices ...string) er
 	if err != nil {
 		return fmt.Errorf("failed to delete indices [%s]: %w", target, err)
 	}
-	defer res.Body.Close()
+	defer func() { _ = res.Body.Close() }()
 
 	if res.IsError() && res.StatusCode != http.StatusNotFound {
 		return fmt.Errorf("error deleting indices [%s]: %s", target, res.String())

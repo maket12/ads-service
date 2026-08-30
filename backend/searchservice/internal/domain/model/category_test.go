@@ -17,4 +17,5 @@ func TestNewCategory(t *testing.T) {
 
 	category, err = model.NewCategory(invalidVal)
 	assert.Error(t, err)
+	assert.Empty(t, category)
 }

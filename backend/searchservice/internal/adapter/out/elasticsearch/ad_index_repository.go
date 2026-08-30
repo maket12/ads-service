@@ -51,7 +51,8 @@ func (r *AdIndexRepository) Index(ctx context.Context, adIndex *model.AdIndex) e
 	if err != nil {
 		return fmt.Errorf("failed to execute index request: %w", err)
 	}
-	defer res.Body.Close()
+
+	defer func() { _ = res.Body.Close() }()
 
 	if res.IsError() {
 		return fmt.Errorf("error indexing document ID=%s: %s", adIndex.ID(), res.String())
@@ -71,7 +72,7 @@ func (r *AdIndexRepository) Delete(ctx context.Context, id string) error {
 	if err != nil {
 		return fmt.Errorf("failed to execute delete request: %w", err)
 	}
-	defer res.Body.Close()
+	defer func() { _ = res.Body.Close() }()
 
 	if res.IsError() {
 		if res.StatusCode == http.StatusNotFound {
@@ -160,7 +161,8 @@ func (r *AdIndexRepository) Search(ctx context.Context, query *model.SearchQuery
 	if err != nil {
 		return nil, 0, fmt.Errorf("failed to execute search: %w", err)
 	}
-	defer res.Body.Close()
+
+	defer func() { _ = res.Body.Close() }()
 
 	if res.IsError() {
 		return nil, 0, fmt.Errorf("search response error: %s", res.String())
