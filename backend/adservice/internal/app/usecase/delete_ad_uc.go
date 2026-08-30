@@ -60,11 +60,11 @@ func (uc *DeleteAdUC) Execute(ctx context.Context, in dto.DeleteAdInput) (dto.De
 		if err = uc.hardDelete(ctx, ad); err != nil {
 			return dto.DeleteAdOutput{}, err
 		}
-	}
-
-	// Scenario №2: Update status in database (deleted) and publish the event in the queue
-	if err = uc.softDeleteAndPublish(ctx, ad); err != nil {
-		return dto.DeleteAdOutput{}, err
+	} else {
+		// Scenario №2: Update status in database (deleted) and publish the event in the queue
+		if err = uc.softDeleteAndPublish(ctx, ad); err != nil {
+			return dto.DeleteAdOutput{}, err
+		}
 	}
 
 	// Response

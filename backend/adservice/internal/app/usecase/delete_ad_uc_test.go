@@ -48,18 +48,19 @@ func TestDeleteAdUC_Execute(t *testing.T) {
 		_ = ad.Publish()
 		return ad
 	}
+	// on moderation again after being published/updated once - IsOnModeration()
+	// is true, but UpdatedAt != nil, so it must still go through
+	// softDeleteAndPublish, not hardDelete.
+	resubmittedAd := func() *model.Ad {
+		ad := newAd()
+		_ = ad.Publish()
+		_ = ad.Update(nil, nil, nil, nil, nil)
+		return ad
+	}
 
-	// NOTE: Execute now calls hardDelete (which itself calls the domain's
-	// ad.Delete()) and then UNCONDITIONALLY calls softDeleteAndPublish
-	// (which calls ad.Delete() again) - there's no else/skip between the
-	// two scenarios. For an ad that is on moderation with a nil UpdatedAt,
-	// this means ad.Delete() runs twice: once inside hardDelete (succeeds)
-	// and once inside softDeleteAndPublish, which fails because the ad is
-	// already marked deleted at that point - so the overall call ends in
-	// ucerrs.ErrCannotDelete even when both DB calls inside hardDelete
-	// succeed. Published ads skip hardDelete entirely (not on moderation),
-	// so softDeleteAndPublish's single ad.Delete() call succeeds and the
-	// flow can complete successfully.
+	// Execute picks exactly one of the two scenarios (if/else):
+	//  - hardDelete: ad is on moderation and was never published (UpdatedAt == nil)
+	//  - softDeleteAndPublish: ad has been published at least once (or is currently published)
 
 	var tests = []testCase{
 		{
@@ -116,7 +117,6 @@ func TestDeleteAdUC_Execute(t *testing.T) {
 			expectErr: ucerrs.ErrDeleteAdDB,
 		},
 		{
-			// hardDelete's DB ad delete succeeds, but media delete fails.
 			name:    "Failure - delete images db error (on moderation)",
 			buildAd: newAd,
 			input: func(adID uuid.UUID) dto.DeleteAdInput {
@@ -129,10 +129,9 @@ func TestDeleteAdUC_Execute(t *testing.T) {
 			expectErr: ucerrs.ErrDeleteImagesDB,
 		},
 		{
-			// hardDelete fully succeeds, but softDeleteAndPublish's second
-			// ad.Delete() domain call fails because the ad is already
-			// marked deleted - no further mocks are hit after that.
-			name:    "Failure - cannot delete on second domain delete (on moderation)",
+			// On-moderation ad, never published: only hardDelete runs,
+			// softDeleteAndPublish (and its ad.Delete() call) must NOT be hit.
+			name:    "Success - on moderation",
 			buildAd: newAd,
 			input: func(adID uuid.UUID) dto.DeleteAdInput {
 				return dto.DeleteAdInput{AdID: adID, SellerID: sellerID}
@@ -141,12 +140,11 @@ func TestDeleteAdUC_Execute(t *testing.T) {
 				a.ad.EXPECT().Delete(mock.Anything, adID).Return(nil)
 				a.media.EXPECT().Delete(mock.Anything, adID).Return(nil)
 			},
-			expectErr: ucerrs.ErrCannotDelete,
+			expectErr: nil,
 		},
 		{
-			// Published ad: hardDelete is skipped (not on moderation), so
-			// only softDeleteAndPublish runs and its single ad.Delete()
-			// call succeeds.
+			// Published ad: hardDelete is skipped (not on moderation, or
+			// UpdatedAt is set), so only softDeleteAndPublish runs.
 			name:    "Success - published",
 			buildAd: publishedAd,
 			input: func(adID uuid.UUID) dto.DeleteAdInput {
@@ -181,6 +179,23 @@ func TestDeleteAdUC_Execute(t *testing.T) {
 				a.media.EXPECT().Delete(mock.Anything, adID).Return(errors.New("db error"))
 			},
 			expectErr: ucerrs.ErrDeleteImagesDB,
+		},
+		{
+			// On-moderation ad that was previously published/updated
+			// (UpdatedAt != nil): must go through softDeleteAndPublish,
+			// hardDelete's uc.ad.Delete/media.Delete-only-no-publish path
+			// must NOT be hit.
+			name:    "Success - on moderation after update (resubmitted)",
+			buildAd: resubmittedAd,
+			input: func(adID uuid.UUID) dto.DeleteAdInput {
+				return dto.DeleteAdInput{AdID: adID, SellerID: sellerID}
+			},
+			mockBehaviour: func(a adapter, adID uuid.UUID) {
+				a.ad.EXPECT().Update(mock.Anything, mock.AnythingOfType("*model.Ad")).Return(nil)
+				a.media.EXPECT().Delete(mock.Anything, adID).Return(nil)
+				a.publisher.EXPECT().PublishAdDeleted(mock.Anything, adID).Return(nil)
+			},
+			expectErr: nil,
 		},
 		{
 			name:    "Failure - publish ad deleted error (published)",
