@@ -14,7 +14,7 @@ func TestMapAdIndexToEsDTO(t *testing.T) {
 		id          = gofakeit.UUID()
 		title       = gofakeit.ProductName()
 		description = gofakeit.ProductDescription()
-		price       = int64(gofakeit.Uint64())
+		price       = int64(gofakeit.Price(100, 10000))
 		rawCategory = model.CategoryElectronics.String()
 		mainImage   = gofakeit.URL()
 	)
@@ -37,7 +37,7 @@ func TestMapEsDTOToAdIndex(t *testing.T) {
 		ID:          gofakeit.UUID(),
 		Title:       gofakeit.ProductName(),
 		Description: gofakeit.ProductDescription(),
-		Price:       int64(gofakeit.Uint64()),
+		Price:       int64(gofakeit.Price(100, 10000)),
 		Category:    model.CategoryVehicles.String(),
 		MainImage:   gofakeit.URL(),
 	}
