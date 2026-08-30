@@ -10,6 +10,7 @@ import (
 	"github.com/maket12/ads-service/backend/gateway/cmd/app/config"
 	"github.com/maket12/ads-service/backend/gateway/graph"
 	"github.com/maket12/ads-service/backend/gateway/internal/middleware"
+	"github.com/maket12/ads-service/backend/searchservice/api/proto/generated/search_v1"
 	"github.com/maket12/ads-service/backend/userservice/api/proto/generated/user_v1"
 
 	"github.com/99designs/gqlgen/graphql/handler"
@@ -48,6 +49,16 @@ func closeAdConnection(adConn *grpc.ClientConn) {
 	}
 }
 
+func closeSearchConnection(searchConn *grpc.ClientConn) {
+	log.Printf("Gateway: Closing Search Service Connection...")
+	if err := searchConn.Close(); err != nil {
+		log.Printf(
+			"Gateway: ERROR - could not close Search Service Connection: %v",
+			err,
+		)
+	}
+}
+
 func main() {
 	// Load Config
 	cfg, err := config.Load()
@@ -65,15 +76,20 @@ func main() {
 	adConn := mustDial(cfg.AdGRPCAddr)
 	defer closeAdConnection(adConn)
 
+	searchConn := mustDial(cfg.SearchGRPCAddr)
+	defer closeSearchConnection(searchConn)
+
 	authClient := auth_v2.NewAuthServiceClient(authConn)
 	userClient := user_v1.NewUserServiceClient(userConn)
 	adClient := ad_v1.NewAdServiceClient(adConn)
+	searchClient := search_v1.NewSearchServiceClient(searchConn)
 
 	// Create resolver
 	resolver := &graph.Resolver{
-		AuthClient: authClient,
-		UserClient: userClient,
-		AdClient:   adClient,
+		AuthClient:   authClient,
+		UserClient:   userClient,
+		AdClient:     adClient,
+		SearchClient: searchClient,
 	}
 
 	// New GraphQL server

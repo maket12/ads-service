@@ -56,6 +56,15 @@ type Ad {
     updatedAt: String
 }
 
+""" AdIndex - short info (doesn't contain description intentionally) """
+type AdIndex {
+    id: ID!
+    title: String!
+    price: Float!
+    category: String!
+    main_image: String!
+}
+
 # ---- Inputs ----
 
 input RegisterInput {
@@ -101,6 +110,16 @@ input UpdateAdInput {
     images: [String!]
 }
 
+input SearchInput {
+    text: String
+    category: String
+    price_from: Float
+    price_to: Float
+    limit: Int
+    offset: Int
+    sort_by: String
+}
+
 type Query {
     # rpc GetProfile
     me: User
@@ -113,6 +132,9 @@ type Query {
 
     # rpc ListAllAds
     allAds(limit: Int!, offset: Int!): [Ad!]!
+
+    # rpc SearchAds
+    search(input: SearchInput): [AdIndex!]!
 
     # rpc ValidateAccessToken
     validateAccessToken(token: String!): ValidateAccessTokenResponse!

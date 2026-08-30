@@ -7,10 +7,11 @@ import (
 )
 
 type Config struct {
-	AuthGRPCAddr string `env:"AUTH_GRPC_ADDR" envDefault:"localhost:50051"`
-	UserGRPCAddr string `env:"USER_GRPC_ADDR" envDefault:"localhost:50052"`
-	AdGRPCAddr   string `env:"AD_GRPC_ADDR" envDefault:"localhost:50053"`
-	GatewayPort  int    `env:"GATEWAY_PORT" envDefault:"6060"`
+	AuthGRPCAddr   string `env:"AUTH_GRPC_ADDR" envDefault:"localhost:50051"`
+	UserGRPCAddr   string `env:"USER_GRPC_ADDR" envDefault:"localhost:50052"`
+	AdGRPCAddr     string `env:"AD_GRPC_ADDR" envDefault:"localhost:50053"`
+	SearchGRPCAddr string `env:"SEARCH_GRPC_ADDR" envDefault:"localhost:50054"`
+	GatewayPort    int    `env:"GATEWAY_PORT" envDefault:"6060"`
 }
 
 func Load() (*Config, error) {

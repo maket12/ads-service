@@ -52,7 +52,7 @@ func (r *mutationResolver) Register(ctx context.Context, input model.RegisterInp
 		Email:    input.Email,
 		Password: input.Password,
 	})
-	if err != nil {
+	if err != nil || resp == nil {
 		return "", mapGRPCError(err)
 	}
 	return resp.AccountId, nil
@@ -66,7 +66,7 @@ func (r *mutationResolver) Login(ctx context.Context, input model.LoginInput) (*
 		Ip:        input.IP,
 		UserAgent: input.UserAgent,
 	})
-	if err != nil {
+	if err != nil || resp == nil {
 		return nil, mapGRPCError(err)
 	}
 
@@ -81,7 +81,7 @@ func (r *mutationResolver) Logout(ctx context.Context, refreshToken string) (boo
 	resp, err := r.AuthClient.Logout(ctx, &auth_v2.LogoutRequest{
 		RefreshToken: refreshToken,
 	})
-	if err != nil {
+	if err != nil || resp == nil {
 		return false, mapGRPCError(err)
 	}
 	return resp.Logout, nil
@@ -94,7 +94,7 @@ func (r *mutationResolver) RefreshSession(ctx context.Context, input model.Refre
 		Ip:              input.IP,
 		UserAgent:       input.UserAgent,
 	})
-	if err != nil {
+	if err != nil || resp == nil {
 		return nil, mapGRPCError(err)
 	}
 
@@ -114,7 +114,7 @@ func (r *mutationResolver) AssignRole(ctx context.Context, accountID string, rol
 		AccountId: accountID,
 		Role:      role.String(),
 	})
-	if err != nil {
+	if err != nil || resp == nil {
 		return false, mapGRPCError(err)
 	}
 
@@ -126,7 +126,7 @@ func (r *mutationResolver) SendVerification(ctx context.Context, accountID strin
 	resp, err := r.AuthClient.SendVerification(ctx, &auth_v2.SendVerificationRequest{
 		AccountId: accountID,
 	})
-	if err != nil {
+	if err != nil || resp == nil {
 		return false, mapGRPCError(err)
 	}
 	return resp.Sent, nil
@@ -135,7 +135,7 @@ func (r *mutationResolver) SendVerification(ctx context.Context, accountID strin
 // VerifyEmail is the resolver for the verifyEmail field.
 func (r *mutationResolver) VerifyEmail(ctx context.Context, token string) (bool, error) {
 	resp, err := r.AuthClient.VerifyEmail(ctx, &auth_v2.VerifyEmailRequest{Token: token})
-	if err != nil {
+	if err != nil || resp == nil {
 		return false, mapGRPCError(err)
 	}
 	return resp.Verified, nil
@@ -150,7 +150,7 @@ func (r *mutationResolver) Block(ctx context.Context, accountID string) (bool, e
 	resp, err := r.AuthClient.BlockAccount(ctx, &auth_v2.BlockAccountRequest{
 		AccountId: accountID,
 	})
-	if err != nil {
+	if err != nil || resp == nil {
 		return false, mapGRPCError(err)
 	}
 
@@ -166,7 +166,7 @@ func (r *mutationResolver) Delete(ctx context.Context, accountID string) (bool, 
 	resp, err := r.AuthClient.DeleteAccount(ctx, &auth_v2.DeleteAccountRequest{
 		AccountId: accountID,
 	})
-	if err != nil {
+	if err != nil || resp == nil {
 		return false, mapGRPCError(err)
 	}
 
@@ -186,7 +186,7 @@ func (r *mutationResolver) UpdateProfile(ctx context.Context, input model.Update
 		AvatarUrl: input.AvatarURL,
 		Bio:       input.Bio,
 	})
-	if err != nil {
+	if err != nil || resp == nil {
 		return false, mapGRPCError(err)
 	}
 
@@ -206,7 +206,7 @@ func (r *mutationResolver) CreateAd(ctx context.Context, input model.CreateAdInp
 		Category:    input.Category,
 		Images:      input.Images,
 	})
-	if err != nil {
+	if err != nil || resp == nil {
 		return "", mapGRPCError(err)
 	}
 
@@ -223,11 +223,11 @@ func (r *mutationResolver) UpdateAd(ctx context.Context, input model.UpdateAdInp
 		Id:          input.AdID,
 		Title:       input.Title,
 		Description: input.Description,
-		Price:       mapFloatPtrToInt(input.Price),
+		Price:       mapFloatPtrToIntPtr(input.Price),
 		Category:    input.Category,
 		Images:      input.Images,
 	})
-	if err != nil {
+	if err != nil || resp == nil {
 		return false, mapGRPCError(err)
 	}
 
@@ -241,7 +241,7 @@ func (r *mutationResolver) Publish(ctx context.Context, adID string) (bool, erro
 	}
 
 	resp, err := r.AdClient.PublishAd(ctx, &ad_v1.PublishAdRequest{Id: adID})
-	if err != nil {
+	if err != nil || resp == nil {
 		return false, mapGRPCError(err)
 	}
 
@@ -255,7 +255,7 @@ func (r *mutationResolver) Reject(ctx context.Context, adID string) (bool, error
 	}
 
 	resp, err := r.AdClient.RejectAd(ctx, &ad_v1.RejectAdRequest{Id: adID})
-	if err != nil {
+	if err != nil || resp == nil {
 		return false, mapGRPCError(err)
 	}
 
@@ -269,7 +269,7 @@ func (r *mutationResolver) DeleteAd(ctx context.Context, adID string) (bool, err
 	}
 
 	resp, err := r.AdClient.DeleteAd(ctx, &ad_v1.DeleteAdRequest{Id: adID})
-	if err != nil {
+	if err != nil || resp == nil {
 		return false, mapGRPCError(err)
 	}
 
@@ -285,7 +285,7 @@ func (r *mutationResolver) DeleteAllAds(ctx context.Context, sellerID string) (b
 	resp, err := r.AdClient.DeleteAllAds(ctx, &ad_v1.DeleteAllAdsRequest{
 		SellerId: sellerID,
 	})
-	if err != nil {
+	if err != nil || resp == nil {
 		return false, mapGRPCError(err)
 	}
 
@@ -294,28 +294,19 @@ func (r *mutationResolver) DeleteAllAds(ctx context.Context, sellerID string) (b
 
 // Me is the resolver for the me field.
 func (r *queryResolver) Me(ctx context.Context) (*model.User, error) {
-	accountID, err := requireAuth(ctx)
+	_, err := requireAuth(ctx)
 	if err != nil {
 		return nil, err
 	}
 
-	role := model.UserRole(authutils.GetAccountRoleFromCtx(ctx))
+	role := authutils.GetAccountRoleFromCtx(ctx)
 
 	resp, err := r.UserClient.GetProfile(ctx, &user_v1.GetProfileRequest{})
-	if err != nil {
+	if err != nil || resp == nil {
 		return nil, mapGRPCError(err)
 	}
 
-	return &model.User{
-		ID:        accountID,
-		Role:      role,
-		FirstName: resp.FirstName,
-		LastName:  resp.LastName,
-		Phone:     resp.Phone,
-		AvatarURL: resp.AvatarUrl,
-		Bio:       resp.Bio,
-		UpdatedAt: authutils.VPtr(resp.UpdatedAt.String()),
-	}, nil
+	return MapUserGRPCToGateway(resp, role), nil
 }
 
 // Ad is the resolver for the ad field.
@@ -325,11 +316,11 @@ func (r *queryResolver) Ad(ctx context.Context, adID string) (*model.Ad, error) 
 	}
 
 	resp, err := r.AdClient.GetAd(ctx, &ad_v1.GetAdRequest{Id: adID})
-	if err != nil {
+	if err != nil || resp == nil {
 		return nil, mapGRPCError(err)
 	}
 
-	return mapAdGRPCToGateway(resp.Ad), nil
+	return MapAdGRPCToGateway(resp.Ad), nil
 }
 
 // Ads is the resolver for the ads field.
@@ -339,11 +330,11 @@ func (r *queryResolver) Ads(ctx context.Context) ([]*model.Ad, error) {
 	}
 
 	resp, err := r.AdClient.ListAds(ctx, &ad_v1.ListAdsRequest{})
-	if err != nil {
+	if err != nil || resp == nil {
 		return nil, mapGRPCError(err)
 	}
 
-	return mapAdListGRPCToGateway(resp.Ads), nil
+	return MapAdListGRPCToGateway(resp.Ads), nil
 }
 
 // AllAds is the resolver for the allAds field.
@@ -356,11 +347,25 @@ func (r *queryResolver) AllAds(ctx context.Context, limit int, offset int) ([]*m
 		Limit:  int32(limit),
 		Offset: int32(offset),
 	})
-	if err != nil {
+	if err != nil || resp == nil {
 		return nil, mapGRPCError(err)
 	}
 
-	return mapAdListGRPCToGateway(resp.Ads), nil
+	return MapAdListGRPCToGateway(resp.Ads), nil
+}
+
+// Search is the resolver for the search field.
+func (r *queryResolver) Search(ctx context.Context, input *model.SearchInput) ([]*model.AdIndex, error) {
+	if _, err := requireAuth(ctx); err != nil {
+		return nil, err
+	}
+
+	resp, err := r.SearchClient.SearchAds(ctx, MapSearchInputToRequest(input))
+	if err != nil || resp == nil {
+		return nil, mapGRPCError(err)
+	}
+
+	return MapAdIndexListGRPCToGateway(resp.Items), nil
 }
 
 // ValidateAccessToken is the resolver for the validateAccessToken field.
@@ -368,7 +373,7 @@ func (r *queryResolver) ValidateAccessToken(ctx context.Context, token string) (
 	resp, err := r.AuthClient.ValidateAccessToken(ctx, &auth_v2.ValidateAccessTokenRequest{
 		AccessToken: token,
 	})
-	if err != nil {
+	if err != nil || resp == nil {
 		return nil, mapGRPCError(err)
 	}
 	return &model.ValidateAccessTokenResponse{

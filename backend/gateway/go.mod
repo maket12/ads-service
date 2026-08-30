@@ -5,9 +5,9 @@ go 1.26.2
 require (
 	github.com/99designs/gqlgen v0.17.94
 	github.com/caarlos0/env/v11 v11.4.1
-	github.com/maket12/ads-service/backend/adservice v0.0.0-20260824080053-213096b3dea2
-	github.com/maket12/ads-service/backend/authservice v0.0.0-20260825061454-4c92cec9a3ed
-	github.com/maket12/ads-service/backend/userservice v0.0.0-20260826052005-0b195f5cf0ed
+	github.com/maket12/ads-service/backend/adservice v0.0.0-20260830032133-110f7dd873e8
+	github.com/maket12/ads-service/backend/authservice v0.0.0-20260830032133-110f7dd873e8
+	github.com/maket12/ads-service/backend/userservice v0.0.0-20260830032133-110f7dd873e8
 	github.com/vektah/gqlparser/v2 v2.5.36
 	google.golang.org/grpc v1.82.1
 )

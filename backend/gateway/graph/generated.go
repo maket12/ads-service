@@ -50,6 +50,14 @@ type ComplexityRoot struct {
 		UpdatedAt   func(childComplexity int) int
 	}
 
+	AdIndex struct {
+		Category  func(childComplexity int) int
+		ID        func(childComplexity int) int
+		MainImage func(childComplexity int) int
+		Price     func(childComplexity int) int
+		Title     func(childComplexity int) int
+	}
+
 	LoginResponse struct {
 		AccessToken  func(childComplexity int) int
 		RefreshToken func(childComplexity int) int
@@ -79,6 +87,7 @@ type ComplexityRoot struct {
 		Ads                 func(childComplexity int) int
 		AllAds              func(childComplexity int, limit int, offset int) int
 		Me                  func(childComplexity int) int
+		Search              func(childComplexity int, input *model.SearchInput) int
 		ValidateAccessToken func(childComplexity int, token string) int
 	}
 
@@ -131,6 +140,7 @@ type QueryResolver interface {
 	Ad(ctx context.Context, adID string) (*model.Ad, error)
 	Ads(ctx context.Context) ([]*model.Ad, error)
 	AllAds(ctx context.Context, limit int, offset int) ([]*model.Ad, error)
+	Search(ctx context.Context, input *model.SearchInput) ([]*model.AdIndex, error)
 	ValidateAccessToken(ctx context.Context, token string) (*model.ValidateAccessTokenResponse, error)
 }
 
@@ -212,6 +222,37 @@ func (e *executableSchema) Complexity(ctx context.Context, typeName, field strin
 		}
 
 		return e.ComplexityRoot.Ad.UpdatedAt(childComplexity), true
+
+	case "AdIndex.category":
+		if e.ComplexityRoot.AdIndex.Category == nil {
+			break
+		}
+
+		return e.ComplexityRoot.AdIndex.Category(childComplexity), true
+	case "AdIndex.id":
+		if e.ComplexityRoot.AdIndex.ID == nil {
+			break
+		}
+
+		return e.ComplexityRoot.AdIndex.ID(childComplexity), true
+	case "AdIndex.main_image":
+		if e.ComplexityRoot.AdIndex.MainImage == nil {
+			break
+		}
+
+		return e.ComplexityRoot.AdIndex.MainImage(childComplexity), true
+	case "AdIndex.price":
+		if e.ComplexityRoot.AdIndex.Price == nil {
+			break
+		}
+
+		return e.ComplexityRoot.AdIndex.Price(childComplexity), true
+	case "AdIndex.title":
+		if e.ComplexityRoot.AdIndex.Title == nil {
+			break
+		}
+
+		return e.ComplexityRoot.AdIndex.Title(childComplexity), true
 
 	case "LoginResponse.accessToken":
 		if e.ComplexityRoot.LoginResponse.AccessToken == nil {
@@ -438,6 +479,17 @@ func (e *executableSchema) Complexity(ctx context.Context, typeName, field strin
 		}
 
 		return e.ComplexityRoot.Query.Me(childComplexity), true
+	case "Query.search":
+		if e.ComplexityRoot.Query.Search == nil {
+			break
+		}
+
+		args, err := ec.field_Query_search_args(ctx, rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.ComplexityRoot.Query.Search(childComplexity, args["input"].(*model.SearchInput)), true
 	case "Query.validateAccessToken":
 		if e.ComplexityRoot.Query.ValidateAccessToken == nil {
 			break
@@ -537,6 +589,7 @@ func (e *executableSchema) Exec(ctx context.Context) graphql.ResponseHandler {
 		ec.unmarshalInputLoginInput,
 		ec.unmarshalInputRefreshSessionInput,
 		ec.unmarshalInputRegisterInput,
+		ec.unmarshalInputSearchInput,
 		ec.unmarshalInputUpdateAdInput,
 		ec.unmarshalInputUpdateProfileInput,
 	)
@@ -657,6 +710,22 @@ func (ec *executionContext) childFields_Ad(ctx context.Context, field graphql.Co
 		return ec.fieldContext_Ad_updatedAt(ctx, field)
 	}
 	return nil, fmt.Errorf("no field named %q was found under type Ad", field.Name)
+}
+
+func (ec *executionContext) childFields_AdIndex(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+	switch field.Name {
+	case "id":
+		return ec.fieldContext_AdIndex_id(ctx, field)
+	case "title":
+		return ec.fieldContext_AdIndex_title(ctx, field)
+	case "price":
+		return ec.fieldContext_AdIndex_price(ctx, field)
+	case "category":
+		return ec.fieldContext_AdIndex_category(ctx, field)
+	case "main_image":
+		return ec.fieldContext_AdIndex_main_image(ctx, field)
+	}
+	return nil, fmt.Errorf("no field named %q was found under type AdIndex", field.Name)
 }
 
 func (ec *executionContext) childFields_LoginResponse(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
@@ -1109,6 +1178,20 @@ func (ec *executionContext) field_Query_allAds_args(ctx context.Context, rawArgs
 	return args, nil
 }
 
+func (ec *executionContext) field_Query_search_args(ctx context.Context, rawArgs map[string]any) (map[string]any, error) {
+	var err error
+	args := map[string]any{}
+	arg0, err := graphql.ProcessArgField(ctx, rawArgs, "input",
+		func(ctx context.Context, v any) (*model.SearchInput, error) {
+			return ec.unmarshalOSearchInput2ᚖgithubᚗcomᚋmaket12ᚋadsᚑserviceᚋbackendᚋgatewayᚋgraphᚋmodelᚐSearchInput(ctx, v)
+		})
+	if err != nil {
+		return nil, err
+	}
+	args["input"] = arg0
+	return args, nil
+}
+
 func (ec *executionContext) field_Query_validateAccessToken_args(ctx context.Context, rawArgs map[string]any) (map[string]any, error) {
 	var err error
 	args := map[string]any{}
@@ -1411,6 +1494,121 @@ func (ec *executionContext) _Ad_updatedAt(ctx context.Context, field graphql.Col
 }
 func (ec *executionContext) fieldContext_Ad_updatedAt(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
 	return graphql.NewScalarFieldContext("Ad", field, false, false, errors.New("field of type String does not have child fields"))
+}
+
+func (ec *executionContext) _AdIndex_id(ctx context.Context, field graphql.CollectedField, obj *model.AdIndex) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return ec.fieldContext_AdIndex_id(ctx, field)
+		},
+		func(ctx context.Context) (any, error) {
+			return obj.ID, nil
+		},
+		nil,
+		func(ctx context.Context, selections ast.SelectionSet, v string) graphql.Marshaler {
+			return ec.marshalNID2string(ctx, selections, v)
+		},
+		true,
+		true,
+	)
+}
+func (ec *executionContext) fieldContext_AdIndex_id(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	return graphql.NewScalarFieldContext("AdIndex", field, false, false, errors.New("field of type ID does not have child fields"))
+}
+
+func (ec *executionContext) _AdIndex_title(ctx context.Context, field graphql.CollectedField, obj *model.AdIndex) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return ec.fieldContext_AdIndex_title(ctx, field)
+		},
+		func(ctx context.Context) (any, error) {
+			return obj.Title, nil
+		},
+		nil,
+		func(ctx context.Context, selections ast.SelectionSet, v string) graphql.Marshaler {
+			return ec.marshalNString2string(ctx, selections, v)
+		},
+		true,
+		true,
+	)
+}
+func (ec *executionContext) fieldContext_AdIndex_title(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	return graphql.NewScalarFieldContext("AdIndex", field, false, false, errors.New("field of type String does not have child fields"))
+}
+
+func (ec *executionContext) _AdIndex_price(ctx context.Context, field graphql.CollectedField, obj *model.AdIndex) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return ec.fieldContext_AdIndex_price(ctx, field)
+		},
+		func(ctx context.Context) (any, error) {
+			return obj.Price, nil
+		},
+		nil,
+		func(ctx context.Context, selections ast.SelectionSet, v float64) graphql.Marshaler {
+			return ec.marshalNFloat2float64(ctx, selections, v)
+		},
+		true,
+		true,
+	)
+}
+func (ec *executionContext) fieldContext_AdIndex_price(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	return graphql.NewScalarFieldContext("AdIndex", field, false, false, errors.New("field of type Float does not have child fields"))
+}
+
+func (ec *executionContext) _AdIndex_category(ctx context.Context, field graphql.CollectedField, obj *model.AdIndex) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return ec.fieldContext_AdIndex_category(ctx, field)
+		},
+		func(ctx context.Context) (any, error) {
+			return obj.Category, nil
+		},
+		nil,
+		func(ctx context.Context, selections ast.SelectionSet, v string) graphql.Marshaler {
+			return ec.marshalNString2string(ctx, selections, v)
+		},
+		true,
+		true,
+	)
+}
+func (ec *executionContext) fieldContext_AdIndex_category(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	return graphql.NewScalarFieldContext("AdIndex", field, false, false, errors.New("field of type String does not have child fields"))
+}
+
+func (ec *executionContext) _AdIndex_main_image(ctx context.Context, field graphql.CollectedField, obj *model.AdIndex) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return ec.fieldContext_AdIndex_main_image(ctx, field)
+		},
+		func(ctx context.Context) (any, error) {
+			return obj.MainImage, nil
+		},
+		nil,
+		func(ctx context.Context, selections ast.SelectionSet, v string) graphql.Marshaler {
+			return ec.marshalNString2string(ctx, selections, v)
+		},
+		true,
+		true,
+	)
+}
+func (ec *executionContext) fieldContext_AdIndex_main_image(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	return graphql.NewScalarFieldContext("AdIndex", field, false, false, errors.New("field of type String does not have child fields"))
 }
 
 func (ec *executionContext) _LoginResponse_accessToken(ctx context.Context, field graphql.CollectedField, obj *model.LoginResponse) (ret graphql.Marshaler) {
@@ -2309,6 +2507,50 @@ func (ec *executionContext) fieldContext_Query_allAds(ctx context.Context, field
 	}()
 	ctx = graphql.WithFieldContext(ctx, fc)
 	if fc.Args, err = ec.field_Query_allAds_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
+		ec.Error(ctx, err)
+		return fc, err
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Query_search(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return ec.fieldContext_Query_search(ctx, field)
+		},
+		func(ctx context.Context) (any, error) {
+			fc := graphql.GetFieldContext(ctx)
+			return ec.Resolvers.Query().Search(ctx, fc.Args["input"].(*model.SearchInput))
+		},
+		nil,
+		func(ctx context.Context, selections ast.SelectionSet, v []*model.AdIndex) graphql.Marshaler {
+			return ec.marshalNAdIndex2ᚕᚖgithubᚗcomᚋmaket12ᚋadsᚑserviceᚋbackendᚋgatewayᚋgraphᚋmodelᚐAdIndexᚄ(ctx, selections, v)
+		},
+		true,
+		true,
+	)
+}
+func (ec *executionContext) fieldContext_Query_search(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Query",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return ec.childFields_AdIndex(ctx, field)
+		},
+	}
+	defer func() {
+		if r := recover(); r != nil {
+			err = ec.Recover(ctx, r)
+			ec.Error(ctx, err)
+		}
+	}()
+	ctx = graphql.WithFieldContext(ctx, fc)
+	if fc.Args, err = ec.field_Query_search_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
 		ec.Error(ctx, err)
 		return fc, err
 	}
@@ -3960,6 +4202,78 @@ func (ec *executionContext) unmarshalInputRegisterInput(ctx context.Context, obj
 	return it, nil
 }
 
+func (ec *executionContext) unmarshalInputSearchInput(ctx context.Context, obj any) (model.SearchInput, error) {
+	var it model.SearchInput
+	if obj == nil {
+		return it, nil
+	}
+
+	asMap := map[string]any{}
+	for k, v := range obj.(map[string]any) {
+		asMap[k] = v
+	}
+
+	fieldsInOrder := [...]string{"text", "category", "price_from", "price_to", "limit", "offset", "sort_by"}
+	for _, k := range fieldsInOrder {
+		v, ok := asMap[k]
+		if !ok {
+			continue
+		}
+		switch k {
+		case "text":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("text"))
+			data, err := ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.Text = data
+		case "category":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("category"))
+			data, err := ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.Category = data
+		case "price_from":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("price_from"))
+			data, err := ec.unmarshalOFloat2ᚖfloat64(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.PriceFrom = data
+		case "price_to":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("price_to"))
+			data, err := ec.unmarshalOFloat2ᚖfloat64(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.PriceTo = data
+		case "limit":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("limit"))
+			data, err := ec.unmarshalOInt2ᚖint(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.Limit = data
+		case "offset":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("offset"))
+			data, err := ec.unmarshalOInt2ᚖint(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.Offset = data
+		case "sort_by":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("sort_by"))
+			data, err := ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.SortBy = data
+		}
+	}
+	return it, nil
+}
+
 func (ec *executionContext) unmarshalInputUpdateAdInput(ctx context.Context, obj any) (model.UpdateAdInput, error) {
 	var it model.UpdateAdInput
 	if obj == nil {
@@ -4151,6 +4465,64 @@ func (ec *executionContext) _Ad(ctx context.Context, sel ast.SelectionSet, obj *
 		case "updatedAt":
 			out.Values[i] = ec._Ad_updatedAt(ctx, field, obj)
 			if out.Values[i] == graphql.RequiredNull {
+				out.Invalids++
+			}
+		default:
+			panic("unknown field " + strconv.Quote(field.Name))
+		}
+	}
+	out.Dispatch(ctx)
+	if out.Invalids > 0 {
+		return graphql.Null
+	}
+
+	atomic.AddInt32(&ec.Deferred, int32(min(len(deferLabelToView), math.MaxInt32)))
+
+	ec.ProcessDeferredGroup(graphql.DeferredGroup{
+		Defers:   deferLabelToView,
+		Path:     graphql.GetPath(ctx),
+		FieldSet: deferredFieldSet,
+		Context:  ctx,
+	})
+
+	return out
+}
+
+var adIndexImplementors = []string{"AdIndex"}
+
+func (ec *executionContext) _AdIndex(ctx context.Context, sel ast.SelectionSet, obj *model.AdIndex) graphql.Marshaler {
+	fields := graphql.CollectFields(ec.OperationContext, sel, adIndexImplementors)
+
+	out := graphql.NewFieldSet(fields)
+	deferredFieldSet := graphql.NewFieldSet(nil)
+	deferLabelToView := make(map[string]*graphql.FieldSetView)
+	for i, field := range fields {
+		switch field.Name {
+		case "__typename":
+			out.Values[i] = graphql.MarshalString("AdIndex")
+		case "id":
+			out.Values[i] = ec._AdIndex_id(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		case "title":
+			out.Values[i] = ec._AdIndex_title(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		case "price":
+			out.Values[i] = ec._AdIndex_price(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		case "category":
+			out.Values[i] = ec._AdIndex_category(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		case "main_image":
+			out.Values[i] = ec._AdIndex_main_image(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
 				out.Invalids++
 			}
 		default:
@@ -4466,6 +4838,28 @@ func (ec *executionContext) _Query(ctx context.Context, sel ast.SelectionSet) gr
 					}
 				}()
 				res = ec._Query_allAds(ctx, field)
+				if res == graphql.Null {
+					atomic.AddUint32(&fs.Invalids, 1)
+				}
+				return res
+			}
+
+			rrm := func(ctx context.Context) graphql.Marshaler {
+				return ec.OperationContext.RootResolverMiddleware(ctx,
+					func(ctx context.Context) graphql.Marshaler { return innerFunc(ctx, out) })
+			}
+
+			out.Concurrently(i, func(ctx context.Context) graphql.Marshaler { return rrm(innerCtx) })
+		case "search":
+			field := field
+
+			innerFunc := func(ctx context.Context, fs *graphql.FieldSet) (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._Query_search(ctx, field)
 				if res == graphql.Null {
 					atomic.AddUint32(&fs.Invalids, 1)
 				}
@@ -5112,6 +5506,32 @@ func (ec *executionContext) marshalNAd2ᚖgithubᚗcomᚋmaket12ᚋadsᚑservice
 	return ec._Ad(ctx, sel, v)
 }
 
+func (ec *executionContext) marshalNAdIndex2ᚕᚖgithubᚗcomᚋmaket12ᚋadsᚑserviceᚋbackendᚋgatewayᚋgraphᚋmodelᚐAdIndexᚄ(ctx context.Context, sel ast.SelectionSet, v []*model.AdIndex) graphql.Marshaler {
+	ret := graphql.MarshalSliceConcurrently(ctx, len(v), 0, false, func(ctx context.Context, i int) graphql.Marshaler {
+		fc := graphql.GetFieldContext(ctx)
+		fc.Result = &v[i]
+		return ec.marshalNAdIndex2ᚖgithubᚗcomᚋmaket12ᚋadsᚑserviceᚋbackendᚋgatewayᚋgraphᚋmodelᚐAdIndex(ctx, sel, v[i])
+	})
+
+	for _, e := range ret {
+		if e == graphql.Null {
+			return graphql.Null
+		}
+	}
+
+	return ret
+}
+
+func (ec *executionContext) marshalNAdIndex2ᚖgithubᚗcomᚋmaket12ᚋadsᚑserviceᚋbackendᚋgatewayᚋgraphᚋmodelᚐAdIndex(ctx context.Context, sel ast.SelectionSet, v *model.AdIndex) graphql.Marshaler {
+	if v == nil {
+		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
+			graphql.AddErrorf(ctx, "the requested element is null which the schema does not allow")
+		}
+		return graphql.Null
+	}
+	return ec._AdIndex(ctx, sel, v)
+}
+
 func (ec *executionContext) unmarshalNAdStatus2githubᚗcomᚋmaket12ᚋadsᚑserviceᚋbackendᚋgatewayᚋgraphᚋmodelᚐAdStatus(ctx context.Context, v any) (model.AdStatus, error) {
 	var res model.AdStatus
 	err := res.UnmarshalGQL(v)
@@ -5476,6 +5896,32 @@ func (ec *executionContext) marshalOFloat2ᚖfloat64(ctx context.Context, sel as
 	_ = sel
 	res := graphql.MarshalFloatContext(*v)
 	return graphql.WrapContextMarshaler(ctx, res)
+}
+
+func (ec *executionContext) unmarshalOInt2ᚖint(ctx context.Context, v any) (*int, error) {
+	if v == nil {
+		return nil, nil
+	}
+	res, err := graphql.UnmarshalInt(v)
+	return &res, graphql.ErrorOnPath(ctx, err)
+}
+
+func (ec *executionContext) marshalOInt2ᚖint(ctx context.Context, sel ast.SelectionSet, v *int) graphql.Marshaler {
+	if v == nil {
+		return graphql.Null
+	}
+	_ = sel
+	_ = ctx
+	res := graphql.MarshalInt(*v)
+	return res
+}
+
+func (ec *executionContext) unmarshalOSearchInput2ᚖgithubᚗcomᚋmaket12ᚋadsᚑserviceᚋbackendᚋgatewayᚋgraphᚋmodelᚐSearchInput(ctx context.Context, v any) (*model.SearchInput, error) {
+	if v == nil {
+		return nil, nil
+	}
+	res, err := ec.unmarshalInputSearchInput(ctx, v)
+	return &res, graphql.ErrorOnPath(ctx, err)
 }
 
 func (ec *executionContext) unmarshalOString2ᚕstringᚄ(ctx context.Context, v any) ([]string, error) {

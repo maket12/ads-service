@@ -23,6 +23,15 @@ type Ad struct {
 	UpdatedAt   *string  `json:"updatedAt,omitempty"`
 }
 
+// AdIndex - short info (doesn't contain description intentionally)
+type AdIndex struct {
+	ID        string  `json:"id"`
+	Title     string  `json:"title"`
+	Price     float64 `json:"price"`
+	Category  string  `json:"category"`
+	MainImage string  `json:"main_image"`
+}
+
 type CreateAdInput struct {
 	Title       string   `json:"title"`
 	Description *string  `json:"description,omitempty"`
@@ -65,6 +74,16 @@ type RefreshSessionResponse struct {
 type RegisterInput struct {
 	Email    string `json:"email"`
 	Password string `json:"password"`
+}
+
+type SearchInput struct {
+	Text      *string  `json:"text,omitempty"`
+	Category  *string  `json:"category,omitempty"`
+	PriceFrom *float64 `json:"price_from,omitempty"`
+	PriceTo   *float64 `json:"price_to,omitempty"`
+	Limit     *int     `json:"limit,omitempty"`
+	Offset    *int     `json:"offset,omitempty"`
+	SortBy    *string  `json:"sort_by,omitempty"`
 }
 
 type UpdateAdInput struct {
