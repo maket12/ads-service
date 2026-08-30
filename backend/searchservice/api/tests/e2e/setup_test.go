@@ -5,6 +5,7 @@ package e2e
 import (
 	"context"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"log/slog"
 	"net"
@@ -15,9 +16,12 @@ import (
 
 	"github.com/brianvoe/gofakeit/v7"
 	_ "github.com/golang-migrate/migrate/v4/database/postgres"
+	"github.com/google/uuid"
+	"github.com/maket12/ads-service/backend/authservice/pkg/utils"
 	"github.com/maket12/ads-service/backend/searchservice/api/proto/generated/search_v1"
 	adapterelasticsearch "github.com/maket12/ads-service/backend/searchservice/internal/adapter/out/elasticsearch"
 	"github.com/maket12/ads-service/backend/searchservice/internal/app/dto"
+	ucerrs "github.com/maket12/ads-service/backend/searchservice/internal/app/errs"
 	pkgelasticsearch "github.com/maket12/ads-service/backend/searchservice/pkg/elasticsearch"
 	amqp "github.com/rabbitmq/amqp091-go"
 	"github.com/stretchr/testify/require"
@@ -174,25 +178,32 @@ func (a *testApp) cleanData(t *testing.T, ctx context.Context) {
 }
 
 // Helper for e2e tests.
-// Creates a new profile directly through the repository, since profile creation
-// in userservice is triggered by a RabbitMQ event (AccountSubscriber -> CreateProfileUC)
-// rather than by a gRPC call, unlike authservice's Register.
+// Creates a new ad index directly through the repository, since ad creation
+// in searchservice is triggered by a RabbitMQ event (AdSubscriber -> CreateAdIndexUC)
+// rather than by a gRPC call, unlike adservice's CreateAd.
 //
-// If account id is not specified, then it uses random value instead.
+// If ad id is not specified, then it uses random value instead.
 //
-// Returns the created profile's account id.
-//func (a *testApp) createProfile(t *testing.T, accountID *string) string {
-//	var id = uuid.NewString()
-//	if accountID != nil {
-//		id = *accountID
-//	}
-//
-//	uc := usecase.NewCreateProfileUC(a.profileRepo)
-//	err := uc.Execute(context.Background(), dto.CreateProfileInput{AccountID: uuid.MustParse(id)})
-//	require.NoError(t, err)
-//
-//	return id
-//}
+// Returns the created ad index id.
+func (a *testApp) createAdIndex(t *testing.T, adID *string) string {
+	var id = uuid.NewString()
+	if adID != nil {
+		id = *adID
+	}
+
+	uc := usecase.NewCreateAdIndexUC(a.adIdxRepo)
+	err := uc.Execute(context.Background(), dto.CreateAdIndexInput{
+		ID:          id,
+		Title:       gofakeit.ProductName(),
+		Description: gofakeit.ProductDescription(),
+		Price:       int64(gofakeit.Price(100, 10000)),
+		Category:    gofakeit.RandomString([]string{"food", "video_games", "electronics"}),
+		MainImage:   gofakeit.URL(),
+	})
+	require.NoError(t, err)
+
+	return id
+}
 
 // Helper for e2e tests.
 // Publishes an ad.published event to RabbitMQ the same way adservice's
@@ -259,60 +270,61 @@ func (a *testApp) waitForAdIdxCreated(t *testing.T, adID string, timeout time.Du
 }
 
 // Helper for e2e tests.
-// Publishes an account.created event to RabbitMQ the same way authservice's
-// AccountPublisher does, so the AccountSubscriber -> CreateProfileUC path is
+// Publishes an ad.published event to RabbitMQ the same way adservice's
+// AdPublisher does, so the AdSubscriber -> CreateAdIndexUC path is
 // exercised for real instead of being bypassed.
-//func (a *testApp) publishAccountDeleted(t *testing.T, accountID string) {
-//	ch, err := a.rabbitClient.Conn.Channel()
-//	require.NoError(t, err)
-//	defer ch.Close()
-//
-//	err = ch.ExchangeDeclare(
-//		a.cfg.AccountExchange,
-//		"topic",
-//		true,
-//		false,
-//		false,
-//		false,
-//		nil,
-//	)
-//	require.NoError(t, err)
-//
-//	event := adapterrabbitmq.AccountDeletedEvent{AccountID: uuid.MustParse(accountID)}
-//	body, err := json.Marshal(event)
-//	require.NoError(t, err)
-//
-//	err = ch.PublishWithContext(
-//		context.Background(),
-//		a.cfg.AccountExchange,
-//		a.cfg.AccountDeletedRoutingKey,
-//		false,
-//		false,
-//		amqp.Publishing{
-//			ContentType: "application/json",
-//			Body:        body,
-//		},
-//	)
-//	require.NoError(t, err)
-//}
+func (a *testApp) publishAdDeleted(t *testing.T, adID string) {
+	ch, err := a.rabbitClient.Conn.Channel()
+	require.NoError(t, err)
+	defer ch.Close()
+
+	err = ch.ExchangeDeclare(
+		a.cfg.AdExchange,
+		"topic",
+		true,
+		false,
+		false,
+		false,
+		nil,
+	)
+	require.NoError(t, err)
+
+	event := adapterrabbitmq.AdDeletedEvent{ID: adID}
+	body, err := json.Marshal(event)
+	require.NoError(t, err)
+
+	err = ch.PublishWithContext(
+		context.Background(),
+		a.cfg.AdExchange,
+		a.cfg.AdDeletedRoutingKey,
+		false,
+		false,
+		amqp.Publishing{
+			ContentType: "application/json",
+			Body:        body,
+		},
+	)
+	require.NoError(t, err)
+}
 
 // Helper for e2e tests.
-// Polls GetProfile until the profile disappears (or the timeout elapses),
-// since consumption of the published event is asynchronous.
-//func (a *testApp) waitForProfileDeleted(t *testing.T, accountID string, timeout time.Duration) {
-//	deadline := time.Now().Add(timeout)
-//	ctx := utils.PackAccountIDForGRPC(context.Background(), accountID)
+// Waits until rabbitmq deliver the delete ad index event.
+func (a *testApp) waitForAdIdxDeleted(t *testing.T, adID string, timeout time.Duration) {
+	// wait some time to let rabbitmq deliver the message
+	time.Sleep(timeout)
+
+	err := a.deleteAdIdxUC.Execute(context.Background(), dto.DeleteAdIndexInput{ID: adID})
+	if err != nil && errors.Is(err, ucerrs.ErrAdIndexNotFound) {
+		return
+	}
+
+	t.Fatalf("timed out waiting for ad index %s to be deleted", adID)
+}
+
+// Helper for e2e tests.
 //
-//	for time.Now().Before(deadline) {
-//		_, err := a.client.GetProfile(ctx, &user_v1.GetProfileRequest{})
-//
-//		st, ok := status.FromError(err)
-//		if err != nil && ok && st.Code() == codes.NotFound {
-//			return
-//		}
-//
-//		time.Sleep(100 * time.Millisecond)
-//	}
-//
-//	t.Fatalf("timed out waiting for profile %s to be deleted", accountID)
-//}
+// Returns `context.Context` contains user auth data.
+func (a *testApp) userCtx() context.Context {
+	ctx := utils.PackAccountIDForGRPC(context.Background(), uuid.NewString())
+	return utils.PackAccountRoleForGRPC(ctx, "user")
+}

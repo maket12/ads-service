@@ -2,6 +2,7 @@ package elasticsearch
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"net/http"
 	"strings"
@@ -18,20 +19,20 @@ type TestContainer struct {
 
 func StartTestContainer(ctx context.Context) (*TestContainer, error) {
 	esContainer, err := container.Run(ctx,
-		"elasticsearch:8.18.8",
+		"docker.elastic.co/elasticsearch/elasticsearch:8.18.8",
 		testcontainers.WithEnv(map[string]string{
 			"xpack.security.enabled": "false",
 			"discovery.type":         "single-node",
 			"ES_JAVA_OPTS":           "-Xms256m -Xmx512m",
 		}),
 	)
-	if err != nil {
+	if err != nil || esContainer == nil {
 		return nil, fmt.Errorf("failed to start elasticsearch container: %w", err)
 	}
 
-	address, err := esContainer.ContainerIP(ctx)
-	if err != nil {
-		return nil, fmt.Errorf("failed to get elasticsearch container address: %w", err)
+	address := esContainer.Settings.Address
+	if address == "" {
+		return nil, errors.New("failed to get elasticsearch container address")
 	}
 
 	cfg := NewConfig([]string{address}, "", "")
